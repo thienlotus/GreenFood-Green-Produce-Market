@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, ChevronDown, List } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
 export default function Navbar() {
   const { items, setIsOpen } = useCartStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   
@@ -66,14 +68,37 @@ export default function Navbar() {
               <span>Thông báo</span>
             </button>
 
-            {/* Login */}
-            <button 
-              onClick={() => toast('Tính năng đăng nhập đang phát triển', { icon: '👤' })}
-              className="hidden md:flex items-center gap-1.5 text-gray-600 hover:text-emerald-600 font-medium text-sm transition-colors border-l pl-5 border-gray-200"
-            >
-              <User size={20} />
-              <span>Đăng nhập</span>
-            </button>
+            {/* Auth Dropdown / Login */}
+            {isAuthenticated && user ? (
+              <div className="hidden md:flex items-center gap-4 border-l pl-5 border-gray-200">
+                <div className="flex flex-col text-right">
+                  <span className="text-sm font-bold text-gray-800">{user.name}</span>
+                  <span className="text-[10px] text-gray-500 capitalize">{user.role}</span>
+                </div>
+                {user.role === 'admin' && (
+                  <Link href="/admin" className="bg-amber-100 text-amber-700 hover:bg-amber-200 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                    Trang Quản Trị
+                  </Link>
+                )}
+                <button 
+                  onClick={() => {
+                    useAuthStore.getState().logout();
+                    toast.success('Đã đăng xuất!');
+                  }}
+                  className="text-gray-500 hover:text-rose-500 text-sm font-medium transition-colors"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            ) : (
+              <Link 
+                href="/login"
+                className="hidden md:flex items-center gap-1.5 text-gray-600 hover:text-emerald-600 font-medium text-sm transition-colors border-l pl-5 border-gray-200"
+              >
+                <User size={20} />
+                <span>Đăng nhập</span>
+              </Link>
+            )}
 
             {/* Warehouse Pickup */}
             <div 
