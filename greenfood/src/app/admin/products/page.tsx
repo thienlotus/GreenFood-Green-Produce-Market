@@ -15,6 +15,7 @@ export default function AdminProducts() {
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState(mockProducts);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formData, setFormData] = useState({ name: '', category: 'Trái cây', price: '', stock: '' });
 
@@ -42,27 +43,64 @@ export default function AdminProducts() {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formattedPrice = `${Number(formData.price).toLocaleString('vi-VN')}đ`;
-    const stockNumber = Number(formData.stock);
-    const status = stockNumber > 0 ? 'Còn hàng' : 'Hết hàng';
+    if (isSubmitting) return;
+
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      toast.error('Tên sản phẩm không được để trống!');
+      return;
+    }
+    if (trimmedName.length > 255) {
+      toast.error('Tên sản phẩm quá dài!');
+      return;
+    }
+
+    const priceNum = Number(formData.price);
+    if (priceNum < 0) {
+      toast.error('Giá bán không được là số âm!');
+      return;
+    }
+
+    const stockNum = Number(formData.stock);
+    if (stockNum < 0) {
+      toast.error('Số lượng tồn kho không được là số âm!');
+      return;
+    }
+
+    // Check duplicate name
+    const isDuplicate = products.some(p => p.name.toLowerCase() === trimmedName.toLowerCase() && p.id !== editingProduct?.id);
+    if (isDuplicate) {
+      toast.error('Tên sản phẩm đã tồn tại!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const formattedPrice = `${priceNum.toLocaleString('vi-VN')}đ`;
+    const status = stockNum > 0 ? 'Còn hàng' : 'Hết hàng';
 
     if (editingProduct) {
-      setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...formData, price: formattedPrice, stock: stockNumber, status } : p));
+      setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...formData, name: trimmedName, price: formattedPrice, stock: stockNum, status } : p));
       toast.success('Đã cập nhật sản phẩm!');
     } else {
       const newProduct = {
         id: Date.now(),
         ...formData,
+        name: trimmedName,
         price: formattedPrice,
-        stock: stockNumber,
+        stock: stockNum,
         status
       };
       setProducts([newProduct, ...products]);
       toast.success('Đã thêm sản phẩm mới!');
     }
     setIsModalOpen(false);
+    setIsSubmitting(false);
   };
 
   return (
@@ -108,7 +146,7 @@ export default function AdminProducts() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map((product) => (
+              {products.filter(p => p.name.toLowerCase().includes(searchTerm.trim().toLowerCase())).map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
@@ -148,7 +186,7 @@ export default function AdminProducts() {
                   </td>
                 </tr>
               ))}
-              {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+              {products.filter(p => p.name.toLowerCase().includes(searchTerm.trim().toLowerCase())).length === 0 && (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-gray-500">
                     Không tìm thấy sản phẩm nào!
@@ -190,8 +228,10 @@ export default function AdminProducts() {
                 </div>
               </div>
               <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Hủy</button>
-                <button type="submit" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors">Lưu sản phẩm</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50">Hủy</button>
+                <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors disabled:opacity-50">
+                  {isSubmitting ? 'Đang lưu...' : 'Lưu sản phẩm'}
+                </button>
               </div>
             </form>
           </div>

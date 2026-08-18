@@ -25,6 +25,8 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [editingStatus, setEditingStatus] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -46,12 +48,17 @@ export default function AdminOrders() {
     setEditingStatus(order.status);
   };
 
-  const handleSaveStatus = () => {
+  const handleSaveStatus = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 600));
+
     if (selectedOrder) {
       setOrders(orders.map(o => o.id === selectedOrder.id ? { ...o, status: editingStatus } : o));
       toast.success(`Đã cập nhật trạng thái đơn ${selectedOrder.id}`);
       setSelectedOrder(null);
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -74,11 +81,16 @@ export default function AdminOrders() {
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
           
-          <select className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <select 
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
             <option value="all">Tất cả trạng thái</option>
             <option value="pending">Chờ duyệt</option>
             <option value="processing">Đang giao</option>
             <option value="completed">Hoàn thành</option>
+            <option value="cancelled">Đã hủy</option>
           </select>
         </div>
 
@@ -96,7 +108,10 @@ export default function AdminOrders() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {orders.filter(o => o.id.toLowerCase().includes(searchTerm.toLowerCase()) || o.customer.toLowerCase().includes(searchTerm.toLowerCase())).map((order) => (
+              {orders.filter(o => 
+                (filterStatus === 'all' || o.status === filterStatus) &&
+                (o.id.toLowerCase().includes(searchTerm.trim().toLowerCase()) || o.customer.toLowerCase().includes(searchTerm.trim().toLowerCase()))
+              ).map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                   <td className="p-4 font-semibold text-emerald-700">{order.id}</td>
                   <td className="p-4 font-medium text-gray-800">{order.customer}</td>
@@ -119,6 +134,16 @@ export default function AdminOrders() {
                   </td>
                 </tr>
               ))}
+              {orders.filter(o => 
+                (filterStatus === 'all' || o.status === filterStatus) &&
+                (o.id.toLowerCase().includes(searchTerm.trim().toLowerCase()) || o.customer.toLowerCase().includes(searchTerm.trim().toLowerCase()))
+              ).length === 0 && (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-gray-500">
+                    Không tìm thấy đơn hàng nào phù hợp!
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -188,16 +213,18 @@ export default function AdminOrders() {
             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
               <button 
                 onClick={() => setSelectedOrder(null)}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                disabled={isSubmitting}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
               >
                 Hủy
               </button>
               <button 
                 onClick={handleSaveStatus}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors"
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50"
               >
                 <Save size={16} />
-                Lưu trạng thái
+                {isSubmitting ? 'Đang lưu...' : 'Lưu trạng thái'}
               </button>
             </div>
           </div>

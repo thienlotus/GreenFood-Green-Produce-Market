@@ -14,6 +14,7 @@ export default function AdminFarmers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [farmers, setFarmers] = useState(mockFarmers);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingFarmer, setEditingFarmer] = useState<any>(null);
   const [formData, setFormData] = useState({ name: '', region: '', products: '', rating: '5.0', status: 'Đã xác minh' });
 
@@ -42,13 +43,53 @@ export default function AdminFarmers() {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      toast.error('Tên Nông trại/HTX không được để trống!');
+      return;
+    }
+    if (trimmedName.length > 255) {
+      toast.error('Tên Nông trại/HTX quá dài!');
+      return;
+    }
+
+    const trimmedRegion = formData.region.trim();
+    if (!trimmedRegion) {
+      toast.error('Khu vực không được để trống!');
+      return;
+    }
+
+    const productsNum = Number(formData.products);
+    if (productsNum < 0) {
+      toast.error('Số sản phẩm không được là số âm!');
+      return;
+    }
+
+    const isDuplicate = farmers.some(f => f.name.toLowerCase() === trimmedName.toLowerCase() && f.id !== editingFarmer?.id);
+    if (isDuplicate) {
+      toast.error('Tên Nông trại/HTX đã tồn tại!');
+      return;
+    }
+
+    if (!['Đã xác minh', 'Chờ duyệt'].includes(formData.status)) {
+      toast.error('Trạng thái không hợp lệ!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 600));
+
     if (editingFarmer) {
       setFarmers(farmers.map(f => f.id === editingFarmer.id ? { 
         ...f, 
         ...formData, 
-        products: Number(formData.products),
+        name: trimmedName,
+        region: trimmedRegion,
+        products: productsNum,
         rating: Number(formData.rating)
       } : f));
       toast.success('Đã cập nhật đối tác!');
@@ -56,13 +97,16 @@ export default function AdminFarmers() {
       const newFarmer = {
         id: `NH00${farmers.length + 1}`,
         ...formData,
-        products: Number(formData.products),
+        name: trimmedName,
+        region: trimmedRegion,
+        products: productsNum,
         rating: Number(formData.rating)
       };
       setFarmers([newFarmer, ...farmers]);
       toast.success('Đã thêm đối tác mới!');
     }
     setIsModalOpen(false);
+    setIsSubmitting(false);
   };
 
   return (
@@ -108,7 +152,7 @@ export default function AdminFarmers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {farmers.filter(f => f.name.toLowerCase().includes(searchTerm.toLowerCase())).map((farmer) => (
+              {farmers.filter(f => f.name.toLowerCase().includes(searchTerm.trim().toLowerCase())).map((farmer) => (
                 <tr key={farmer.id} className="hover:bg-gray-50 transition-colors">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
@@ -148,7 +192,7 @@ export default function AdminFarmers() {
                   </td>
                 </tr>
               ))}
-              {farmers.filter(f => f.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+              {farmers.filter(f => f.name.toLowerCase().includes(searchTerm.trim().toLowerCase())).length === 0 && (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-gray-500">
                     Không tìm thấy đối tác nào!
@@ -189,8 +233,10 @@ export default function AdminFarmers() {
                 </div>
               </div>
               <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Hủy</button>
-                <button type="submit" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors">Lưu đối tác</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50">Hủy</button>
+                <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors disabled:opacity-50">
+                  {isSubmitting ? 'Đang lưu...' : 'Lưu đối tác'}
+                </button>
               </div>
             </form>
           </div>

@@ -3,9 +3,40 @@
 import { Save, Globe, Lock, Bell, Store } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
+import { useState } from 'react';
+
 export default function AdminSettings() {
-  const handleSave = () => {
+  const [storeName, setStoreName] = useState('GreenFood');
+  const [hotline, setHotline] = useState('028 7770 2614');
+  const [address, setAddress] = useState('Quận 1, TP. Hồ Chí Minh');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSave = async () => {
+    if (isSubmitting) return;
+
+    if (!storeName.trim()) {
+      toast.error('Tên cửa hàng không được để trống!');
+      return;
+    }
+
+    if (!address.trim()) {
+      toast.error('Địa chỉ không được để trống!');
+      return;
+    }
+
+    // Allow spaces in phone number, but must contain valid numbers
+    const phoneClean = hotline.replace(/\s/g, '');
+    const phoneRegex = /^(0|\+84)[0-9]{8,10}$/;
+    if (!phoneRegex.test(phoneClean)) {
+      toast.error('Hotline không hợp lệ!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 600));
+
     toast.success('Đã lưu cấu hình hệ thống thành công!');
+    setIsSubmitting(false);
   };
 
   return (
@@ -26,15 +57,15 @@ export default function AdminSettings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tên cửa hàng</label>
-                <input type="text" defaultValue="GreenFood" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" />
+                <input type="text" value={storeName} onChange={(e) => setStoreName(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Hotline</label>
-                <input type="text" defaultValue="028 7770 2614" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" />
+                <input type="text" value={hotline} onChange={(e) => setHotline(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" />
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ văn phòng</label>
-                <input type="text" defaultValue="Quận 1, TP. Hồ Chí Minh" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" />
+                <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" />
               </div>
             </div>
           </section>
@@ -63,10 +94,11 @@ export default function AdminSettings() {
         <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
           <button 
             onClick={handleSave}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors"
+            disabled={isSubmitting}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50"
           >
             <Save size={18} />
-            Lưu thay đổi
+            {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
           </button>
         </div>
       </div>

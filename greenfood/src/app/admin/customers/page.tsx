@@ -14,6 +14,7 @@ export default function AdminCustomers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [customers, setCustomers] = useState(mockCustomers);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<any>(null);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', status: 'Hoạt động' });
 
@@ -36,16 +37,41 @@ export default function AdminCustomers() {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      toast.error('Họ và tên không được để trống!');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error('Định dạng email không hợp lệ!');
+      return;
+    }
+
+    const phoneRegex = /^(0|\+84)[0-9]{8,10}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      toast.error('Số điện thoại không hợp lệ (10-11 số)!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 600));
+
     if (editingCustomer) {
       setCustomers(customers.map(c => c.id === editingCustomer.id ? { 
         ...c, 
-        ...formData 
+        ...formData,
+        name: trimmedName 
       } : c));
       toast.success('Đã cập nhật thông tin khách hàng!');
     }
     setIsModalOpen(false);
+    setIsSubmitting(false);
   };
 
   return (
@@ -83,7 +109,11 @@ export default function AdminCustomers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {customers.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.email.toLowerCase().includes(searchTerm.toLowerCase())).map((customer) => (
+              {customers.filter(c => 
+                c.name.toLowerCase().includes(searchTerm.trim().toLowerCase()) || 
+                c.email.toLowerCase().includes(searchTerm.trim().toLowerCase()) ||
+                c.phone.includes(searchTerm.trim())
+              ).map((customer) => (
                 <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
@@ -159,8 +189,10 @@ export default function AdminCustomers() {
                 </select>
               </div>
               <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Hủy</button>
-                <button type="submit" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors">Lưu thay đổi</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50">Hủy</button>
+                <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors disabled:opacity-50">
+                  {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </button>
               </div>
             </form>
           </div>
