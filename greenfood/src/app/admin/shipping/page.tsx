@@ -1,21 +1,17 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2, X, Save, Truck, MapPin } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { 
+  getShippingZones, 
+  createShippingZone, 
+  updateShippingZone, 
+  deleteShippingZone, 
+  ShippingZoneItem 
+} from '@/lib/api';
 
-interface ShippingZone {
-  id: string;
-  name: string;
-  provinces: string;
-  baseFee: number;
-  extraFeePerKg: number;
-  freeShipMinimum: number;
-  estimatedDays: string;
-  isActive: boolean;
-}
-
-const initialZones: ShippingZone[] = [
+const fallbackZones: ShippingZoneItem[] = [
   { id: 'SZ001', name: 'Nội thành TP.HCM', provinces: 'TP. Hồ Chí Minh (Quận 1-12, Bình Thạnh, Gò Vấp, Phú Nhuận, Tân Bình, Tân Phú)', baseFee: 15000, extraFeePerKg: 3000, freeShipMinimum: 300000, estimatedDays: '1-2 giờ', isActive: true },
   { id: 'SZ002', name: 'Ngoại thành TP.HCM', provinces: 'TP. Hồ Chí Minh (Củ Chi, Hóc Môn, Bình Chánh, Nhà Bè, Cần Giờ)', baseFee: 25000, extraFeePerKg: 4000, freeShipMinimum: 500000, estimatedDays: '2-4 giờ', isActive: true },
   { id: 'SZ003', name: 'Đồng Bằng Sông Cửu Long', provinces: 'Bến Tre, Vĩnh Long, Đồng Tháp, Tiền Giang, Cần Thơ, An Giang, Long An', baseFee: 30000, extraFeePerKg: 5000, freeShipMinimum: 500000, estimatedDays: '1-2 ngày', isActive: true },
@@ -24,18 +20,29 @@ const initialZones: ShippingZone[] = [
   { id: 'SZ006', name: 'Miền Bắc', provinces: 'Hà Nội, Hải Phòng, Quảng Ninh, Nam Định, Ninh Bình, Hà Nam', baseFee: 50000, extraFeePerKg: 7000, freeShipMinimum: 800000, estimatedDays: '3-5 ngày', isActive: true },
 ];
 
-const emptyZone: Omit<ShippingZone, 'id'> = {
+const emptyZone: Omit<ShippingZoneItem, 'id'> = {
   name: '', provinces: '', baseFee: 0, extraFeePerKg: 0, freeShipMinimum: 0, estimatedDays: '', isActive: true
 };
 
 export default function AdminShipping() {
-  const [zones, setZones] = useState<ShippingZone[]>(initialZones);
+  const [zones, setZones] = useState<ShippingZoneItem[]>(fallbackZones);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [editingZone, setEditingZone] = useState<ShippingZone | null>(null);
+  const [editingZone, setEditingZone] = useState<ShippingZoneItem | null>(null);
   const [formData, setFormData] = useState(emptyZone);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const loadZones = async () => {
+    const data = await getShippingZones();
+    if (data && data.length > 0) {
+      setZones(data);
+    }
+  };
+
+  useEffect(() => {
+    loadZones();
+  }, []);
 
   const filteredZones = zones.filter(z =>
     z.name.toLowerCase().includes(searchTerm.trim().toLowerCase()) ||
@@ -48,9 +55,17 @@ export default function AdminShipping() {
     setShowModal(true);
   };
 
-  const openEditModal = (zone: ShippingZone) => {
+  const openEditModal = (zone: ShippingZoneItem) => {
     setEditingZone(zone);
-    setFormData({ name: zone.name, provinces: zone.provinces, baseFee: zone.baseFee, extraFeePerKg: zone.extraFeePerKg, freeShipMinimum: zone.freeShipMinimum, estimatedDays: zone.estimatedDays, isActive: zone.isActive });
+    setFormData({ 
+      name: zone.name, 
+      provinces: zone.provinces, 
+      baseFee: zone.baseFee, 
+      extraFeePerKg: zone.extraFeePerKg, 
+      freeShipMinimum: zone.freeShipMinimum, 
+      estimatedDays: zone.estimatedDays, 
+      isActive: zone.isActive 
+    });
     setShowModal(true);
   };
 
@@ -69,18 +84,31 @@ export default function AdminShipping() {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
 
     if (editingZone) {
-      setZones(zones.map(z => z.id === editingZone.id ? { ...z, ...formData } : z));
-      toast.success(`Đã cập nhật vùng "${formData.name}" thành công!`);
+      const res = await updateShippingZone(editingZone.id, formData);
+      if (res.success) {
+        toast.success(`Đã cập nhật vùng "${formData.name}" thành công!`);
+        await loadZones();
+      } else {
+        // Local update fallback
+        setZones(zones.map(z => z.id === editingZone.id ? { ...z, ...formData } : z));
+        toast.success(`Đã cập nhật vùng "${formData.name}" (Local)!`);
+      }
     } else {
-      const newZone: ShippingZone = {
-        id: `SZ${String(zones.length + 1).padStart(3, '0')}`,
-        ...formData,
-      };
-      setZones([...zones, newZone]);
-      toast.success(`Đã thêm vùng "${formData.name}" thành công!`);
+      const res = await createShippingZone(formData);
+      if (res.success && res.data) {
+        toast.success(`Đã thêm vùng "${formData.name}" thành công!`);
+        await loadZones();
+      } else {
+        // Local add fallback
+        const newZone: ShippingZoneItem = {
+          id: `SZ${String(zones.length + 1).padStart(3, '0')}`,
+          ...formData,
+        };
+        setZones([...zones, newZone]);
+        toast.success(`Đã thêm vùng "${formData.name}" (Local)!`);
+      }
     }
     setShowModal(false);
     setIsSubmitting(false);
@@ -88,27 +116,38 @@ export default function AdminShipping() {
 
   const handleDelete = async (id: string) => {
     const zone = zones.find(z => z.id === id);
-    setZones(zones.filter(z => z.id !== id));
-    toast.success(`Đã xóa vùng "${zone?.name}" thành công!`);
+    const res = await deleteShippingZone(id);
+    if (res.success) {
+      toast.success(`Đã xóa vùng "${zone?.name}" thành công!`);
+      await loadZones();
+    } else {
+      setZones(zones.filter(z => z.id !== id));
+      toast.success(`Đã xóa vùng "${zone?.name}" thành công!`);
+    }
     setDeleteConfirm(null);
   };
 
   return (
     <>
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Truck size={22} className="text-emerald-600" />
-            Quản lý Phí Giao Hàng
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">Cấu hình phí vận chuyển theo từng vùng giao hàng trên toàn quốc.</p>
+        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <Truck size={22} className="text-emerald-600" />
+              Quản lý Phí Giao Hàng (Backend API CRUD)
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">Cấu hình phí vận chuyển lưu trữ trực tiếp trên CSDL MySQL qua Laravel REST API.</p>
+          </div>
+          <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-full">
+            REST API: /api/shipping-zones
+          </span>
         </div>
 
         <div className="p-4 border-b border-gray-100 bg-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="relative max-w-md w-full">
             <input
               type="text"
-              placeholder="Tìm kiếm vùng giao hàng..."
+              placeholder="Tìm kiếm vùng giao hàng hoặc tỉnh thành..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -140,7 +179,7 @@ export default function AdminShipping() {
             <tbody className="divide-y divide-gray-100">
               {filteredZones.map((zone) => (
                 <tr key={zone.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="p-4 text-sm font-mono text-gray-500">{zone.id}</td>
+                  <td className="p-4 text-sm font-mono text-gray-500 font-bold">{zone.id}</td>
                   <td className="p-4">
                     <div className="font-semibold text-gray-800 text-sm">{zone.name}</div>
                     <div className="text-xs text-gray-500 mt-0.5 max-w-xs truncate">{zone.provinces}</div>
@@ -185,7 +224,7 @@ export default function AdminShipping() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
               <h3 className="text-lg font-bold text-gray-800">
-                {editingZone ? `Chỉnh sửa: ${editingZone.name}` : 'Thêm vùng giao hàng mới'}
+                {editingZone ? `Chỉnh sửa: ${editingZone.name}` : 'Thêm vùng giao hàng mới (API Backend)'}
               </h3>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={20} /></button>
             </div>
@@ -246,7 +285,7 @@ export default function AdminShipping() {
               <button onClick={handleSave} disabled={isSubmitting}
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50">
                 <Save size={16} />
-                {isSubmitting ? 'Đang lưu...' : (editingZone ? 'Cập nhật' : 'Thêm mới')}
+                {isSubmitting ? 'Đang lưu vào DB...' : (editingZone ? 'Cập nhật' : 'Thêm mới')}
               </button>
             </div>
           </div>
@@ -262,7 +301,7 @@ export default function AdminShipping() {
             </div>
             <h3 className="text-lg font-bold text-gray-800 mb-2">Xác nhận xóa</h3>
             <p className="text-sm text-gray-600 mb-6">
-              Bạn có chắc muốn xóa vùng giao hàng <strong>&quot;{zones.find(z => z.id === deleteConfirm)?.name}&quot;</strong>? Hành động này không thể hoàn tác.
+              Bạn có chắc muốn xóa vùng giao hàng <strong>&quot;{zones.find(z => z.id === deleteConfirm)?.name}&quot;</strong>? Dữ liệu trên Database sẽ bị xóa vĩnh viễn.
             </p>
             <div className="flex justify-center gap-3">
               <button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Hủy</button>

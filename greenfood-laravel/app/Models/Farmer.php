@@ -16,8 +16,19 @@ class Farmer extends Model
         'story',
         'address',
         'region_id',
+        'latitude',
+        'longitude',
+        'image_url',
+        'specialty',
         'rating',
         'is_verified'
+    ];
+
+    protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
+        'rating' => 'float',
+        'is_verified' => 'boolean'
     ];
 
     public function user()

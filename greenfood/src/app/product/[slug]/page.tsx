@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import { notFound, useParams } from 'next/navigation';
-import { ShoppingCart, Star, MapPin, ShieldCheck, ChevronRight, Truck, Leaf, Heart, Share2, Check } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'next/navigation';
+import { ShoppingCart, Star, MapPin, ShieldCheck, ChevronRight, Truck, Leaf, Check } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
-import { getProductBySlug, ALL_PRODUCTS } from '@/data/products';
+import { getProductBySlug, getProducts } from '@/lib/api';
+import { ALL_PRODUCTS, ProductItem } from '@/data/products';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
@@ -13,9 +14,9 @@ export default function ProductDetailPage() {
   const params = useParams();
   const slug = typeof params?.slug === 'string' ? params.slug : '';
 
-  const product = useMemo(() => {
-    return getProductBySlug(slug) || ALL_PRODUCTS[0];
-  }, [slug]);
+  const [product, setProduct] = useState<ProductItem>(ALL_PRODUCTS[0]);
+  const [relatedProducts, setRelatedProducts] = useState<ProductItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
   const [selectedImage, setSelectedImage] = useState(product.images[0]);
@@ -23,10 +24,25 @@ export default function ProductDetailPage() {
   const [isAdded, setIsAdded] = useState(false);
   const { addItem, setIsOpen } = useCartStore();
 
-  // Related products in the same category
-  const relatedProducts = useMemo(() => {
-    return ALL_PRODUCTS.filter(p => p.slug !== product.slug && p.categorySlug === product.categorySlug).slice(0, 4);
-  }, [product]);
+  useEffect(() => {
+    async function loadProduct() {
+      setIsLoading(true);
+      const prod = await getProductBySlug(slug);
+      if (prod) {
+        setProduct(prod);
+        setSelectedVariant(prod.variants[0]);
+        setSelectedImage(prod.images[0]);
+
+        // Load related
+        const related = await getProducts({ category: prod.categorySlug, limit: 4 });
+        setRelatedProducts(related.filter(p => p.slug !== prod.slug));
+      }
+      setIsLoading(false);
+    }
+    if (slug) {
+      loadProduct();
+    }
+  }, [slug]);
 
   const handleAddToCart = () => {
     addItem({

@@ -16,8 +16,18 @@ class Product extends Model
         'name',
         'slug',
         'description',
+        'image_url',
+        'badge',
+        'sold_count',
+        'rating',
         'is_seasonal',
         'harvest_season'
+    ];
+
+    protected $casts = [
+        'rating' => 'float',
+        'sold_count' => 'integer',
+        'is_seasonal' => 'boolean'
     ];
 
     public function farmer()

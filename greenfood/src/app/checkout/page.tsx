@@ -1,21 +1,23 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCartStore } from '@/store/useCartStore';
 import { ChevronLeft, CheckCircle, ChevronRight, MapPin, CreditCard, Smartphone, Building2, Banknote, ShieldCheck, Truck, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { getShippingZones, createOrder, ShippingZoneItem } from '@/lib/api';
+import { toast } from 'react-hot-toast';
 
-const shippingZones = [
-  { id: 'zone1', name: 'Nội thành TP.HCM', fee: 15000, freeMin: 300000, est: '1-2 giờ' },
-  { id: 'zone2', name: 'Ngoại thành TP.HCM', fee: 25000, freeMin: 500000, est: '2-4 giờ' },
-  { id: 'zone3', name: 'Đồng Bằng Sông Cửu Long', fee: 30000, freeMin: 500000, est: '1-2 ngày' },
-  { id: 'zone4', name: 'Miền Đông Nam Bộ', fee: 25000, freeMin: 500000, est: '1-2 ngày' },
-  { id: 'zone5', name: 'Tây Nguyên & Miền Trung', fee: 40000, freeMin: 700000, est: '2-3 ngày' },
-  { id: 'zone6', name: 'Miền Bắc', fee: 50000, freeMin: 800000, est: '3-5 ngày' },
+const fallbackZones: ShippingZoneItem[] = [
+  { id: 'SZ001', name: 'Nội thành TP.HCM', provinces: '', baseFee: 15000, extraFeePerKg: 3000, freeShipMinimum: 300000, estimatedDays: '1-2 giờ', isActive: true },
+  { id: 'SZ002', name: 'Ngoại thành TP.HCM', provinces: '', baseFee: 25000, extraFeePerKg: 4000, freeShipMinimum: 500000, estimatedDays: '2-4 giờ', isActive: true },
+  { id: 'SZ003', name: 'Đồng Bằng Sông Cửu Long', provinces: '', baseFee: 30000, extraFeePerKg: 5000, freeShipMinimum: 500000, estimatedDays: '1-2 ngày', isActive: true },
+  { id: 'SZ004', name: 'Miền Đông Nam Bộ', provinces: '', baseFee: 25000, extraFeePerKg: 4500, freeShipMinimum: 500000, estimatedDays: '1-2 ngày', isActive: true },
+  { id: 'SZ005', name: 'Tây Nguyên & Miền Trung', provinces: '', baseFee: 40000, extraFeePerKg: 6000, freeShipMinimum: 700000, estimatedDays: '2-3 ngày', isActive: true },
+  { id: 'SZ006', name: 'Miền Bắc', provinces: '', baseFee: 50000, extraFeePerKg: 7000, freeShipMinimum: 800000, estimatedDays: '3-5 ngày', isActive: true },
 ];
 
-type PaymentMethod = 'cod' | 'bank' | 'momo' | 'vnpay';
+type PaymentMethod = 'COD' | 'BANK_TRANSFER' | 'MOMO' | 'VNPAY';
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
@@ -23,6 +25,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
+  const [shippingZones, setShippingZones] = useState<ShippingZoneItem[]>(fallbackZones);
 
   // Form fields
   const [fullName, setFullName] = useState('');
@@ -31,13 +34,23 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [note, setNote] = useState('');
   const [selectedZone, setSelectedZone] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    async function loadZones() {
+      const data = await getShippingZones();
+      if (data && data.length > 0) {
+        setShippingZones(data.filter(z => z.isActive));
+      }
+    }
+    loadZones();
+  }, []);
+
   const totalAmount = items.reduce((total, item) => total + (item.price * item.quantity), 0);
   const zone = shippingZones.find(z => z.id === selectedZone);
-  const shippingFee = zone ? (totalAmount >= zone.freeMin ? 0 : zone.fee) : 0;
+  const shippingFee = zone ? (totalAmount >= zone.freeShipMinimum ? 0 : zone.baseFee) : 0;
   const finalTotal = totalAmount + shippingFee;
 
   const validateForm = (): boolean => {
@@ -56,24 +69,39 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    if (paymentMethod === 'bank' || paymentMethod === 'momo' || paymentMethod === 'vnpay') {
+    if (paymentMethod === 'BANK_TRANSFER' || paymentMethod === 'MOMO' || paymentMethod === 'VNPAY') {
       setShowPaymentPopup(true);
       return;
     }
     processOrder();
   };
 
-  const processOrder = () => {
+  const processOrder = async () => {
     setIsSubmitting(true);
     setShowPaymentPopup(false);
-    const newOrderId = `GF${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderId(newOrderId);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      clearCart();
-    }, 1500);
+    const res = await createOrder({
+      customerName: fullName,
+      customerPhone: phone,
+      customerEmail: email,
+      shippingAddress: address,
+      shippingZoneId: selectedZone,
+      paymentMethod: paymentMethod,
+      note: note,
+      items: items.map(i => ({
+        productName: i.name,
+        unit: i.unit,
+        quantity: i.quantity,
+        price: i.price
+      }))
+    });
+
+    const newTracking = res.trackingNumber || `GF${Math.floor(100000 + Math.random() * 900000)}`;
+    setOrderId(newTracking);
+    setIsSubmitting(false);
+    setIsSuccess(true);
+    clearCart();
+    toast.success('Đặt hàng thành công!');
   };
 
   if (isSuccess) {
@@ -84,7 +112,7 @@ export default function CheckoutPage() {
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Đặt hàng thành công!</h1>
         <p className="text-gray-600 mb-4">
-          Cảm ơn bạn đã đồng hành cùng nông sản Việt. Mã đơn hàng của bạn là:
+          Cảm ơn bạn đã đồng hành cùng nông sản Việt. Mã đơn hàng đã lưu vào hệ thống:
         </p>
         <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl py-4 px-6 mb-6 inline-block">
           <span className="text-2xl font-bold text-emerald-700 font-mono">#{orderId}</span>
@@ -117,10 +145,10 @@ export default function CheckoutPage() {
   }
 
   const paymentMethods = [
-    { id: 'cod' as PaymentMethod, name: 'Thanh toán khi nhận hàng (COD)', desc: 'Trả tiền mặt cho shipper khi nhận hàng', icon: Banknote, color: 'emerald' },
-    { id: 'bank' as PaymentMethod, name: 'Chuyển khoản ngân hàng', desc: 'Chuyển khoản qua tài khoản ngân hàng', icon: Building2, color: 'blue' },
-    { id: 'momo' as PaymentMethod, name: 'Ví MoMo', desc: 'Thanh toán qua ví điện tử MoMo', icon: Smartphone, color: 'pink' },
-    { id: 'vnpay' as PaymentMethod, name: 'VNPay', desc: 'Thanh toán qua cổng VNPay', icon: CreditCard, color: 'indigo' },
+    { id: 'COD' as PaymentMethod, name: 'Thanh toán khi nhận hàng (COD)', desc: 'Trả tiền mặt cho shipper khi nhận hàng', icon: Banknote, color: 'emerald' },
+    { id: 'BANK_TRANSFER' as PaymentMethod, name: 'Chuyển khoản ngân hàng', desc: 'Chuyển khoản qua tài khoản ngân hàng', icon: Building2, color: 'blue' },
+    { id: 'MOMO' as PaymentMethod, name: 'Ví MoMo', desc: 'Thanh toán qua ví điện tử MoMo', icon: Smartphone, color: 'pink' },
+    { id: 'VNPAY' as PaymentMethod, name: 'VNPay', desc: 'Thanh toán qua cổng VNPay', icon: CreditCard, color: 'indigo' },
   ];
 
   return (
@@ -130,7 +158,7 @@ export default function CheckoutPage() {
           <ChevronLeft size={16} /> Tiếp tục mua hàng
         </Link>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Thanh toán</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Thanh toán (Backend API)</h1>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Form nhập thông tin */}
@@ -182,7 +210,7 @@ export default function CheckoutPage() {
                     className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all ${formErrors.zone ? 'border-rose-400 bg-rose-50' : 'border-gray-300'}`}>
                     <option value="">-- Chọn vùng giao hàng --</option>
                     {shippingZones.map(z => (
-                      <option key={z.id} value={z.id}>{z.name} — Phí: {z.fee.toLocaleString('vi-VN')}đ (Miễn phí từ {z.freeMin.toLocaleString('vi-VN')}đ) — {z.est}</option>
+                      <option key={z.id} value={z.id}>{z.name} — Phí: {z.baseFee.toLocaleString('vi-VN')}đ (Miễn phí từ {z.freeShipMinimum.toLocaleString('vi-VN')}đ) — {z.estimatedDays}</option>
                     ))}
                   </select>
                   {formErrors.zone && <p className="text-rose-500 text-xs mt-1">{formErrors.zone}</p>}
@@ -191,11 +219,11 @@ export default function CheckoutPage() {
                       <div className="flex items-center gap-2 text-emerald-700 text-sm font-medium">
                         <Truck size={16} />
                         {shippingFee === 0
-                          ? `🎉 Miễn phí giao hàng! (Đơn từ ${zone.freeMin.toLocaleString('vi-VN')}đ)`
-                          : `Phí ship: ${zone.fee.toLocaleString('vi-VN')}đ — Mua thêm ${(zone.freeMin - totalAmount).toLocaleString('vi-VN')}đ để được miễn phí ship`
+                          ? `🎉 Miễn phí giao hàng! (Đơn từ ${zone.freeShipMinimum.toLocaleString('vi-VN')}đ)`
+                          : `Phí ship: ${zone.baseFee.toLocaleString('vi-VN')}đ — Mua thêm ${(zone.freeShipMinimum - totalAmount).toLocaleString('vi-VN')}đ để được miễn phí ship`
                         }
                       </div>
-                      <p className="text-xs text-emerald-600 mt-1">⏱ Thời gian giao hàng dự kiến: {zone.est}</p>
+                      <p className="text-xs text-emerald-600 mt-1">⏱ Thời gian giao hàng dự kiến: {zone.estimatedDays}</p>
                     </div>
                   )}
                 </div>
@@ -306,7 +334,7 @@ export default function CheckoutPage() {
                 }`}
               >
                 {isSubmitting ? (
-                  <>Đang xử lý...</>
+                  <>Đang tạo đơn trên hệ thống...</>
                 ) : (
                   <>Đặt hàng ngay <ChevronRight size={20} /></>
                 )}
@@ -314,7 +342,7 @@ export default function CheckoutPage() {
 
               <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
                 <ShieldCheck size={14} className="text-emerald-500" />
-                Thanh toán an toàn & bảo mật
+                Thanh toán an toàn & bảo mật (Laravel REST API)
               </div>
             </div>
           </div>
@@ -326,12 +354,12 @@ export default function CheckoutPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">
-              {paymentMethod === 'bank' && '🏦 Chuyển khoản ngân hàng'}
-              {paymentMethod === 'momo' && '📱 Thanh toán MoMo'}
-              {paymentMethod === 'vnpay' && '💳 Thanh toán VNPay'}
+              {paymentMethod === 'BANK_TRANSFER' && '🏦 Chuyển khoản ngân hàng'}
+              {paymentMethod === 'MOMO' && '📱 Thanh toán MoMo'}
+              {paymentMethod === 'VNPAY' && '💳 Thanh toán VNPay'}
             </h3>
 
-            {paymentMethod === 'bank' && (
+            {paymentMethod === 'BANK_TRANSFER' && (
               <div className="space-y-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
                   <p className="font-semibold text-blue-800 mb-2">Thông tin chuyển khoản:</p>
@@ -349,7 +377,7 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {paymentMethod === 'momo' && (
+            {paymentMethod === 'MOMO' && (
               <div className="space-y-4 text-center">
                 <div className="bg-pink-50 border border-pink-200 rounded-xl p-4">
                   <p className="text-pink-700 text-sm">Quét mã QR bằng ứng dụng MoMo để thanh toán</p>
@@ -361,7 +389,7 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {paymentMethod === 'vnpay' && (
+            {paymentMethod === 'VNPAY' && (
               <div className="space-y-4 text-center">
                 <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
                   <p className="text-indigo-700 text-sm">Bạn sẽ được chuyển đến cổng thanh toán VNPay</p>

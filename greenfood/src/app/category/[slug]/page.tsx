@@ -1,41 +1,59 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import { notFound, useParams } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
   ChevronRight, 
-  Filter, 
-  SlidersHorizontal, 
   Leaf, 
-  Sparkles, 
   Search, 
-  ArrowUpDown,
   ShoppingBag
 } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
-import { CATEGORIES, getCategoryBySlug, getProductsByCategory, ALL_PRODUCTS } from '@/data/products';
+import { getCategoryBySlug, getProducts, getCategories } from '@/lib/api';
+import { ProductItem, CategoryInfo } from '@/data/products';
 
 export default function CategoryPage() {
   const params = useParams();
   const slug = typeof params?.slug === 'string' ? params.slug : '';
 
+  const [category, setCategory] = useState<CategoryInfo | null>(null);
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [allCategories, setAllCategories] = useState<CategoryInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'popular'>('default');
   const [filterRegion, setFilterRegion] = useState<string>('all');
 
-  const category = getCategoryBySlug(slug);
-  const baseProducts = useMemo(() => getProductsByCategory(slug), [slug]);
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const [catData, prodData, allCats] = await Promise.all([
+        getCategoryBySlug(slug),
+        getProducts({ category: slug }),
+        getCategories()
+      ]);
+
+      setCategory(catData || null);
+      setProducts(prodData);
+      setAllCategories(allCats);
+      setIsLoading(false);
+    }
+    if (slug) {
+      loadData();
+    }
+  }, [slug]);
 
   // Extract regions for filter
   const regions = useMemo(() => {
-    const list = Array.from(new Set(baseProducts.map(p => p.farmer.region).filter(Boolean)));
+    const list = Array.from(new Set(products.map(p => p.farmer.region).filter(Boolean)));
     return ['all', ...list];
-  }, [baseProducts]);
+  }, [products]);
 
   // Filter and sort
   const filteredProducts = useMemo(() => {
-    let result = [...baseProducts];
+    let result = [...products];
 
     // Search filter
     if (searchTerm.trim()) {
@@ -62,9 +80,9 @@ export default function CategoryPage() {
     }
 
     return result;
-  }, [baseProducts, searchTerm, filterRegion, sortBy]);
+  }, [products, searchTerm, filterRegion, sortBy]);
 
-  if (!category && baseProducts.length === 0) {
+  if (!isLoading && !category && products.length === 0) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-600">
@@ -79,7 +97,7 @@ export default function CategoryPage() {
     );
   }
 
-  const categoryName = category?.name || 'Tất cả nông sản';
+  const categoryName = category?.name || (slug === 'di-cho-online' ? 'Đi chợ online' : 'Nông sản chọn lọc');
   const categoryDesc = category?.description || 'Nông sản sạch từ các nông hộ đối tác khắp Việt Nam.';
   const bannerImg = category?.bannerImage || 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1920&auto=format&fit=crop';
 
@@ -176,7 +194,7 @@ export default function CategoryPage() {
           {/* Quick other category pills */}
           <div className="hidden lg:flex items-center gap-2">
             <span className="text-xs text-gray-400">Danh mục khác:</span>
-            {CATEGORIES.filter(c => c.slug !== slug).slice(0, 3).map(cat => (
+            {allCategories.filter(c => c.slug !== slug).slice(0, 4).map(cat => (
               <Link 
                 key={cat.slug} 
                 href={`/category/${cat.slug}`}
