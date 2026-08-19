@@ -58,9 +58,9 @@ export default function MapPage() {
             <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
               <MapPin size={22} className="text-emerald-600" />
             </div>
-            Bản Đồ Nhà Vườn GreenFood (GIS API)
+            Bản Đồ Nhà Vườn GreenFood
           </h1>
-          <p className="text-gray-600 mt-2">Dữ liệu tọa độ GPS thực tế kết nối trực tiếp từ Backend CSDL Nông nghiệp</p>
+          <p className="text-gray-600 mt-2">Khám phá vị trí các nông hộ đối tác và vùng trồng nông sản sạch trên toàn quốc</p>
 
           <div className="flex flex-col sm:flex-row gap-3 mt-4">
             <div className="relative flex-1 max-w-md">

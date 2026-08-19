@@ -105,11 +105,11 @@ export default function TrackingPage() {
       <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white py-12">
         <div className="container mx-auto px-4 text-center max-w-2xl">
           <div className="inline-flex items-center gap-2 bg-emerald-900/60 px-4 py-1.5 rounded-full text-xs font-semibold mb-4 border border-emerald-600">
-            <Package size={14} /> Hệ Thống Tra Cứu Đơn Hàng (Backend API)
+            <Package size={14} /> Hệ Thống Tra Cứu Đơn Hàng
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-3">Theo Dõi Đơn Hàng</h1>
           <p className="text-emerald-100 text-sm md:text-base mb-6">
-            Nhập mã đơn hàng (VD: GF284910) để theo dõi lộ trình và trạng thái vận chuyển từ CSDL GreenFood.
+            Nhập mã đơn hàng (VD: GF284910) để theo dõi lộ trình và trạng thái vận chuyển trong thời gian thực.
           </p>
 
           <div className="flex gap-2 max-w-lg mx-auto bg-white p-1.5 rounded-2xl shadow-xl">

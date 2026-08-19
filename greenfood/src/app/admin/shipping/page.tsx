@@ -134,13 +134,10 @@ export default function AdminShipping() {
           <div>
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <Truck size={22} className="text-emerald-600" />
-              Quản lý Phí Giao Hàng (Backend API CRUD)
+              Quản lý Phí Giao Hàng
             </h2>
-            <p className="text-sm text-gray-500 mt-1">Cấu hình phí vận chuyển lưu trữ trực tiếp trên CSDL MySQL qua Laravel REST API.</p>
+            <p className="text-sm text-gray-500 mt-1">Cấu hình các vùng vận chuyển và định mức phí giao hàng áp dụng cho khách mua hàng.</p>
           </div>
-          <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-full">
-            REST API: /api/shipping-zones
-          </span>
         </div>
 
         <div className="p-4 border-b border-gray-100 bg-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -224,7 +221,7 @@ export default function AdminShipping() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
               <h3 className="text-lg font-bold text-gray-800">
-                {editingZone ? `Chỉnh sửa: ${editingZone.name}` : 'Thêm vùng giao hàng mới (API Backend)'}
+                {editingZone ? `Chỉnh sửa: ${editingZone.name}` : 'Thêm vùng giao hàng mới'}
               </h3>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={20} /></button>
             </div>
@@ -285,7 +282,7 @@ export default function AdminShipping() {
               <button onClick={handleSave} disabled={isSubmitting}
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50">
                 <Save size={16} />
-                {isSubmitting ? 'Đang lưu vào DB...' : (editingZone ? 'Cập nhật' : 'Thêm mới')}
+                {isSubmitting ? 'Đang lưu...' : (editingZone ? 'Cập nhật' : 'Thêm mới')}
               </button>
             </div>
           </div>

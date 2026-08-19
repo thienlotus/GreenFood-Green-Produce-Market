@@ -158,7 +158,7 @@ export default function CheckoutPage() {
           <ChevronLeft size={16} /> Tiếp tục mua hàng
         </Link>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Thanh toán (Backend API)</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Thanh toán</h1>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Form nhập thông tin */}
@@ -342,7 +342,7 @@ export default function CheckoutPage() {
 
               <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
                 <ShieldCheck size={14} className="text-emerald-500" />
-                Thanh toán an toàn & bảo mật (Laravel REST API)
+                Thanh toán an toàn & bảo mật 100%
               </div>
             </div>
           </div>
