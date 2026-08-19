@@ -30,8 +30,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Tổng quan', href: '/admin', icon: LayoutDashboard },
     { name: 'Đơn hàng', href: '/admin/orders', icon: ShoppingBag },
     { name: 'Sản phẩm', href: '/admin/products', icon: Package },
-    { name: 'Khách hàng', href: '/admin/customers', icon: Users },
-    { name: 'Nông hộ', href: '/admin/farmers', icon: Tractor },
+    { name: 'Người dùng & Phân quyền', href: '/admin/customers', icon: Users },
+    { name: 'Nông hộ & Vườn', href: '/admin/farmers', icon: Tractor },
     { name: 'Phí giao hàng', href: '/admin/shipping', icon: Truck },
     { name: 'Cài đặt', href: '/admin/settings', icon: Settings },
   ];
@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Sidebar */}
         <aside className="w-64 bg-white border-r border-gray-200 flex flex-col hidden md:flex sticky top-0 h-screen">
           <div className="h-16 flex items-center px-6 border-b border-gray-200">
-            <span className="text-2xl font-bold text-emerald-700 font-[family-name:var(--font-pacifico)] tracking-tight">GreenFood Admin</span>
+            <span className="text-2xl font-bold text-emerald-700 font-pacifico tracking-tight">GreenFood Admin</span>
           </div>
           
           <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
@@ -91,7 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
             <div className="flex items-center gap-4">
               <h1 className="text-xl font-semibold text-gray-800 hidden md:block">Quản trị hệ thống</h1>
-              <span className="text-xl font-bold text-emerald-700 md:hidden font-[family-name:var(--font-pacifico)]">GreenFood Admin</span>
+              <span className="text-xl font-bold text-emerald-700 md:hidden font-pacifico">GreenFood Admin</span>
             </div>
             <div className="flex items-center gap-4">
               <div className="h-8 w-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">

@@ -9,7 +9,7 @@ import { toast } from 'react-hot-toast';
 
 export default function Navbar() {
   const { items, setIsOpen } = useCartStore();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   
@@ -40,9 +40,9 @@ export default function Navbar() {
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-4 lg:gap-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <img src="/logo.jpg" alt="GreenFood Logo" className="h-10 w-10 object-contain rounded-lg shadow-sm mix-blend-multiply" />
-            <span className="text-3xl font-medium text-emerald-600 hidden sm:block tracking-tight font-[family-name:var(--font-pacifico)]">GreenFood</span>
+            <span className="text-3xl font-medium text-emerald-600 hidden sm:block tracking-tight font-pacifico">GreenFood</span>
           </Link>
 
           {/* Search Bar */}
@@ -69,11 +69,13 @@ export default function Navbar() {
             </button>
 
             {/* Auth Dropdown / Login */}
-            {isAuthenticated && user ? (
+            {mounted && isAuthenticated && user ? (
               <div className="hidden md:flex items-center gap-4 border-l pl-5 border-gray-200">
                 <div className="flex flex-col text-right">
                   <span className="text-sm font-bold text-gray-800">{user.name}</span>
-                  <span className="text-[10px] text-gray-500 capitalize">{user.role}</span>
+                  <span className="text-[10px] text-gray-500 capitalize">
+                    {user.role === 'admin' ? 'Quản trị viên' : user.role === 'vendor' ? 'Nông hộ' : 'Khách hàng'}
+                  </span>
                 </div>
                 {user.role === 'admin' && (
                   <Link href="/admin" className="bg-amber-100 text-amber-700 hover:bg-amber-200 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
@@ -82,7 +84,7 @@ export default function Navbar() {
                 )}
                 <button 
                   onClick={() => {
-                    useAuthStore.getState().logout();
+                    logout();
                     toast.success('Đã đăng xuất!');
                   }}
                   className="text-gray-500 hover:text-rose-500 text-sm font-medium transition-colors"

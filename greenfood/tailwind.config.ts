@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        pacifico: ['Pacifico', 'cursive', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'Arial', 'Helvetica', 'sans-serif'],
+      },
       colors: {
         primary: {
           50: '#f0fdf4',
