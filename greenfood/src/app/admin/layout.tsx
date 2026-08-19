@@ -9,6 +9,7 @@ import {
   Package, 
   Users, 
   Tractor,
+  Truck,
   Settings,
   LogOut,
   ArrowLeft
@@ -31,6 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Sản phẩm', href: '/admin/products', icon: Package },
     { name: 'Khách hàng', href: '/admin/customers', icon: Users },
     { name: 'Nông hộ', href: '/admin/farmers', icon: Tractor },
+    { name: 'Phí giao hàng', href: '/admin/shipping', icon: Truck },
     { name: 'Cài đặt', href: '/admin/settings', icon: Settings },
   ];
 

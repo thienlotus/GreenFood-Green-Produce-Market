@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, ChevronDown, List } from 'lucide-react';
+import { ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, ChevronDown, List, Map, Package } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useState, useEffect } from 'react';
@@ -161,7 +161,7 @@ export default function Navbar() {
             </div>
 
             {/* Horizontal Links */}
-            <nav className="flex items-center gap-8 ml-8">
+            <nav className="flex items-center gap-6 ml-8">
               <Link href="/category/di-cho-online" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
                 ĐI CHỢ ONLINE
               </Link>
@@ -174,8 +174,11 @@ export default function Navbar() {
               <Link href="/category/dac-san" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
                 ĐẶC SẢN
               </Link>
-              <Link href="/category/agrishow" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
-                AGRISHOW
+              <Link href="/map" className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
+                <Map size={15} /> BẢN ĐỒ NHÀ VƯỜN
+              </Link>
+              <Link href="/tracking" className="flex items-center gap-1.5 text-amber-700 hover:text-amber-600 font-bold text-sm uppercase transition-colors">
+                <Package size={15} /> THEO DÕI ĐƠN
               </Link>
             </nav>
 

@@ -78,7 +78,7 @@ export default function CartDrawer() {
                       <div className="flex justify-between items-start">
                         <h3 className="font-semibold text-gray-800 text-sm line-clamp-2 pr-2">{item.name}</h3>
                         <button 
-                          onClick={() => removeItem(item.id, item.variantId)}
+                          onClick={() => removeItem(item.variantId)}
                           className="text-gray-400 hover:text-red-500 transition-colors p-1"
                         >
                           <Trash2 size={16} />
@@ -93,12 +93,12 @@ export default function CartDrawer() {
                       </div>
                       <div className="flex items-center border border-gray-200 rounded-lg h-8">
                         <button 
-                          onClick={() => updateQuantity(item.id, item.variantId, Math.max(1, item.quantity - 1))}
+                          onClick={() => updateQuantity(item.variantId, Math.max(1, item.quantity - 1))}
                           className="px-2.5 text-gray-500 hover:text-emerald-600 font-bold"
                         >-</button>
                         <span className="w-6 text-center text-sm font-semibold text-gray-800">{item.quantity}</span>
                         <button 
-                          onClick={() => updateQuantity(item.id, item.variantId, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
                           className="px-2.5 text-gray-500 hover:text-emerald-600 font-bold"
                         >+</button>
                       </div>

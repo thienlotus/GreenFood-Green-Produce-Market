@@ -76,7 +76,7 @@ export default function AdminDashboard() {
                 <Tooltip 
                   cursor={{fill: '#f9fafb'}}
                   contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-                  formatter={(value: number) => [`${value.toLocaleString('vi-VN')}đ`, 'Doanh thu']}
+                  formatter={(value: any) => [`${Number(value || 0).toLocaleString('vi-VN')}đ`, 'Doanh thu']}
                 />
                 <Bar dataKey="total" fill="#059669" radius={[4, 4, 0, 0]} barSize={32} />
               </BarChart>

@@ -79,16 +79,16 @@ export default function Home() {
   ];
 
   const categories = [
-    { name: "Đi chợ online", icon: "🛒", bg: "bg-[#e8f5e9]" },
-    { name: "Khuyến mãi", icon: "🔥", bg: "bg-[#ffebee]" },
-    { name: "Trái cây Việt", icon: "🍉", bg: "bg-[#fff3e0]" },
-    { name: "Trái cây Nhập", icon: "🍇", bg: "bg-[#f3e5f5]" },
-    { name: "Thịt & Thủy sản", icon: "🥩", bg: "bg-[#e1f5fe]" },
-    { name: "Đặc sản", icon: "🎁", bg: "bg-[#fdf3c6]" },
-    { name: "Rau củ", icon: "🥬", bg: "bg-[#e8f5e9]" },
-    { name: "Thức uống", icon: "🥤", bg: "bg-[#e0f2f1]" },
-    { name: "Quà tặng", icon: "🎀", bg: "bg-[#fce4ec]" },
-    { name: "Sức khỏe", icon: "💊", bg: "bg-[#e8eaf6]" },
+    { name: "Đi chợ online", slug: "di-cho-online", icon: "🛒", bg: "bg-[#e8f5e9]" },
+    { name: "Trái cây Việt", slug: "trai-cay", icon: "🍉", bg: "bg-[#fff3e0]" },
+    { name: "Trà - Cà phê", slug: "tra-ca-phe", icon: "☕", bg: "bg-[#e0f2f1]" },
+    { name: "Đặc sản", slug: "dac-san", icon: "🎁", bg: "bg-[#fdf3c6]" },
+    { name: "Agrishow", slug: "agrishow", icon: "🌾", bg: "bg-[#f3e5f5]" },
+    { name: "Rau củ hữu cơ", slug: "di-cho-online", icon: "🥬", bg: "bg-[#e8f5e9]" },
+    { name: "Khuyến mãi", slug: "di-cho-online", icon: "🔥", bg: "bg-[#ffebee]" },
+    { name: "Bản đồ Vườn", slug: "map", isMap: true, icon: "📍", bg: "bg-[#e1f5fe]" },
+    { name: "Theo dõi đơn", slug: "tracking", isTracking: true, icon: "📦", bg: "bg-[#fce4ec]" },
+    { name: "Nông hộ sạch", slug: "map", isMap: true, icon: "👨‍🌾", bg: "bg-[#e8eaf6]" },
   ];
 
   return (
@@ -114,11 +114,11 @@ export default function Home() {
 
           {/* Side Banners ( chiếm 1/3 ) */}
           <div className="hidden lg:flex flex-col gap-4 h-[400px]">
-            <Link href="#" className="flex-1 rounded-2xl overflow-hidden relative group">
+            <Link href="/category/trai-cay" className="flex-1 rounded-2xl overflow-hidden relative group">
               <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
             </Link>
-            <Link href="#" className="flex-1 rounded-2xl overflow-hidden relative group">
+            <Link href="/category/dac-san" className="flex-1 rounded-2xl overflow-hidden relative group">
               <img src="https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=600&auto=format&fit=crop" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
             </Link>
@@ -131,11 +131,15 @@ export default function Home() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
             {categories.map((cat, idx) => (
-              <Link href="#" key={idx} className="flex flex-col items-center group cursor-pointer gap-2">
-                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-2xl ${cat.bg} group-hover:-translate-y-1 transition-transform duration-300`}>
+              <Link 
+                href={cat.isMap ? '/map' : cat.isTracking ? '/tracking' : `/category/${cat.slug}`} 
+                key={idx} 
+                className="flex flex-col items-center group cursor-pointer gap-2"
+              >
+                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-2xl ${cat.bg} group-hover:-translate-y-1 transition-transform duration-300 shadow-2xs`}>
                   {cat.icon}
                 </div>
-                <span className="text-[11px] md:text-xs font-medium text-gray-700 text-center leading-tight">
+                <span className="text-[11px] md:text-xs font-medium text-gray-700 text-center leading-tight group-hover:text-emerald-600 transition-colors">
                   {cat.name}
                 </span>
               </Link>
@@ -180,7 +184,7 @@ export default function Home() {
             <span className="w-1.5 h-6 bg-emerald-500 inline-block rounded-full"></span>
             Trái Cây Việt Nam
           </h2>
-          <Link href="#" className="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center">
+          <Link href="/category/trai-cay" className="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center">
             Xem thêm <ChevronRight size={16} />
           </Link>
         </div>
@@ -203,7 +207,7 @@ export default function Home() {
             <span className="w-1.5 h-6 bg-amber-500 inline-block rounded-full"></span>
             Đặc Sản Quà Tặng
           </h2>
-          <Link href="#" className="text-amber-600 hover:text-amber-700 font-medium text-sm flex items-center">
+          <Link href="/category/dac-san" className="text-amber-600 hover:text-amber-700 font-medium text-sm flex items-center">
             Xem thêm <ChevronRight size={16} />
           </Link>
         </div>
