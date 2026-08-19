@@ -158,16 +158,16 @@ export const useAuthStore = create<AuthState>()(
           }
         }
 
-        // Theo yêu cầu: Tài khoản mới luôn mặc định là Nông hộ ('vendor'). Phân quyền chỉ do Admin thực hiện.
+        // Theo yêu cầu: Tài khoản mới luôn mặc định là Khách Hàng ('customer'). Phân quyền do Admin quản trị.
         const newUserAccount: RegisteredAccount = {
           id: `usr-${Date.now()}`,
           name: data.name.trim(),
           email: cleanEmail,
           phone: cleanPhone,
-          role: 'vendor', // Mặc định luôn là Nông Hộ
+          role: 'customer', // Mặc định luôn là Khách Hàng
           tier: 'BRONZE',
           loyaltyPoints: 50, // Quà tặng điểm thưởng
-          farmName: data.farmName?.trim() || `Nhà Vườn ${data.name.trim()}`,
+          farmName: data.farmName?.trim() || '',
           address: '',
           status: 'Hoạt động',
           avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(data.name)}`,

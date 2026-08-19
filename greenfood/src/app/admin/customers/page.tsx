@@ -98,7 +98,7 @@ export default function AdminUsersManagement() {
               Quản lý Người dùng & Phân quyền
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-              Chỉ Quản trị viên mới có quyền xem danh sách và cấp quyền (Nông hộ ➔ Khách hàng / Admin) cho các tài khoản.
+              Chỉ Quản trị viên mới có quyền xem danh sách và phân quyền vai trò (Khách hàng ➔ Nông hộ / Admin) cho các tài khoản.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-bold bg-emerald-50 text-emerald-800 px-4 py-2 rounded-xl border border-emerald-200">
@@ -129,8 +129,8 @@ export default function AdminUsersManagement() {
             className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-emerald-500"
           >
             <option value="all">Tất cả vai trò</option>
-            <option value="vendor">🌾 Nông Hộ (Mặc định)</option>
-            <option value="customer">🛒 Khách Hàng</option>
+            <option value="customer">🛒 Khách Hàng (Mặc định)</option>
+            <option value="vendor">🌾 Nông Hộ / Vườn</option>
             <option value="admin">👑 Quản Trị Viên</option>
           </select>
         </div>
@@ -292,24 +292,7 @@ export default function AdminUsersManagement() {
                 </label>
 
                 <div className="space-y-2">
-                  {/* Option 1: Vendor */}
-                  <label
-                    onClick={() => setSelectedRole('vendor')}
-                    className={`flex items-center gap-3 p-3 rounded-2xl border-2 cursor-pointer transition-all ${
-                      selectedRole === 'vendor'
-                        ? 'border-amber-500 bg-amber-50/70 text-amber-900'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                    }`}
-                  >
-                    <input type="radio" name="role_choice" checked={selectedRole === 'vendor'} onChange={() => {}} className="hidden" />
-                    <div className="p-2 rounded-xl bg-amber-100 text-amber-700 font-bold text-lg">🌾</div>
-                    <div>
-                      <div className="font-bold text-xs">Nông Hộ / Nhà Vườn (Mặc định)</div>
-                      <div className="text-[11px] text-gray-500">Đối tác cung ứng nông sản, mở gian hàng vườn</div>
-                    </div>
-                  </label>
-
-                  {/* Option 2: Customer */}
+                  {/* Option 1: Customer */}
                   <label
                     onClick={() => setSelectedRole('customer')}
                     className={`flex items-center gap-3 p-3 rounded-2xl border-2 cursor-pointer transition-all ${
@@ -321,8 +304,25 @@ export default function AdminUsersManagement() {
                     <input type="radio" name="role_choice" checked={selectedRole === 'customer'} onChange={() => {}} className="hidden" />
                     <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700 font-bold text-lg">🛒</div>
                     <div>
-                      <div className="font-bold text-xs">Khách Hàng Tiêu Dùng</div>
+                      <div className="font-bold text-xs">Khách Hàng Tiêu Dùng (Mặc định)</div>
                       <div className="text-[11px] text-gray-500">Mua sắm, đặt hàng nông sản, tích điểm VIP</div>
+                    </div>
+                  </label>
+
+                  {/* Option 2: Vendor */}
+                  <label
+                    onClick={() => setSelectedRole('vendor')}
+                    className={`flex items-center gap-3 p-3 rounded-2xl border-2 cursor-pointer transition-all ${
+                      selectedRole === 'vendor'
+                        ? 'border-amber-500 bg-amber-50/70 text-amber-900'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
+                  >
+                    <input type="radio" name="role_choice" checked={selectedRole === 'vendor'} onChange={() => {}} className="hidden" />
+                    <div className="p-2 rounded-xl bg-amber-100 text-amber-700 font-bold text-lg">🌾</div>
+                    <div>
+                      <div className="font-bold text-xs">Nông Hộ / Nhà Vườn</div>
+                      <div className="text-[11px] text-gray-500">Đối tác cung ứng nông sản, mở gian hàng vườn</div>
                     </div>
                   </label>
 

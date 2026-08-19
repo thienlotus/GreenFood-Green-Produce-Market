@@ -1,7 +1,7 @@
 import { useAuthStore, INITIAL_DEMO_ACCOUNTS } from '../store/useAuthStore';
 
 console.log('========================================================================');
-console.log('🧪 KIỂM THỬ: PHÂN QUYỀN ADMIN & MẶC ĐỊNH TÀI KHOẢN MỚI LÀ NÔNG HỘ');
+console.log('🧪 KIỂM THỬ: PHÂN QUYỀN ADMIN & MẶC ĐỊNH TÀI KHOẢN MỚI LÀ KHÁCH HÀNG');
 console.log('========================================================================\n');
 
 let passedTests = 0;
@@ -27,19 +27,18 @@ assert(store.isAuthenticated === false, '2. Khởi tạo: isAuthenticated = fals
 const adminLogin = store.authenticate('admin@greenfood.vn', '123456');
 assert(adminLogin.success === true && adminLogin.user?.role === 'admin', '3. Đăng nhập Admin thành công với quyền Quản trị viên');
 
-// 3. Test New User Registration - Must ALWAYS default to role: 'vendor' (Nông Hộ)
+// 3. Test New User Registration - Must ALWAYS default to role: 'customer' (Khách Hàng)
 const newReg1 = store.register({
-  name: 'Lê Văn Vườn',
-  email: 'levanvuon@gmail.com',
+  name: 'Nguyễn Thị Khách',
+  email: 'nguyenthikhach@gmail.com',
   phone: '0934111222',
   password: 'Password123!',
-  farmName: 'Vườn Cam Cao Phong'
 });
 assert(newReg1.success === true, '4. Đăng ký tài khoản mới thành công');
-assert(newReg1.user?.role === 'vendor', '5. QUY TẮC BẮT BUỘC: Tài khoản mới đăng ký LUÔN MẶC ĐỊNH là Nông Hộ (vendor)');
-assert(newReg1.user?.farmName === 'Vườn Cam Cao Phong', '6. Tên nông trại được lưu trữ chính xác');
+assert(newReg1.user?.role === 'customer', '5. QUY TẮC BẮT BUỘC: Tài khoản mới đăng ký LUÔN MẶC ĐỊNH là Khách Hàng (customer)');
+assert(newReg1.user?.loyaltyPoints === 50, '6. Điểm thưởng chào mừng (+50 điểm) được cộng chính xác');
 
-// 4. Test New User Registration without farmName - Defaults to 'Nhà Vườn [Name]' and role: 'vendor'
+// 4. Test New User Registration 2 - Also defaults to role: 'customer'
 const newReg2 = store.register({
   name: 'Trần Thị Thu',
   email: 'tranthithu@gmail.com',
@@ -47,15 +46,15 @@ const newReg2 = store.register({
   password: 'Password123!',
 });
 assert(newReg2.success === true, '7. Đăng ký tài khoản thứ 2 thành công');
-assert(newReg2.user?.role === 'vendor', '8. Tài khoản thứ 2 cũng mặc định là Nông Hộ (vendor)');
+assert(newReg2.user?.role === 'customer', '8. Tài khoản thứ 2 cũng mặc định là Khách Hàng (customer)');
 
-// 5. Test Admin Role Management: Admin changes role of new user to 'customer' (Khách Hàng)
+// 5. Test Admin Role Management: Admin changes role of new user to 'vendor' (Nông Hộ)
 const targetUserId = newReg1.user!.id;
-const updateToCustRes = store.updateUserRole(targetUserId, 'customer');
-assert(updateToCustRes.success === true, '9. Admin thực hiện phân quyền đổi vai trò thành công');
+const updateToVendorRes = store.updateUserRole(targetUserId, 'vendor');
+assert(updateToVendorRes.success === true, '9. Admin thực hiện phân quyền đổi vai trò thành công');
 
-const updatedAccCust = useAuthStore.getState().registeredAccounts.find(a => a.id === targetUserId);
-assert(updatedAccCust?.role === 'customer', '10. Vai trò tài khoản đã được Admin nâng cấp thành "Khách Hàng (customer)"');
+const updatedAccVendor = useAuthStore.getState().registeredAccounts.find(a => a.id === targetUserId);
+assert(updatedAccVendor?.role === 'vendor', '10. Vai trò tài khoản đã được Admin cấp quyền nâng lên "Nông Hộ (vendor)"');
 
 // 6. Test Admin Role Management: Admin changes role of user to 'admin' (Quản trị viên)
 const updateToAdminRes = store.updateUserRole(targetUserId, 'admin');
@@ -69,19 +68,19 @@ const lockRes = store.toggleUserLock(targetUserId);
 assert(lockRes.success === true && lockRes.newStatus === 'Khóa', '13. Admin khóa tài khoản thành công');
 
 store.logout();
-const lockedLoginAttempt = store.authenticate('levanvuon@gmail.com', 'Password123!');
+const lockedLoginAttempt = store.authenticate('nguyenthikhach@gmail.com', 'Password123!');
 assert(lockedLoginAttempt.success === false, '14. Tài khoản bị khóa không thể đăng nhập');
 
 const unlockRes = store.toggleUserLock(targetUserId);
 assert(unlockRes.success === true && unlockRes.newStatus === 'Hoạt động', '15. Admin mở khóa tài khoản thành công');
 
-const unlockedLoginAttempt = store.authenticate('levanvuon@gmail.com', 'Password123!');
+const unlockedLoginAttempt = store.authenticate('nguyenthikhach@gmail.com', 'Password123!');
 assert(unlockedLoginAttempt.success === true, '16. Tài khoản sau khi mở khóa đăng nhập bình thường');
 
 // 8. Test Duplicate Prevention
 const dupEmail = store.register({
   name: 'Trùng Email',
-  email: 'levanvuon@gmail.com',
+  email: 'nguyenthikhach@gmail.com',
   phone: '0939999999',
   password: 'Password123!',
 });
