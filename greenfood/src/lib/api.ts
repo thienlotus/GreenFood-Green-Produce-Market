@@ -265,6 +265,56 @@ export async function deleteShippingZone(id: string): Promise<{ success: boolean
 }
 
 // 5. ORDERS API
+export interface OrderItemPayload {
+  productId?: string;
+  variantId?: string;
+  productName: string;
+  unit: string;
+  quantity: number;
+  price: number;
+}
+
+export interface AdminOrderItemDetail {
+  id: string;
+  product_id?: string | null;
+  variant_id?: string | null;
+  product_name: string;
+  unit: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
+}
+
+export interface AdminOrder {
+  id: string; // #GF284910
+  order_uuid: string;
+  tracking_number: string;
+  customer: string;
+  phone: string;
+  email?: string;
+  address: string;
+  shipping_zone: string;
+  shipping_fee: number;
+  date: string;
+  total: string;
+  total_raw: number;
+  status: string; // 'pending' | 'processing' | 'completed' | 'cancelled'
+  raw_status: string;
+  payment_method: string;
+  note?: string;
+  items: number;
+  item_details: AdminOrderItemDetail[];
+}
+
+export interface DashboardStats {
+  total_revenue: number;
+  total_orders: number;
+  total_products: number;
+  total_farmers: number;
+  total_users: number;
+  recent_orders: any[];
+}
+
 export async function createOrder(payload: {
   customerName: string;
   customerPhone: string;
@@ -273,37 +323,86 @@ export async function createOrder(payload: {
   shippingZoneId: string;
   paymentMethod: string;
   note?: string;
-  items: { productName: string; unit: string; quantity: number; price: number }[];
+  items: OrderItemPayload[];
 }): Promise<{ success: boolean; message: string; trackingNumber?: string; orderId?: string }> {
-  const res = await fetchApi<{ success: boolean; message: string; data?: any }>('/orders', {
-    method: 'POST',
-    body: JSON.stringify({
-      customer_name: payload.customerName,
-      customer_phone: payload.customerPhone,
-      customer_email: payload.customerEmail,
-      shipping_address: payload.shippingAddress,
-      shipping_zone_id: payload.shippingZoneId,
-      payment_method: payload.paymentMethod,
-      note: payload.note,
-      items: payload.items.map(it => ({
-        product_name: it.productName,
-        unit: it.unit,
-        quantity: it.quantity,
-        price: it.price
-      }))
-    })
+  try {
+    const url = `${API_BASE_URL}/orders`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        customer_name: payload.customerName,
+        customer_phone: payload.customerPhone,
+        customer_email: payload.customerEmail,
+        shipping_address: payload.shippingAddress,
+        shipping_zone_id: payload.shippingZoneId,
+        payment_method: payload.paymentMethod,
+        note: payload.note,
+        items: payload.items.map(it => ({
+          product_id: it.productId,
+          variant_id: it.variantId,
+          product_name: it.productName,
+          unit: it.unit,
+          quantity: it.quantity,
+          price: it.price
+        }))
+      })
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data && data.success && data.data) {
+      return {
+        success: true,
+        message: data.message || 'Đặt hàng thành công!',
+        trackingNumber: data.data.tracking_number,
+        orderId: data.data.order_id
+      };
+    }
+
+    return {
+      success: false,
+      message: data?.message || `Lỗi đặt hàng (mã lỗi ${res.status})`
+    };
+  } catch (error: any) {
+    console.error('[API] createOrder error:', error);
+    return { success: false, message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại!' };
+  }
+}
+
+export async function getAdminOrders(params?: { status?: string; search?: string }): Promise<AdminOrder[]> {
+  const queryParams = new URLSearchParams();
+  if (params?.status && params.status !== 'all') queryParams.set('status', params.status);
+  if (params?.search) queryParams.set('search', params.search);
+
+  const queryStr = queryParams.toString() ? `?${queryParams.toString()}` : '';
+  const res = await fetchApi<{ success: boolean; data: AdminOrder[] }>(`/admin/orders${queryStr}`);
+
+  if (res && res.success && Array.isArray(res.data)) {
+    return res.data;
+  }
+  return [];
+}
+
+export async function updateOrderStatus(orderId: string, status: string): Promise<{ success: boolean; message: string }> {
+  const cleanId = orderId.replace('#', '');
+  const res = await fetchApi<{ success: boolean; message: string }>(`/admin/orders/${cleanId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify({ status })
   });
 
-  if (res && res.success && res.data) {
-    return {
-      success: true,
-      message: res.message,
-      trackingNumber: res.data.tracking_number,
-      orderId: res.data.order_id
-    };
-  }
+  return { success: res?.success || false, message: res?.message || 'Cập nhật thất bại' };
+}
 
-  return { success: false, message: res?.message || 'Đặt hàng không thành công' };
+export async function getDashboardStats(): Promise<DashboardStats | null> {
+  const res = await fetchApi<{ success: boolean; data: DashboardStats }>('/admin/dashboard');
+  if (res && res.success && res.data) {
+    return res.data;
+  }
+  return null;
 }
 
 export async function trackOrder(trackingNumber: string): Promise<any | null> {
@@ -313,3 +412,4 @@ export async function trackOrder(trackingNumber: string): Promise<any | null> {
   }
   return null;
 }
+

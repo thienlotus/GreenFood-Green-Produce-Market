@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ShippingZone;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -73,9 +75,39 @@ class OrderController extends Controller
             ]);
 
             foreach ($request->items as $it) {
+                $productId = null;
+                $variantId = null;
+
+                // Safe check if product_id exists in database
+                if (!empty($it['product_id']) && is_string($it['product_id'])) {
+                    if (Product::where('id', $it['product_id'])->exists()) {
+                        $productId = $it['product_id'];
+                    } else {
+                        // Fallback matching by name
+                        $matchedProduct = Product::where('name', 'like', '%' . trim($it['product_name']) . '%')->first();
+                        if ($matchedProduct) {
+                            $productId = $matchedProduct->id;
+                        }
+                    }
+                } else {
+                    $matchedProduct = Product::where('name', 'like', '%' . trim($it['product_name']) . '%')->first();
+                    if ($matchedProduct) {
+                        $productId = $matchedProduct->id;
+                    }
+                }
+
+                // Safe check if variant_id exists in database
+                if (!empty($it['variant_id']) && is_string($it['variant_id'])) {
+                    if (ProductVariant::where('id', $it['variant_id'])->exists()) {
+                        $variantId = $it['variant_id'];
+                    }
+                }
+
                 OrderItem::create([
                     'id' => (string) Str::uuid(),
                     'order_id' => $order->id,
+                    'product_id' => $productId,
+                    'variant_id' => $variantId,
                     'product_name' => $it['product_name'],
                     'unit' => $it['unit'],
                     'quantity' => $it['quantity'],
@@ -103,6 +135,148 @@ class OrderController extends Controller
                 'message' => 'Có lỗi xảy ra khi tạo đơn hàng: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function index(Request $request)
+    {
+        $query = Order::with(['items', 'shippingZone'])->latest();
+
+        if ($request->has('status') && $request->status !== 'all' && $request->status !== '') {
+            $status = strtoupper($request->status);
+            if ($status === 'PROCESSING') $status = 'SHIPPING';
+            if ($status === 'COMPLETED') $status = 'DELIVERED';
+            $query->where('status', $status);
+        }
+
+        if ($request->has('search') && trim($request->search) !== '') {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('tracking_number', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_phone', 'like', "%{$search}%");
+            });
+        }
+
+        $orders = $query->get();
+
+        $data = $orders->map(function ($order) {
+            $mappedStatus = match ($order->status) {
+                'PENDING' => 'pending',
+                'CONFIRMED' => 'pending',
+                'SHIPPING' => 'processing',
+                'DELIVERED' => 'completed',
+                'CANCELLED' => 'cancelled',
+                default => strtolower($order->status)
+            };
+
+            return [
+                'id' => '#' . $order->tracking_number,
+                'order_uuid' => $order->id,
+                'tracking_number' => $order->tracking_number,
+                'customer' => $order->customer_name,
+                'phone' => $order->customer_phone,
+                'email' => $order->customer_email,
+                'address' => $order->shipping_address,
+                'shipping_zone' => $order->shippingZone?->name ?? 'Mặc định',
+                'shipping_fee' => (float)$order->shipping_fee,
+                'date' => $order->created_at->format('Y-m-d H:i'),
+                'total' => number_format($order->total_amount, 0, ',', '.') . 'đ',
+                'total_raw' => (float)$order->total_amount,
+                'status' => $mappedStatus,
+                'raw_status' => $order->status,
+                'payment_method' => $order->payment_method,
+                'note' => $order->note,
+                'items' => $order->items->sum('quantity'),
+                'item_details' => $order->items->map(function ($it) {
+                    return [
+                        'id' => $it->id,
+                        'product_id' => $it->product_id,
+                        'variant_id' => $it->variant_id,
+                        'product_name' => $it->product_name,
+                        'unit' => $it->unit,
+                        'quantity' => $it->quantity,
+                        'price' => (float)$it->price_at_time,
+                        'subtotal' => (float)($it->price_at_time * $it->quantity)
+                    ];
+                })
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'count' => $data->count(),
+            'data' => $data
+        ]);
+    }
+
+    public function show($id)
+    {
+        $order = Order::where('id', $id)
+            ->orWhere('tracking_number', strtoupper(str_replace('#', '', $id)))
+            ->with(['items', 'shippingZone'])
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy đơn hàng'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $order
+        ]);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $order = Order::where('id', $id)
+            ->orWhere('tracking_number', strtoupper(str_replace('#', '', $id)))
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy đơn hàng'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|string|in:PENDING,CONFIRMED,SHIPPING,DELIVERED,CANCELLED,pending,processing,completed,cancelled'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Trạng thái không hợp lệ'
+            ], 422);
+        }
+
+        $inputStatus = strtolower($request->status);
+        $dbStatus = match ($inputStatus) {
+            'pending' => 'PENDING',
+            'processing' => 'SHIPPING',
+            'shipping' => 'SHIPPING',
+            'confirmed' => 'CONFIRMED',
+            'completed' => 'DELIVERED',
+            'delivered' => 'DELIVERED',
+            'cancelled' => 'CANCELLED',
+            default => strtoupper($request->status)
+        };
+
+        $order->status = $dbStatus;
+        $order->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật trạng thái thành công',
+            'data' => [
+                'id' => '#' . $order->tracking_number,
+                'status' => strtolower($dbStatus),
+                'raw_status' => $dbStatus
+            ]
+        ]);
     }
 
     public function track($trackingNumber)

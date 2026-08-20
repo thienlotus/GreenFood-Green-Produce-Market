@@ -89,6 +89,8 @@ export default function CheckoutPage() {
       paymentMethod: paymentMethod,
       note: note,
       items: items.map(i => ({
+        productId: String(i.id),
+        variantId: i.variantId ? String(i.variantId) : undefined,
         productName: i.name,
         unit: i.unit,
         quantity: i.quantity,
@@ -96,12 +98,16 @@ export default function CheckoutPage() {
       }))
     });
 
-    const newTracking = res.trackingNumber || `GF${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderId(newTracking);
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    clearCart();
-    toast.success('Đặt hàng thành công!');
+    if (res.success && res.trackingNumber) {
+      setOrderId(res.trackingNumber);
+      setIsSubmitting(false);
+      setIsSuccess(true);
+      clearCart();
+      toast.success('Đặt hàng thành công!');
+    } else {
+      setIsSubmitting(false);
+      toast.error(res.message || 'Không thể tạo đơn hàng, vui lòng thử lại!');
+    }
   };
 
   if (isSuccess) {

@@ -28,11 +28,17 @@ Route::prefix('v1')->group(function () {
     Route::put('/shipping-zones/{id}', [ShippingZoneController::class, 'update']);
     Route::delete('/shipping-zones/{id}', [ShippingZoneController::class, 'destroy']);
 
-    // 5. Orders (Đặt hàng & Theo dõi đơn)
+    // 5. Orders (Đặt hàng & Theo dõi đơn & Quản lý đơn)
+    Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/tracking/{trackingNumber}', [OrderController::class, 'track']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 
-    // 6. Admin Dashboard Stats
+    // 6. Admin Endpoints
+    Route::get('/admin/orders', [OrderController::class, 'index']);
+    Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
+    Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
     Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
 });
 
@@ -47,6 +53,13 @@ Route::get('/shipping-zones', [ShippingZoneController::class, 'index']);
 Route::post('/shipping-zones', [ShippingZoneController::class, 'store']);
 Route::put('/shipping-zones/{id}', [ShippingZoneController::class, 'update']);
 Route::delete('/shipping-zones/{id}', [ShippingZoneController::class, 'destroy']);
+Route::get('/orders', [OrderController::class, 'index']);
 Route::post('/orders', [OrderController::class, 'store']);
 Route::get('/orders/tracking/{trackingNumber}', [OrderController::class, 'track']);
+Route::get('/orders/{id}', [OrderController::class, 'show']);
+Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+Route::get('/admin/orders', [OrderController::class, 'index']);
+Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
+Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
 Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
+
