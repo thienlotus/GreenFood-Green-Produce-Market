@@ -8,4 +8,17 @@ build
 ~$*.xls
 *.tsbuildinfo
 .venv
+vendor/
+.env
 
+# Temporary and test artifacts
+*.log
+extracted_images/
+user_pdf_images/
+jmeter.log
+jmeter_test/
+*.pptx
+slide*
+create_pptx.py
+generate_translated_presentation.py
+GreenFood_Cart_Postman_Collection.json

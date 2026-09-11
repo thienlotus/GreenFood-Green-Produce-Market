@@ -1,7 +1,42 @@
+"use client";
+
+import { useState } from 'react';
 import { MapPin, Phone, Mail, ChevronRight, Facebook, Youtube, Instagram } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 
 export default function Footer() {
+  const [email, setEmail] = useState('');
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast.error('Vui lòng nhập email của bạn!');
+      return;
+    }
+    toast.success('Đăng ký nhận ưu đãi thành công! Mã giảm giá 50.000đ đã được gửi tới ' + email);
+    setEmail('');
+  };
+
+  const aboutLinks = [
+    { title: "Câu chuyện GreenFood", href: "/about" },
+    { title: "Nông hộ & Hợp tác xã liên kết", href: "/farmers" },
+    { title: "Tiêu chuẩn chất lượng VietGAP", href: "/quality-standards" },
+    { title: "Điều khoản và Điều kiện sử dụng", href: "/terms" },
+    { title: "Chính sách bảo mật thông tin", href: "/privacy" },
+    { title: "Dành cho Đối tác & CTV", href: "/partners" },
+    { title: "Tuyển dụng nhân sự", href: "/careers" }
+  ];
+
+  const supportLinks = [
+    { title: "Chính sách giao hàng", href: "/shipping" },
+    { title: "Chính sách đổi trả & hoàn tiền", href: "/returns" },
+    { title: "Hướng dẫn mua hàng online", href: "/how-to-buy" },
+    { title: "Câu hỏi thường gặp (FAQs)", href: "/faqs" },
+    { title: "Liên hệ & Góp ý", href: "/contact" },
+    { title: "Tiếp nhận khiếu nại", href: "/complaints" }
+  ];
+
   return (
     <footer className="bg-emerald-900 text-emerald-50 pt-16 pb-8 border-t-[6px] border-emerald-600">
       <div className="container mx-auto px-4 lg:px-8">
@@ -12,20 +47,46 @@ export default function Footer() {
             <h3 className="text-xl font-bold text-white mb-2">Đăng ký nhận tin từ GreenFood</h3>
             <p className="text-emerald-200 text-sm">Nhận ngay mã giảm giá 50.000đ cho đơn hàng đầu tiên</p>
           </div>
-          <div className="flex-1 flex max-w-md w-full">
+          <form onSubmit={handleSubscribe} className="flex-1 flex max-w-md w-full">
             <input 
               type="email" 
               placeholder="Nhập email của bạn..." 
-              className="px-4 py-3 rounded-l-lg w-full text-gray-800 focus:outline-none"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="px-4 py-3 rounded-l-lg w-full text-gray-800 focus:outline-none text-sm"
             />
-            <button className="bg-amber-500 hover:bg-amber-600 px-6 py-3 rounded-r-lg font-bold text-white transition-colors whitespace-nowrap">
+            <button 
+              type="submit" 
+              className="bg-amber-500 hover:bg-amber-600 px-6 py-3 rounded-r-lg font-bold text-white transition-colors whitespace-nowrap text-sm"
+            >
               Đăng ký
             </button>
-          </div>
+          </form>
           <div className="flex gap-4">
-            <a href="#" className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center hover:bg-blue-600 transition-colors"><Facebook size={20} /></a>
-            <a href="#" className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center hover:bg-red-600 transition-colors"><Youtube size={20} /></a>
-            <a href="#" className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center hover:bg-pink-600 transition-colors"><Instagram size={20} /></a>
+            <a 
+              href="https://facebook.com" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center hover:bg-blue-600 transition-colors"
+            >
+              <Facebook size={20} />
+            </a>
+            <a 
+              href="https://youtube.com" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center hover:bg-red-600 transition-colors"
+            >
+              <Youtube size={20} />
+            </a>
+            <a 
+              href="https://instagram.com" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center hover:bg-pink-600 transition-colors"
+            >
+              <Instagram size={20} />
+            </a>
           </div>
         </div>
 
@@ -43,15 +104,15 @@ export default function Footer() {
                 <Phone className="shrink-0 mt-0.5 text-emerald-400" size={18} />
                 <div>
                   <a href="tel:02877702614" className="hover:text-amber-400 font-bold transition-colors">028 7770 2614</a>
-                  <p className="text-xs text-emerald-300 mt-0.5">Thứ 2 - Thứ 6 (8:00 - 17:30)</p>
+                  <p className="text-xs text-emerald-300 mt-0.5">Thứ 2 - Chủ Nhật (7:00 - 21:00)</p>
                 </div>
               </li>
               <li className="flex gap-3">
                 <Mail className="shrink-0 mt-0.5 text-emerald-400" size={18} />
                 <a href="mailto:info@greenfood.vn" className="hover:text-amber-400 transition-colors">info@greenfood.vn</a>
               </li>
-              <li className="pt-2">
-                Mã số thuế: 0123456789
+              <li className="pt-2 text-xs text-emerald-300">
+                Mã số thuế: 0123456789 do Sở KH&ĐT TP.HCM cấp
               </li>
             </ul>
           </div>
@@ -60,20 +121,12 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-bold mb-6 text-lg uppercase tracking-wider">VỀ GREENFOOD</h4>
             <ul className="space-y-3 text-sm">
-              {[
-                "Câu chuyện GreenFood",
-                "Nông hộ & Hợp tác xã liên kết",
-                "Tiêu chuẩn chất lượng VietGAP",
-                "Điều khoản và Điều kiện sử dụng",
-                "Chính sách bảo mật thông tin",
-                "Dành cho Cộng tác viên",
-                "Tuyển dụng"
-              ].map((item, idx) => (
+              {aboutLinks.map((item, idx) => (
                 <li key={idx}>
-                  <a href="#" className="flex items-center gap-2 hover:text-amber-400 transition-colors group">
+                  <Link href={item.href} className="flex items-center gap-2 hover:text-amber-400 transition-colors group">
                     <ChevronRight size={14} className="text-emerald-500 group-hover:text-amber-400" />
-                    {item}
-                  </a>
+                    {item.title}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -83,19 +136,12 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-bold mb-6 text-lg uppercase tracking-wider">HỖ TRỢ KHÁCH HÀNG</h4>
             <ul className="space-y-3 text-sm">
-              {[
-                "Chính sách giao hàng",
-                "Chính sách đổi trả & hoàn tiền",
-                "Hướng dẫn mua hàng online",
-                "Câu hỏi thường gặp (FAQs)",
-                "Quy định về thẻ quà tặng",
-                "Xuất hóa đơn GTGT"
-              ].map((item, idx) => (
+              {supportLinks.map((item, idx) => (
                 <li key={idx}>
-                  <a href="#" className="flex items-center gap-2 hover:text-amber-400 transition-colors group">
+                  <Link href={item.href} className="flex items-center gap-2 hover:text-amber-400 transition-colors group">
                     <ChevronRight size={14} className="text-emerald-500 group-hover:text-amber-400" />
-                    {item}
-                  </a>
+                    {item.title}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -110,12 +156,12 @@ export default function Footer() {
                 <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QR Code" className="w-full h-full object-contain" />
               </div>
               <div className="flex flex-col gap-2 justify-center">
-                <a href="#" className="h-10">
+                <div onClick={() => toast('Ứng dụng iOS sắp ra mắt trên App Store!')} className="h-10 cursor-pointer">
                   <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store" className="h-full object-contain" />
-                </a>
-                <a href="#" className="h-10">
+                </div>
+                <div onClick={() => toast('Ứng dụng Android sắp ra mắt trên Google Play!')} className="h-10 cursor-pointer">
                   <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" className="h-full object-contain" />
-                </a>
+                </div>
               </div>
             </div>
 
@@ -132,7 +178,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-emerald-800 pt-8 text-center text-xs text-emerald-400/80 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>© 2026 Bản quyền thuộc về Công ty Cổ phần GreenFood.</p>
+          <p>© 2026 Bản quyền thuộc về Công ty Cổ phần GreenFood - Nông Sản Chuẩn Sạch Cho Mọi Nhà.</p>
           <div className="flex items-center gap-4">
             <img src="https://images.dmca.com/Badges/dmca_protected_sml_120n.png?ID=7d863f69-d48e-4a64-af08-7a544bebb148" alt="DMCA" className="h-6" />
             <img src="https://luatminhkhue.vn/nhan-dien-thuong-hieu/images/bocongthuong.png" alt="Bộ công thương" className="h-10 grayscale opacity-70" />

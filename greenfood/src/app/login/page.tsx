@@ -220,16 +220,62 @@ export default function LoginPage() {
                 </button>
               </p>
             ) : (
-              <p>
-                Chưa có tài khoản?{' '}
-                <button 
-                  type="button" 
-                  onClick={() => { setIsRegister(true); setError(''); }} 
-                  className="text-emerald-600 font-semibold hover:underline cursor-pointer"
-                >
-                  Đăng ký ngay
-                </button>
-              </p>
+              <div>
+                <p className="mb-4">
+                  Chưa có tài khoản?{' '}
+                  <button 
+                    type="button" 
+                    onClick={() => { setIsRegister(true); setError(''); }} 
+                    className="text-emerald-600 font-semibold hover:underline cursor-pointer"
+                  >
+                    Đăng ký ngay
+                  </button>
+                </p>
+
+                <div className="pt-4 border-t border-gray-100 text-left">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 text-center">
+                    Tài khoản demo thử nghiệm (Click để điền nhanh)
+                  </p>
+                  <div className="grid grid-cols-1 gap-1.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUsername('admin@greenfood.vn');
+                        setPassword('admin123');
+                        setError('');
+                      }}
+                      className="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg flex items-center justify-between border border-emerald-200 transition-colors text-left"
+                    >
+                      <span className="font-semibold">👑 Quản trị viên (Admin)</span>
+                      <span className="text-gray-500 text-[11px]">admin@greenfood.vn / admin123</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUsername('khachhang@greenfood.vn');
+                        setPassword('123456');
+                        setError('');
+                      }}
+                      className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-800 rounded-lg flex items-center justify-between border border-gray-200 transition-colors text-left"
+                    >
+                      <span className="font-semibold">👤 Khách hàng (Customer)</span>
+                      <span className="text-gray-500 text-[11px]">khachhang@greenfood.vn / 123456</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUsername('nongdan@greenfood.vn');
+                        setPassword('123456');
+                        setError('');
+                      }}
+                      className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-lg flex items-center justify-between border border-amber-200 transition-colors text-left"
+                    >
+                      <span className="font-semibold">🌾 Nông dân (Vendor)</span>
+                      <span className="text-gray-500 text-[11px]">nongdan@greenfood.vn / 123456</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>

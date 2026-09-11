@@ -211,8 +211,9 @@ class OrderController extends Controller
 
     public function show($id)
     {
+        $cleanId = strtoupper(trim(str_replace(['#', '{', '}', ' '], '', $id)));
         $order = Order::where('id', $id)
-            ->orWhere('tracking_number', strtoupper(str_replace('#', '', $id)))
+            ->orWhere('tracking_number', $cleanId)
             ->with(['items', 'shippingZone'])
             ->first();
 
@@ -231,8 +232,9 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
+        $cleanId = strtoupper(trim(str_replace(['#', '{', '}', ' '], '', $id)));
         $order = Order::where('id', $id)
-            ->orWhere('tracking_number', strtoupper(str_replace('#', '', $id)))
+            ->orWhere('tracking_number', $cleanId)
             ->first();
 
         if (!$order) {
@@ -281,7 +283,7 @@ class OrderController extends Controller
 
     public function track($trackingNumber)
     {
-        $code = strtoupper(trim(str_replace('#', '', $trackingNumber)));
+        $code = strtoupper(trim(str_replace(['#', '{', '}', ' '], '', $trackingNumber)));
 
         $order = Order::where('tracking_number', $code)
             ->orWhere('tracking_number', 'like', "%{$code}%")

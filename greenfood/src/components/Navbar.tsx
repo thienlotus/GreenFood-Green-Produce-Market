@@ -30,9 +30,9 @@ export default function Navbar() {
           <div onClick={() => toast('Tính năng tải ứng dụng đang phát triển')} className="flex items-center gap-1 hover:text-emerald-200 cursor-pointer transition-colors">
             <Download size={14} /> Tải ứng dụng
           </div>
-          <div onClick={() => toast('Trang Cộng tác viên đang phát triển')} className="flex items-center gap-1 hover:text-emerald-200 cursor-pointer transition-colors">
+          <Link href="/partners" className="flex items-center gap-1 hover:text-emerald-200 transition-colors">
             <Users size={14} /> Dành cho Cộng tác viên
-          </div>
+          </Link>
         </div>
       </div>
 
@@ -153,9 +153,15 @@ export default function Navbar() {
               {/* Dropdown Content */}
               {isCategoryOpen && (
                 <div className="absolute top-full left-0 w-64 bg-white shadow-xl border border-gray-100 py-2 z-50 rounded-b-lg">
-                  {['Đi chợ online', 'Trái cây tươi ngon', 'Trà - Cà phê - Socola', 'Đặc sản vùng miền', 'Đồ sấy - Ăn vặt'].map((cat) => (
-                    <Link key={cat} href="#" className="block px-5 py-3 hover:bg-emerald-50 hover:text-emerald-600 text-gray-700 text-sm font-medium transition-colors">
-                      {cat}
+                  {[
+                    { name: 'Đi chợ online', href: '/category/di-cho-online' },
+                    { name: 'Trái cây tươi ngon', href: '/category/trai-cay' },
+                    { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe' },
+                    { name: 'Đặc sản vùng miền', href: '/category/dac-san' },
+                    { name: 'Nông hộ & Nhà vườn', href: '/farmers' }
+                  ].map((cat) => (
+                    <Link key={cat.name} href={cat.href} className="block px-5 py-3 hover:bg-emerald-50 hover:text-emerald-600 text-gray-700 text-sm font-medium transition-colors">
+                      {cat.name}
                     </Link>
                   ))}
                 </div>
