@@ -94,6 +94,40 @@ const dupPhone = store.register({
 });
 assert(dupPhone.success === false, '18. Chặn đăng ký trùng số điện thoại đã có trên hệ thống');
 
+// 9. Test Phone Format Validation (Chặn chữ cái, ký tự đặc biệt, định dạng không hợp lệ)
+const letterPhone = store.register({
+  name: 'SĐT Chứa Chữ',
+  email: 'letterphone@gmail.com',
+  phone: '0934abc123',
+  password: 'Password123!',
+});
+assert(letterPhone.success === false, '19. Chặn đăng ký khi số điện thoại chứa chữ cái (0934abc123)');
+
+const shortPhone = store.register({
+  name: 'SĐT Quá Ngắn',
+  email: 'shortphone@gmail.com',
+  phone: '093412',
+  password: 'Password123!',
+});
+assert(shortPhone.success === false, '20. Chặn đăng ký khi số điện thoại không đủ 10 số (093412)');
+
+const invalidPrefixPhone = store.register({
+  name: 'SĐT Đầu Số Không Hợp Lệ',
+  email: 'invalidprefix@gmail.com',
+  phone: '0123456789',
+  password: 'Password123!',
+});
+assert(invalidPrefixPhone.success === false, '21. Chặn đăng ký khi đầu số điện thoại không thuộc mạng di động VN (0123456789)');
+
+const emptyPhone = store.register({
+  name: 'SĐT Rỗng',
+  email: 'emptyphone@gmail.com',
+  phone: '',
+  password: 'Password123!',
+});
+assert(emptyPhone.success === false, '22. Chặn đăng ký khi bỏ trống số điện thoại');
+
 console.log('\n========================================================================');
 console.log(`📊 KẾT QUẢ KIỂM THỬ: ${passedTests}/${totalTests} TESTS PASSED (${Math.round((passedTests/totalTests)*100)}%)`);
 console.log('========================================================================\n');
+

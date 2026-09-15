@@ -100,7 +100,10 @@ export default function FaqsPage() {
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveCategory(tab.id)}
+              onClick={() => {
+                setActiveCategory(tab.id);
+                setOpenIndex(null);
+              }}
               className={`px-4 py-2 rounded-full text-xs lg:text-sm font-semibold transition-all ${
                 activeCategory === tab.id 
                   ? 'bg-emerald-600 text-white shadow-sm' 

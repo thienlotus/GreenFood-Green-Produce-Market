@@ -30,6 +30,18 @@ export default function LoginPage() {
         return;
       }
 
+      const cleanPhone = phone.trim().replace(/\D/g, '');
+      if (!cleanPhone) {
+        setError('Vui lòng nhập số điện thoại!');
+        return;
+      }
+
+      const phoneRegex = /^(0|\+?84)[35789][0-9]{8}$/;
+      if (!phoneRegex.test(cleanPhone)) {
+        setError('Số điện thoại không hợp lệ! Vui lòng nhập đúng 10 số điện thoại di động (bắt đầu bằng 03, 05, 07, 08, 09).');
+        return;
+      }
+
       if (password !== confirmPassword) {
         setError('Mật khẩu nhập lại không khớp!');
         return;
@@ -44,7 +56,7 @@ export default function LoginPage() {
       const res = register({
         name: fullName.trim(),
         email: cleanEmail,
-        phone: phone.trim() || '0900000000',
+        phone: cleanPhone,
         password: password,
       });
 
@@ -126,10 +138,11 @@ export default function LoginPage() {
                     <input
                       type="tel"
                       required
+                      maxLength={10}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                       className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                      placeholder="Nhập số điện thoại..."
+                      placeholder="VD: 0901234567"
                     />
                   </div>
                 </div>

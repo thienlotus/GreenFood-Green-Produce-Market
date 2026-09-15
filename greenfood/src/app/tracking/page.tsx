@@ -1,20 +1,32 @@
 "use client";
 
-import { useState } from 'react';
-import { Search, Package, CheckCircle2, Clock, Truck, ShieldCheck, Phone, AlertCircle, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Package, CheckCircle2, Clock, Truck, Phone, AlertCircle, RefreshCw, Lock, ShieldAlert, ArrowRight, UserCheck, Shield } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 import { trackOrder } from '@/lib/api';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
 
+// Chuẩn hóa số điện thoại để so sánh quyền sở hữu (+84 / 0...)
+function normalizePhone(phone?: string): string {
+  if (!phone) return '';
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('84')) return '0' + digits.slice(2);
+  return digits;
+}
+
 const fallbackOrders: Record<string, any> = {
   GF284910: {
     id: 'GF284910',
-    customer: 'Nguyễn Văn An',
-    phone: '0909123456',
+    customer: 'Nguyễn Văn Khách',
+    phone: '0912345678', // Khớp với tài khoản Khách Hàng demo
     address: '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh',
     date: '2026-08-19 09:30',
     total: 340000,
@@ -41,8 +53,8 @@ const fallbackOrders: Record<string, any> = {
   },
   GF285020: {
     id: 'GF285020',
-    customer: 'Trần Thị Bích',
-    phone: '0918765432',
+    customer: 'Lê Hoàng Nông Dân',
+    phone: '0987654321', // Khớp với tài khoản Nông Hộ demo
     address: '456 Lê Lợi, Quận 3, TP. Hồ Chí Minh',
     date: '2026-08-18 14:00',
     total: 1250000,
@@ -73,28 +85,112 @@ const statusLabels: Record<string, { label: string; color: string; icon: any }> 
 };
 
 export default function TrackingPage() {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+
   const [orderCode, setOrderCode] = useState('');
   const [currentOrder, setCurrentOrder] = useState<any | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchError, setSearchError] = useState<'NOT_FOUND' | 'FORBIDDEN' | null>(null);
+  const [forbiddenCode, setForbiddenCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSearch = async (codeToSearch?: string) => {
     const code = (codeToSearch || orderCode).trim().toUpperCase();
-    if (!code) return;
+    if (!code) {
+      toast.error('Vui lòng nhập mã đơn hàng cần tra cứu!');
+      return;
+    }
 
     setIsLoading(true);
     setHasSearched(true);
+    setSearchError(null);
+    setCurrentOrder(null);
 
     const cleanCode = code.replace('#', '');
-    const data = await trackOrder(cleanCode);
+    let orderData = await trackOrder(cleanCode);
 
-    if (data) {
-      setCurrentOrder(data);
-    } else {
-      setCurrentOrder(fallbackOrders[cleanCode] || null);
+    if (!orderData) {
+      orderData = fallbackOrders[cleanCode] || null;
     }
+
+    if (!orderData) {
+      setSearchError('NOT_FOUND');
+      setIsLoading(false);
+      return;
+    }
+
+    // Logic kiểm tra quyền sở hữu đơn hàng (Ownership Check):
+    // 1. Quản trị viên (admin) được phép xem tất cả đơn hàng
+    // 2. Người dùng thông thường chỉ được xem đơn hàng có số điện thoại trùng khớp với tài khoản
+    const userPhoneNorm = normalizePhone(user?.phone);
+    const orderPhoneNorm = normalizePhone(orderData.phone);
+    const isOwner = user?.role === 'admin' || (userPhoneNorm && userPhoneNorm === orderPhoneNorm);
+
+    if (!isOwner) {
+      setSearchError('FORBIDDEN');
+      setForbiddenCode(cleanCode);
+      toast.error('Bạn không có quyền xem đơn hàng này!');
+      setIsLoading(false);
+      return;
+    }
+
+    setCurrentOrder(orderData);
     setIsLoading(false);
   };
+
+  // Màn hình chờ khi chưa mount (tránh hydration mismatch)
+  if (!mounted) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center bg-gray-50">
+        <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Phương án 1: BẮT BUỘC ĐĂNG NHẬP MỚI ĐƯỢC TRA CỨU ĐƠN HÀNG
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="min-h-[80vh] bg-gray-50 flex items-center justify-center px-4 py-16">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 sm:p-10 shadow-xl border border-gray-100 text-center">
+          <div className="w-20 h-20 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-emerald-600 border border-emerald-100 shadow-inner">
+            <Lock size={36} />
+          </div>
+
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-800 text-xs font-bold rounded-full mb-3 border border-amber-200">
+            <Shield size={13} /> Bảo vệ quyền riêng tư cá nhân
+          </span>
+
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">Yêu Cầu Đăng Nhập</h1>
+          <p className="text-gray-500 text-sm leading-relaxed mb-8">
+            Để bảo vệ thông tin cá nhân và lộ trình vận chuyển của người nhận, GreenFood yêu cầu quý khách đăng nhập để tra cứu các đơn hàng thuộc tài khoản của mình.
+          </p>
+
+          <div className="space-y-3">
+            <Link
+              href="/login"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 text-sm"
+            >
+              <span>Đăng nhập ngay</span>
+              <ArrowRight size={16} />
+            </Link>
+
+            <Link
+              href="/register"
+              className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-colors border border-gray-200 block text-sm"
+            >
+              Chưa có tài khoản? Đăng ký
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const statusInfo = currentOrder ? (statusLabels[currentOrder.status] || statusLabels.pending) : null;
   const StatusIcon = statusInfo?.icon || Clock;
@@ -104,18 +200,28 @@ export default function TrackingPage() {
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white py-12">
         <div className="container mx-auto px-4 text-center max-w-2xl">
-          <div className="inline-flex items-center gap-2 bg-emerald-900/60 px-4 py-1.5 rounded-full text-xs font-semibold mb-4 border border-emerald-600">
-            <Package size={14} /> Hệ Thống Tra Cứu Đơn Hàng
+          <div className="inline-flex items-center gap-2 bg-emerald-900/60 px-4 py-1.5 rounded-full text-xs font-semibold mb-3 border border-emerald-600">
+            <Package size={14} /> Hệ Thống Theo Dõi Đơn Hàng Cá Nhân
           </div>
+
           <h1 className="text-3xl md:text-4xl font-bold mb-3">Theo Dõi Đơn Hàng</h1>
           <p className="text-emerald-100 text-sm md:text-base mb-6">
-            Nhập mã đơn hàng (VD: GF284910) để theo dõi lộ trình và trạng thái vận chuyển trong thời gian thực.
+            Nhập mã đơn hàng của bạn để kiểm tra vị trí shipper và tiến độ giao hàng thời gian thực.
           </p>
+
+          {/* Badge thông tin tài khoản đang tra cứu */}
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl text-xs text-emerald-50 mb-6 border border-white/15">
+            <UserCheck size={14} className="text-emerald-300" />
+            <span>
+              Tài khoản: <strong>{user.name}</strong> ({user.phone || 'Chưa có SĐT'})
+              {user.role === 'admin' && <span className="ml-2 bg-purple-500 text-white px-2 py-0.5 rounded text-[10px] font-bold">Admin</span>}
+            </span>
+          </div>
 
           <div className="flex gap-2 max-w-lg mx-auto bg-white p-1.5 rounded-2xl shadow-xl">
             <input
               type="text"
-              placeholder="Nhập mã đơn hàng..."
+              placeholder="Nhập mã đơn hàng (VD: GF284910)..."
               value={orderCode}
               onChange={(e) => setOrderCode(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -124,24 +230,39 @@ export default function TrackingPage() {
             <button
               onClick={() => handleSearch()}
               disabled={isLoading}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors flex items-center gap-2 shrink-0 disabled:opacity-50"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors flex items-center gap-2 shrink-0 disabled:opacity-50 shadow-md"
             >
               {isLoading ? <RefreshCw size={16} className="animate-spin" /> : <Search size={16} />}
               {isLoading ? 'Đang tìm...' : 'Tra cứu'}
             </button>
           </div>
 
+          {/* Gợi ý đơn hàng cá nhân phù hợp theo tài khoản */}
           <div className="flex items-center justify-center gap-2 mt-4 text-xs text-emerald-200">
-            <span>Mã mẫu thử:</span>
-            {['GF284910', 'GF285020', 'GF285130'].map((code) => (
-              <button
-                key={code}
-                onClick={() => { setOrderCode(code); handleSearch(code); }}
-                className="underline hover:text-white font-mono"
-              >
-                {code}
-              </button>
-            ))}
+            {user.role === 'admin' ? (
+              <>
+                <span>Mã đơn hệ thống (Admin):</span>
+                {['GF284910', 'GF285020'].map((code) => (
+                  <button
+                    key={code}
+                    onClick={() => { setOrderCode(code); handleSearch(code); }}
+                    className="underline hover:text-white font-mono font-medium"
+                  >
+                    {code}
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                <span>Đơn hàng gần đây của bạn:</span>
+                <button
+                  onClick={() => { setOrderCode('GF284910'); handleSearch('GF284910'); }}
+                  className="underline hover:text-white font-mono font-bold bg-white/10 px-2 py-0.5 rounded"
+                >
+                  GF284910
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -223,8 +344,10 @@ export default function TrackingPage() {
                     scrollWheelZoom={false}
                   >
                     <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; Google Maps'
+                      url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+                      subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+                      maxZoom={20}
                     />
                     <Marker position={[currentOrder.shipperLat, currentOrder.shipperLng]}>
                       <Popup>
@@ -309,26 +432,41 @@ export default function TrackingPage() {
               </div>
             </div>
           </div>
-        ) : hasSearched ? (
+        ) : searchError === 'FORBIDDEN' ? (
+          /* Thông báo bảo vệ quyền sở hữu - Không có quyền xem đơn hàng của người khác */
+          <div className="bg-white rounded-2xl p-10 text-center shadow-sm border border-amber-200">
+            <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-amber-600 border border-amber-200">
+              <ShieldAlert size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Truy Cập Bị Từ Chối</h3>
+            <p className="text-sm text-gray-600 max-w-lg mx-auto mb-4 leading-relaxed">
+              Đơn hàng <strong className="font-mono text-gray-900">#{forbiddenCode}</strong> không thuộc về số điện thoại (<strong className="font-mono text-emerald-700">{user.phone}</strong>) của tài khoản bạn đang đăng nhập.
+            </p>
+            <p className="text-xs text-gray-500 max-w-md mx-auto mb-6">
+              Vì chính sách bảo mật thông tin và quyền riêng tư, khách hàng chỉ có thể tra cứu đơn hàng do chính mình đặt.
+            </p>
+            <button
+              onClick={() => { setSearchError(null); setOrderCode(''); }}
+              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors"
+            >
+              Thử tra cứu mã khác
+            </button>
+          </div>
+        ) : searchError === 'NOT_FOUND' ? (
           <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
             <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
               <AlertCircle size={32} />
             </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Không tìm thấy đơn hàng</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">Không Tìm Thấy Đơn Hàng</h3>
             <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
-              Mã đơn hàng <strong>&quot;{orderCode}&quot;</strong> không tồn tại trong hệ thống. Vui lòng kiểm tra lại mã trên hóa đơn hoặc tin nhắn.
+              Mã đơn hàng <strong>&quot;{orderCode}&quot;</strong> không tồn tại trong hệ thống. Vui lòng kiểm tra lại mã trên hóa đơn hoặc tin nhắn xác nhận.
             </p>
-            <div className="flex gap-2 justify-center">
-              {['GF284910', 'GF285020', 'GF285130'].map((code) => (
-                <button
-                  key={code}
-                  onClick={() => { setOrderCode(code); handleSearch(code); }}
-                  className="px-3 py-1.5 bg-gray-100 hover:bg-emerald-50 text-xs font-mono rounded-lg transition-colors"
-                >
-                  Thử {code}
-                </button>
-              ))}
-            </div>
+            <button
+              onClick={() => { setSearchError(null); setOrderCode(''); }}
+              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors"
+            >
+              Nhập lại mã đơn hàng
+            </button>
           </div>
         ) : null}
       </div>

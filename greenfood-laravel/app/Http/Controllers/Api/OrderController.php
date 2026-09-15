@@ -153,7 +153,8 @@ class OrderController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('tracking_number', 'like', "%{$search}%")
                   ->orWhere('customer_name', 'like', "%{$search}%")
-                  ->orWhere('customer_phone', 'like', "%{$search}%");
+                  ->orWhere('customer_phone', 'like', "%{$search}%")
+                  ->orWhere('created_at', 'like', "%{$search}%");
             });
         }
 
@@ -284,6 +285,13 @@ class OrderController extends Controller
     public function track($trackingNumber)
     {
         $code = strtoupper(trim(str_replace(['#', '{', '}', ' '], '', $trackingNumber)));
+
+        if (empty($code)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mã đơn hàng không hợp lệ'
+            ], 422);
+        }
 
         $order = Order::where('tracking_number', $code)
             ->orWhere('tracking_number', 'like', "%{$code}%")

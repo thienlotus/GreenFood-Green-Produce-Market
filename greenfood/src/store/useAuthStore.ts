@@ -129,9 +129,7 @@ export const useAuthStore = create<AuthState>()(
           return { success: false, message: 'Tài khoản của bạn đã bị khóa! Vui lòng liên hệ Quản trị viên.' };
         }
 
-        const isPasswordMatch = 
-          found.passwordHash === password ||
-          (found.role === 'admin' && (password === 'admin123' || password === '123456'));
+        const isPasswordMatch = found.passwordHash === password;
 
         if (!isPasswordMatch) {
           return { success: false, message: 'Mật khẩu không chính xác! Vui lòng thử lại.' };
@@ -153,13 +151,23 @@ export const useAuthStore = create<AuthState>()(
           return { success: false, message: 'Email này đã được sử dụng bởi tài khoản khác!' };
         }
 
-        if (cleanPhone) {
-          const existingPhone = accounts.find(
-            (a) => a.phone && a.phone.replace(/\s+/g, '') === cleanPhone
-          );
-          if (existingPhone) {
-            return { success: false, message: 'Số điện thoại này đã được đăng ký trên hệ thống!' };
-          }
+        if (!cleanPhone) {
+          return { success: false, message: 'Vui lòng nhập số điện thoại!' };
+        }
+
+        const phoneRegex = /^(0|\+?84)[35789][0-9]{8}$/;
+        if (!phoneRegex.test(cleanPhone)) {
+          return {
+            success: false,
+            message: 'Số điện thoại không hợp lệ! Vui lòng nhập đúng 10 số điện thoại di động (bắt đầu bằng 03, 05, 07, 08, 09).',
+          };
+        }
+
+        const existingPhone = accounts.find(
+          (a) => a.phone && a.phone.replace(/\s+/g, '') === cleanPhone
+        );
+        if (existingPhone) {
+          return { success: false, message: 'Số điện thoại này đã được đăng ký trên hệ thống!' };
         }
 
         // Theo yêu cầu: Tài khoản mới luôn mặc định là Khách Hàng ('customer'). Phân quyền do Admin quản trị.
@@ -190,7 +198,7 @@ export const useAuthStore = create<AuthState>()(
 
         return { 
           success: true, 
-          message: 'Đăng ký tài khoản Nông Hộ thành công! Tài khoản mặc định là Nông hộ. Liên hệ Quản trị viên nếu cần cấp lại vai trò.', 
+          message: 'Đăng ký tài khoản thành công! Tài khoản của bạn có vai trò Khách Hàng. Liên hệ Quản trị viên nếu cần cấp quyền Nông hộ.', 
           user: safeUser 
         };
       },

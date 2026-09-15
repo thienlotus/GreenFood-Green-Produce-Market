@@ -57,7 +57,7 @@ export default function CheckoutPage() {
     const errors: Record<string, string> = {};
     if (!fullName.trim()) errors.fullName = 'Vui lòng nhập họ tên';
     if (!phone.trim()) errors.phone = 'Vui lòng nhập số điện thoại';
-    else if (!/^(0|\+84)[0-9]{8,10}$/.test(phone.replace(/\s/g, ''))) errors.phone = 'Số điện thoại không hợp lệ';
+    else if (!/^(0|\+?84)[35789][0-9]{8}$/.test(phone.replace(/\s/g, ''))) errors.phone = 'Số điện thoại không hợp lệ (cần 10 chữ số, đầu 03, 05, 07, 08, 09)';
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Email không hợp lệ';
     if (!address.trim()) errors.address = 'Vui lòng nhập địa chỉ';
     if (!selectedZone) errors.zone = 'Vui lòng chọn vùng giao hàng';

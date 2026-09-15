@@ -63,9 +63,15 @@ export default function ProfilePage() {
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanPhone = phone.trim().replace(/\D/g, '');
+    if (cleanPhone && !/^(0|\+?84)[35789][0-9]{8}$/.test(cleanPhone)) {
+      toast.error('Số điện thoại không hợp lệ! Vui lòng nhập đúng 10 số (bắt đầu bằng 03, 05, 07, 08, 09).');
+      return;
+    }
+
     updateProfile({
       name: name.trim(),
-      phone: phone.trim(),
+      phone: cleanPhone,
       address: address.trim(),
       farmName: user.role === 'vendor' ? farmName.trim() : undefined,
     });
@@ -249,9 +255,10 @@ export default function ProfilePage() {
                   {isEditing ? (
                     <input
                       type="tel"
+                      maxLength={10}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="0912 345 678"
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                      placeholder="0912345678"
                       className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
                     />
                   ) : (

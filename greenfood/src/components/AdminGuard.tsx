@@ -18,12 +18,12 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     if (mounted) {
       if (!isAuthenticated || user?.role !== 'admin') {
         toast.error('Truy cập bị từ chối! Bạn không có quyền quản trị.');
-        router.push('/');
+        router.push('/login');
       }
     }
   }, [mounted, isAuthenticated, user, router]);
 
-  if (!mounted || !isAuthenticated || user?.role !== 'admin') {
+  if (!mounted) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">Đang kiểm tra quyền truy cập...</div>;
   }
 

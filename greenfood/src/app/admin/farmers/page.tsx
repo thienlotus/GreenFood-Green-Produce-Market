@@ -95,7 +95,7 @@ export default function AdminFarmers() {
       toast.success('Đã cập nhật đối tác!');
     } else {
       const newFarmer = {
-        id: `NH00${farmers.length + 1}`,
+        id: `NH${Date.now().toString().slice(-6)}`,
         ...formData,
         name: trimmedName,
         region: trimmedRegion,

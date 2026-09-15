@@ -16,7 +16,10 @@ Route::prefix('v1')->group(function () {
 
     // 2. Products
     Route::get('/products', [ProductController::class, 'index']);
+    Route::post('/products', [ProductController::class, 'store']);
     Route::get('/products/{slug}', [ProductController::class, 'show']);
+    Route::put('/products/{id}', [ProductController::class, 'update']);
+    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
     // 3. Farmers (Bản đồ GIS & Nông hộ)
     Route::get('/farmers', [FarmerController::class, 'index']);
@@ -46,7 +49,10 @@ Route::prefix('v1')->group(function () {
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [CategoryController::class, 'show']);
 Route::get('/products', [ProductController::class, 'index']);
+Route::post('/products', [ProductController::class, 'store']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
+Route::put('/products/{id}', [ProductController::class, 'update']);
+Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 Route::get('/farmers', [FarmerController::class, 'index']);
 Route::get('/farmers/{id}', [FarmerController::class, 'show']);
 Route::get('/shipping-zones', [ShippingZoneController::class, 'index']);

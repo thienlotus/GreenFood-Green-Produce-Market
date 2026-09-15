@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Eye, CheckCircle2, XCircle, Clock, X, Save, Package, RefreshCw, MapPin, Phone, Mail, CreditCard } from 'lucide-react';
+import { Search, Eye, CheckCircle2, XCircle, Clock, X, Save, Package, RefreshCw, MapPin, Phone, Mail, CreditCard, Printer } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { getAdminOrders, updateOrderStatus, AdminOrder } from '@/lib/api';
@@ -58,6 +58,17 @@ export default function AdminOrders() {
 
   const handleSaveStatus = async () => {
     if (!selectedOrder || isSubmitting) return;
+
+    if ((selectedOrder.status === 'completed' || selectedOrder.status === 'delivered') && editingStatus === 'pending') {
+      toast.error('Không thể hoàn tác đơn hàng đã giao thành công');
+      return;
+    }
+
+    if ((selectedOrder.status === 'processing' || selectedOrder.status === 'shipping') && editingStatus === 'cancelled') {
+      toast.error('Không thể hủy đơn hàng đang trên đường giao');
+      return;
+    }
+
     setIsSubmitting(true);
 
     const res = await updateOrderStatus(selectedOrder.tracking_number, editingStatus);
@@ -324,22 +335,36 @@ export default function AdminOrders() {
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+            <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between gap-3">
               <button 
-                onClick={() => setSelectedOrder(null)}
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                type="button"
+                onClick={() => {
+                  toast.success(`Đang mở giao diện in hóa đơn đơn hàng ${selectedOrder.id}...`);
+                }}
+                className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200 flex items-center gap-1.5"
+                title="In hóa đơn"
               >
-                Đóng
+                <Printer size={16} />
+                In hóa đơn
               </button>
-              <button 
-                onClick={handleSaveStatus}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50"
-              >
-                <Save size={16} />
-                {isSubmitting ? 'Đang lưu...' : 'Lưu trạng thái'}
-              </button>
+
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setSelectedOrder(null)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Đóng
+                </button>
+                <button 
+                  onClick={handleSaveStatus}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50"
+                >
+                  <Save size={16} />
+                  {isSubmitting ? 'Đang lưu...' : 'Lưu trạng thái'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
