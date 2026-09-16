@@ -263,8 +263,9 @@ export default function ProfilePage() {
       } else {
         toast.error(res.message);
       }
-    } catch {
-      toast.error('Có lỗi xảy ra khi lưu thông tin!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Có lỗi xảy ra khi lưu thông tin: ' + err.message);
     } finally {
       setIsSavingProfile(false);
     }
@@ -546,7 +547,7 @@ export default function ProfilePage() {
             }`}
           >
             <MapPin size={16} />
-            <span>Sổ địa chỉ ({savedAddresses.length})</span>
+            <span>Sổ địa chỉ ({(savedAddresses || []).length})</span>
           </button>
 
           <button
@@ -558,7 +559,7 @@ export default function ProfilePage() {
             }`}
           >
             <Gift size={16} />
-            <span>Điểm & Voucher ({userVouchers.length})</span>
+            <span>Điểm & Voucher ({(userVouchers || []).length})</span>
           </button>
 
           <button
@@ -798,7 +799,7 @@ export default function ProfilePage() {
                   <Gift size={22} />
                 </div>
                 <div>
-                  <div className="text-xl font-black text-gray-900">{userVouchers.length}</div>
+                  <div className="text-xl font-black text-gray-900">{(userVouchers || []).length}</div>
                   <div className="text-xs text-gray-500">Voucher khả dụng</div>
                 </div>
               </div>
@@ -808,7 +809,7 @@ export default function ProfilePage() {
                   <MapPin size={22} />
                 </div>
                 <div>
-                  <div className="text-xl font-black text-gray-900">{savedAddresses.length}</div>
+                  <div className="text-xl font-black text-gray-900">{(savedAddresses || []).length}</div>
                   <div className="text-xs text-gray-500">Địa chỉ lưu sẵn</div>
                 </div>
               </div>
@@ -969,7 +970,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {savedAddresses.map((addr) => (
+              {(savedAddresses || []).map((addr) => (
                 <div
                   key={addr.id}
                   className={`p-5 rounded-2xl border transition-all space-y-3 relative ${
@@ -1001,7 +1002,7 @@ export default function ProfilePage() {
                           Đặt mặc định
                         </button>
                       )}
-                      {savedAddresses.length > 1 && (
+                      {(savedAddresses || []).length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeSavedAddress(addr.id)}
@@ -1170,7 +1171,7 @@ export default function ProfilePage() {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {AVAILABLE_VOUCHERS.map((v) => {
+                {(AVAILABLE_VOUCHERS || []).map((v) => {
                   const canRedeem = (user.loyaltyPoints || 0) >= v.pointsCost;
                   return (
                     <div
@@ -1215,14 +1216,14 @@ export default function ProfilePage() {
             <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-4">
               <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                 <Tag size={18} className="text-emerald-600" />
-                <span>Kho Voucher Của Tôi ({userVouchers.length})</span>
+                <span>Kho Voucher Của Tôi ({(userVouchers || []).length})</span>
               </h3>
 
-              {userVouchers.length === 0 ? (
+              {(userVouchers || []).length === 0 ? (
                 <p className="text-xs text-gray-500 py-6 text-center">Bạn chưa có voucher nào. Hãy dùng điểm thưởng để đổi ngay!</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {userVouchers.map((v) => (
+                  {(userVouchers || []).map((v) => (
                     <div
                       key={v.id}
                       className="p-5 rounded-2xl border border-emerald-100 bg-emerald-50/30 flex flex-col justify-between gap-3"
@@ -1463,54 +1464,6 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
-
-        {/* RECENT ORDERS SECTION */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 mt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <ShoppingBag className="text-emerald-600" size={24} />
-            Đơn Hàng Gần Đây Của Bạn
-          </h2>
-          
-          {recentOrders.length > 0 ? (
-            <div className="space-y-4">
-              {recentOrders.map((o, idx) => (
-                <div key={idx} className="flex flex-col md:flex-row md:items-center justify-between p-5 border border-gray-100 rounded-2xl hover:border-emerald-200 hover:bg-emerald-50/30 transition-colors">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <p className="font-mono font-bold text-gray-900 text-lg">{o.code}</p>
-                      <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md bg-blue-100 text-blue-800">
-                        ĐÃ ĐẶT
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500 flex items-center gap-1.5">
-                      <Calendar size={14} />
-                      {new Date(o.date).toLocaleString('vi-VN')}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between md:justify-end w-full md:w-auto mt-4 md:mt-0 gap-6">
-                    <span className="font-bold text-xl text-emerald-600">{o.total.toLocaleString('vi-VN')}đ</span>
-                    <Link 
-                      href={`/tracking?code=${o.code}`}
-                      className="text-sm bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-sm"
-                    >
-                      Theo dõi
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 shadow-sm">
-                <ShoppingBag size={24} />
-              </div>
-              <p className="text-gray-500 font-medium mb-4">Bạn chưa có đơn hàng nào.</p>
-              <Link href="/" className="inline-block bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-sm">
-                Bắt đầu mua sắm ngay
-              </Link>
-            </div>
-          )}
-        </div>
 
       </div>
     </div>

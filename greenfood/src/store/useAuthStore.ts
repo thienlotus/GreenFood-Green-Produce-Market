@@ -411,7 +411,7 @@ export const useAuthStore = create<AuthState>()(
               passwordHash: data.password,
             };
 
-            const accounts = get().registeredAccounts.filter((a) => a.id !== newUserAccount.id && a.phone !== newUserAccount.phone && a.email !== newUserAccount.email);
+            const accounts = (get().registeredAccounts || []).filter((a) => a.id !== newUserAccount.id && a.phone !== newUserAccount.phone && a.email !== newUserAccount.email);
             const updatedAccounts = [newUserAccount, ...accounts];
             const { passwordHash: _, ...safeUser } = newUserAccount;
 
@@ -507,7 +507,7 @@ export const useAuthStore = create<AuthState>()(
 
           if (res.ok && json && json.success) {
             const updatedUser: User = { ...currentUser, ...data };
-            const accounts = get().registeredAccounts.map((acc) =>
+            const accounts = (get().registeredAccounts || []).map((acc) =>
               acc.id === currentUser.id ? { ...acc, ...data } : acc
             );
 
@@ -740,7 +740,7 @@ export const useAuthStore = create<AuthState>()(
         if (!currentUser) return;
 
         const updatedUser = { ...currentUser, ...data };
-        const accounts = get().registeredAccounts.map((acc) =>
+        const accounts = (get().registeredAccounts || []).map((acc) =>
           acc.id === currentUser.id ? { ...acc, ...data } : acc
         );
 
