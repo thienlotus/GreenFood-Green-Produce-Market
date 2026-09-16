@@ -134,9 +134,20 @@ async function runTests() {
   });
   assert(emptyPhone.success === false, '22. Chặn đăng ký khi bỏ trống số điện thoại');
 
+  // 10. TỰ ĐỘNG DỌN DẸP DỮ LIỆU KIỂM THỬ (CLEANUP / TEARDOWN)
+  // Xóa ngay lập tức các tài khoản thử nghiệm khỏi CSDL và Store để không tích tụ rác CSDL
+  if (newReg1.user?.id) {
+    await store.deleteUserAccount(newReg1.user.id);
+  }
+  if (newReg2.user?.id) {
+    await store.deleteUserAccount(newReg2.user.id);
+  }
+  console.log('🧹 [CLEANUP] Đã tự động dọn dẹp và xóa sạch các tài khoản kiểm thử khỏi CSDL!');
+
   console.log('\n========================================================================');
   console.log(`📊 KẾT QUẢ KIỂM THỬ: ${passedTests}/${totalTests} TESTS PASSED (${Math.round((passedTests/totalTests)*100)}%)`);
   console.log('========================================================================\n');
 }
 
 runTests().catch(console.error);
+
