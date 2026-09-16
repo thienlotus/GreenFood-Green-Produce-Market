@@ -105,8 +105,8 @@ async function generateDuongPassOnlyTestCases() {
         const cell = row.getCell(c);
         cell.font = { name: 'Calibri', size: 11 };
         cell.border = thinBorder;
-        cell.alignment = { 
-          vertical: 'middle', 
+        cell.alignment = {
+          vertical: 'middle',
           wrapText: true,
           horizontal: (c === 1 || c === 7 || c === 9 || c === 10) ? 'center' : 'left'
         };
@@ -335,9 +335,9 @@ async function generateDuongPassOnlyTestCases() {
       cell.value = val;
       cell.font = { name: 'Calibri', size: 11 };
       cell.border = thinBorder;
-      cell.alignment = { 
-        vertical: 'middle', 
-        horizontal: cIdx === 0 ? 'left' : 'center' 
+      cell.alignment = {
+        vertical: 'middle',
+        horizontal: cIdx === 0 ? 'left' : 'center'
       };
       if (cIdx === 1) {
         cell.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF006100' } };
@@ -393,7 +393,7 @@ async function generateDuongPassOnlyTestCases() {
   // Total row
   const totalRowIndex = 7 + duongModules.length;
   const totalR = sumWs.getRow(totalRowIndex);
-  
+
   totalR.getCell(1).value = 'TỔNG CỘNG';
   totalR.getCell(1).font = { name: 'Calibri', size: 11, bold: true };
   totalR.getCell(1).border = thinBorder;
@@ -418,7 +418,7 @@ async function generateDuongPassOnlyTestCases() {
   // Output file only for Duong
   const duongPath1 = path.join(__dirname, '..', 'testcases', 'Test_Cases_GreenFood_Duong.xlsx');
   const duongPath2 = path.join(__dirname, '..', '..', 'Test_Cases_GreenFood_Duong.xlsx');
-  
+
   await workbook.xlsx.writeFile(duongPath1);
   await workbook.xlsx.writeFile(duongPath2);
 

@@ -334,7 +334,10 @@ export async function createOrder(payload: {
   customerPhone: string;
   customerEmail?: string;
   shippingAddress: string;
-  shippingZoneId: string;
+  shippingZoneId?: string;
+  shippingFee?: number;
+  toDistrictId?: number;
+  toWardCode?: string;
   paymentMethod: string;
   note?: string;
   items: OrderItemPayload[];
@@ -353,6 +356,9 @@ export async function createOrder(payload: {
         customer_email: payload.customerEmail,
         shipping_address: payload.shippingAddress,
         shipping_zone_id: payload.shippingZoneId,
+        shipping_fee: payload.shippingFee,
+        to_district_id: payload.toDistrictId,
+        to_ward_code: payload.toWardCode,
         payment_method: payload.paymentMethod,
         note: payload.note,
         items: payload.items.map(it => ({
@@ -421,9 +427,78 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
 
 export async function trackOrder(trackingNumber: string): Promise<any | null> {
   const res = await fetchApi<{ success: boolean; data: any }>(`/orders/tracking/${trackingNumber}`);
-  if (res && res.success && res.data) {
+  if (res && res.success) {
     return res.data;
   }
   return null;
+}
+
+export async function getMyOrders(phone: string): Promise<any[]> {
+  const res = await fetchApi<{ success: boolean; data: any[] }>(`/orders/my-orders?phone=${encodeURIComponent(phone)}`);
+  if (res && res.success) {
+    return res.data;
+  }
+  return [];
+}
+
+// 6. GHN API INTEGRATION
+export async function getGhnProvinces(): Promise<any[]> {
+  try {
+    const res = await fetchApi<{ code: number; data: any[] }>('/ghn/provinces');
+    if (res && res.code === 200 && Array.isArray(res.data)) {
+      return res.data;
+    }
+    return [];
+  } catch (error) {
+    console.error('[API] getGhnProvinces error:', error);
+    return [];
+  }
+}
+
+export async function getGhnDistricts(provinceId: number): Promise<any[]> {
+  try {
+    const res = await fetchApi<{ code: number; data: any[] }>(`/ghn/districts/${provinceId}`);
+    if (res && res.code === 200 && Array.isArray(res.data)) {
+      return res.data;
+    }
+    return [];
+  } catch (error) {
+    console.error('[API] getGhnDistricts error:', error);
+    return [];
+  }
+}
+
+export async function getGhnWards(districtId: number): Promise<any[]> {
+  try {
+    const res = await fetchApi<{ code: number; data: any[] }>(`/ghn/wards/${districtId}`);
+    if (res && res.code === 200 && Array.isArray(res.data)) {
+      return res.data;
+    }
+    return [];
+  } catch (error) {
+    console.error('[API] getGhnWards error:', error);
+    return [];
+  }
+}
+
+export async function calculateGhnShippingFee(districtId: number, wardCode: string, items: any[]): Promise<number | null> {
+  try {
+    const res = await fetchApi<{ code: number; data: any }>('/ghn/calculate-fee', {
+      method: 'POST',
+      body: JSON.stringify({
+        to_district_id: districtId,
+        to_ward_code: wardCode,
+        items: items
+      })
+    });
+
+    if (res && res.code === 200 && res.data && res.data.total) {
+      return res.data.total;
+    }
+    return null;
+  } catch (error) {
+    console.error('[API] calculateGhnShippingFee error:', error);
+    return null;
+  }
 }
 

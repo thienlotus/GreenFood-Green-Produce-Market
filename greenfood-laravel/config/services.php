@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    // Cấu hình kết nối API Giao Hàng Nhanh (GHN)
+    'ghn' => [
+        'base_url' => env('GHN_BASE_URL', 'https://dev-online-gateway.ghn.vn/shiip/public-api'), // Cổng API GHN Dev/Sandbox
+        'token' => env('GHN_TOKEN', '6ca431c7-aa99-11f1-a973-aee5264794df'),                  // Token tài khoản GHN mới
+        'shop_id' => env('GHN_SHOP_ID', 217561),         // Mã Shop GHN (đã gán địa chỉ kho)
+        'verify_ssl' => env('GHN_VERIFY_SSL', false),      // Bỏ qua SSL khi chạy local
+        'from_district_id' => env('GHN_FROM_DISTRICT_ID', 3440), // ID Quận/Huyện kho gửi (Nam Từ Liêm, HN)
+        'default_weight' => env('GHN_DEFAULT_WEIGHT', 200),     // Trọng lượng ước tính mặc định
+    ],
+
 ];

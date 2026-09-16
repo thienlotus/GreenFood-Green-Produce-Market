@@ -8,9 +8,11 @@ use App\Models\OrderItem;
 use App\Models\ShippingZone;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Services\GHNOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
@@ -22,7 +24,10 @@ class OrderController extends Controller
             'customer_phone' => 'required|string|max:20',
             'customer_email' => 'nullable|email|max:255',
             'shipping_address' => 'required|string',
-            'shipping_zone_id' => 'required|string|exists:shipping_zones,id',
+            'shipping_zone_id' => 'nullable|string|exists:shipping_zones,id',
+            'shipping_fee' => 'nullable|numeric|min:0',
+            'to_district_id' => 'required|integer',
+            'to_ward_code' => 'required|string',
             'payment_method' => 'required|in:COD,BANK_TRANSFER,MOMO,VNPAY',
             'items' => 'required|array|min:1',
             'items.*.product_name' => 'required|string',
@@ -42,16 +47,22 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
-            $zone = ShippingZone::find($request->shipping_zone_id);
             $itemsTotal = 0;
             foreach ($request->items as $it) {
                 $itemsTotal += ($it['price'] * $it['quantity']);
             }
 
-            $shippingFee = ($zone && $itemsTotal >= $zone->free_ship_minimum) ? 0 : ($zone ? $zone->base_fee : 0);
+            $shippingFee = 0;
+            if ($request->has('shipping_fee') && $request->shipping_fee !== null) {
+                $shippingFee = $request->shipping_fee;
+            } elseif ($request->has('shipping_zone_id') && $request->shipping_zone_id) {
+                $zone = ShippingZone::find($request->shipping_zone_id);
+                $shippingFee = ($zone && $itemsTotal >= $zone->free_ship_minimum) ? 0 : ($zone ? $zone->base_fee : 0);
+            }
+
             $totalAmount = $itemsTotal + $shippingFee;
 
-            $trackingNumber = 'GF' . mt_rand(100000, 999999);
+            $trackingNumber = 'GF' . mt_rand(100000, 999999); // Temporary fallback
 
             $order = Order::create([
                 'id' => (string) Str::uuid(),
@@ -113,6 +124,24 @@ class OrderController extends Controller
                     'quantity' => $it['quantity'],
                     'price_at_time' => $it['price'],
                 ]);
+            }
+
+            // Create order in GHN
+            try {
+                $ghnService = app(GHNOrderService::class);
+                $isPaid = in_array($request->payment_method, ['BANK_TRANSFER', 'MOMO', 'VNPAY']);
+                $ghnResponse = $ghnService->create($order, $request->to_ward_code, $request->to_district_id, $isPaid);
+                
+                if ($ghnResponse['code'] === 200 && isset($ghnResponse['data']['order_code'])) {
+                    $trackingNumber = $ghnResponse['data']['order_code'];
+                    $order->tracking_number = $trackingNumber;
+                    $order->save();
+                } else {
+                    Log::warning('GHN API order creation returned non-200 or missing order_code: ' . json_encode($ghnResponse));
+                }
+            } catch (\Exception $ghnEx) {
+                // If GHN fails (e.g. sandbox map condition error), log and fallback to temporary tracking number
+                Log::error('GHN order creation failed: ' . $ghnEx->getMessage());
             }
 
             DB::commit();
@@ -219,6 +248,34 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'count' => $data->count(),
+            'data' => $data
+        ]);
+    }
+
+    public function myOrders(Request $request)
+    {
+        $phone = $request->query('phone');
+        
+        if (!$phone) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng cung cấp số điện thoại'
+            ], 400);
+        }
+
+        $orders = Order::where('customer_phone', $phone)->latest()->get();
+
+        $data = $orders->map(function ($order) {
+            return [
+                'code' => $order->tracking_number,
+                'date' => $order->created_at->toIso8601String(),
+                'total' => (float)$order->total_amount,
+                'status' => $order->status
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
             'data' => $data
         ]);
     }

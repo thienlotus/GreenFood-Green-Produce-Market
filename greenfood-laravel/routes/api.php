@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ShippingZoneController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\GHNController;
 
 // Public APIs
 Route::prefix('v1')->group(function () {
@@ -44,6 +45,7 @@ Route::prefix('v1')->group(function () {
     // 5. Orders (Đặt hàng & Theo dõi đơn & Quản lý đơn)
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
+    Route::get('/orders/my-orders', [OrderController::class, 'myOrders']);
     Route::get('/orders/tracking/{trackingNumber}', [OrderController::class, 'track']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
@@ -53,6 +55,12 @@ Route::prefix('v1')->group(function () {
     Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
     Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
     Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
+
+    // 7. GHN Delivery API
+    Route::get('/ghn/provinces', [GHNController::class, 'getProvinces']);
+    Route::get('/ghn/districts/{provinceId}', [GHNController::class, 'getDistricts']);
+    Route::get('/ghn/wards/{districtId}', [GHNController::class, 'getWards']);
+    Route::post('/ghn/calculate-fee', [GHNController::class, 'getShippingFee']);
 });
 
 // Direct aliases without v1 prefix for convenience
@@ -71,6 +79,7 @@ Route::put('/shipping-zones/{id}', [ShippingZoneController::class, 'update']);
 Route::delete('/shipping-zones/{id}', [ShippingZoneController::class, 'destroy']);
 Route::get('/orders', [OrderController::class, 'index']);
 Route::post('/orders', [OrderController::class, 'store']);
+Route::get('/orders/my-orders', [OrderController::class, 'myOrders']);
 Route::get('/orders/tracking/{trackingNumber}', [OrderController::class, 'track']);
 Route::get('/orders/{id}', [OrderController::class, 'show']);
 Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
@@ -78,6 +87,10 @@ Route::get('/admin/orders', [OrderController::class, 'index']);
 Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
 Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
 Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
+Route::get('/ghn/provinces', [GHNController::class, 'getProvinces']);
+Route::get('/ghn/districts/{provinceId}', [GHNController::class, 'getDistricts']);
+Route::get('/ghn/wards/{districtId}', [GHNController::class, 'getWards']);
+Route::post('/ghn/calculate-fee', [GHNController::class, 'getShippingFee']);
 
 // Direct Auth aliases
 Route::post('/register', [AuthController::class, 'register']);

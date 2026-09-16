@@ -242,21 +242,42 @@ export default function AdminShipping() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phí cơ bản (đ) *</label>
-                  <input type="number" min="0" value={formData.baseFee} onChange={(e) => setFormData({ ...formData, baseFee: Number(e.target.value) })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+                  <input 
+                    type="number" 
+                    min="0" 
+                    value={formData.baseFee === 0 ? '' : formData.baseFee} 
+                    placeholder="0"
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => setFormData({ ...formData, baseFee: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phí mỗi kg thêm (đ)</label>
-                  <input type="number" min="0" value={formData.extraFeePerKg} onChange={(e) => setFormData({ ...formData, extraFeePerKg: Number(e.target.value) })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+                  <input 
+                    type="number" 
+                    min="0" 
+                    value={formData.extraFeePerKg === 0 ? '' : formData.extraFeePerKg} 
+                    placeholder="0"
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => setFormData({ ...formData, extraFeePerKg: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" 
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Miễn phí ship từ (đ)</label>
-                  <input type="number" min="0" value={formData.freeShipMinimum} onChange={(e) => setFormData({ ...formData, freeShipMinimum: Number(e.target.value) })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+                  <input 
+                    type="number" 
+                    min="0" 
+                    value={formData.freeShipMinimum === 0 ? '' : formData.freeShipMinimum} 
+                    placeholder="0"
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => setFormData({ ...formData, freeShipMinimum: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian giao *</label>

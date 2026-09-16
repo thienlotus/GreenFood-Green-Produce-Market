@@ -71,6 +71,8 @@ interface UserOrder {
   item_details?: OrderItemDetail[];
 }
 
+import { getMyOrders } from '@/lib/api';
+
 export default function ProfilePage() {
   const router = useRouter();
   const {
@@ -128,7 +130,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
     if (mounted && !isAuthenticated) {
@@ -1461,6 +1463,54 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
+
+        {/* RECENT ORDERS SECTION */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 mt-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <ShoppingBag className="text-emerald-600" size={24} />
+            Đơn Hàng Gần Đây Của Bạn
+          </h2>
+          
+          {recentOrders.length > 0 ? (
+            <div className="space-y-4">
+              {recentOrders.map((o, idx) => (
+                <div key={idx} className="flex flex-col md:flex-row md:items-center justify-between p-5 border border-gray-100 rounded-2xl hover:border-emerald-200 hover:bg-emerald-50/30 transition-colors">
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <p className="font-mono font-bold text-gray-900 text-lg">{o.code}</p>
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md bg-blue-100 text-blue-800">
+                        ĐÃ ĐẶT
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                      <Calendar size={14} />
+                      {new Date(o.date).toLocaleString('vi-VN')}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between md:justify-end w-full md:w-auto mt-4 md:mt-0 gap-6">
+                    <span className="font-bold text-xl text-emerald-600">{o.total.toLocaleString('vi-VN')}đ</span>
+                    <Link 
+                      href={`/tracking?code=${o.code}`}
+                      className="text-sm bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+                    >
+                      Theo dõi
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 shadow-sm">
+                <ShoppingBag size={24} />
+              </div>
+              <p className="text-gray-500 font-medium mb-4">Bạn chưa có đơn hàng nào.</p>
+              <Link href="/" className="inline-block bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-sm">
+                Bắt đầu mua sắm ngay
+              </Link>
+            </div>
+          )}
+        </div>
 
       </div>
     </div>
