@@ -7,9 +7,17 @@ use App\Http\Controllers\Api\FarmerController;
 use App\Http\Controllers\Api\ShippingZoneController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\AuthController;
 
 // Public APIs
 Route::prefix('v1')->group(function () {
+    // 0. Auth & Users
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/users', [AuthController::class, 'users']);
+    Route::put('/users/{id}/role', [AuthController::class, 'updateRole']);
+    Route::delete('/users/{id}', [AuthController::class, 'deleteUser']);
+
     // 1. Categories
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/categories/{slug}', [CategoryController::class, 'show']);
@@ -68,4 +76,11 @@ Route::get('/admin/orders', [OrderController::class, 'index']);
 Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
 Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
 Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
+
+// Direct Auth aliases
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/users', [AuthController::class, 'users']);
+Route::put('/users/{id}/role', [AuthController::class, 'updateRole']);
+Route::delete('/users/{id}', [AuthController::class, 'deleteUser']);
 

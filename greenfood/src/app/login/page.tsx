@@ -19,8 +19,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isRegister, setIsRegister] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAuth = (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -53,37 +54,51 @@ export default function LoginPage() {
       }
       
       const cleanEmail = username.includes('@') ? username : `${username}@greenfood.vn`;
-      const res = register({
-        name: fullName.trim(),
-        email: cleanEmail,
-        phone: cleanPhone,
-        password: password,
-      });
+      setIsLoading(true);
+      try {
+        const res = await register({
+          name: fullName.trim(),
+          email: cleanEmail,
+          phone: cleanPhone,
+          password: password,
+        });
 
-      if (res.success && res.user) {
-        toast.success(res.message);
-        router.push('/');
-      } else {
-        setError(res.message);
-        toast.error(res.message);
+        if (res.success && res.user) {
+          toast.success(res.message);
+          router.push('/');
+        } else {
+          setError(res.message);
+          toast.error(res.message);
+        }
+      } catch (err: any) {
+        setError('Có lỗi xảy ra trong quá trình lưu dữ liệu!');
+      } finally {
+        setIsLoading(false);
       }
       return;
     }
 
     // Login process
-    const res = authenticate(username, password);
-    if (res.success && res.user) {
-      toast.success(`Đăng nhập thành công! Chào mừng ${res.user.name}.`);
-      if (res.user.role === 'admin') {
-        router.push('/admin');
-      } else {
-        router.push('/');
+    setIsLoading(true);
+    try {
+      const res = await authenticate(username, password);
+      if (res.success && res.user) {
+        toast.success(`Đăng nhập thành công! Chào mừng ${res.user.name}.`);
+        if (res.user.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/');
+        }
+        return;
       }
-      return;
-    }
 
-    setError(res.message || 'Tên đăng nhập hoặc mật khẩu không chính xác!');
-    toast.error('Đăng nhập thất bại!');
+      setError(res.message || 'Tên đăng nhập hoặc mật khẩu không chính xác!');
+      toast.error(res.message || 'Đăng nhập thất bại!');
+    } catch (err: any) {
+      setError('Lỗi kết nối máy chủ CSDL!');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -213,10 +228,15 @@ export default function LoginPage() {
 
             <button 
               type="submit"
-              className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 px-6 rounded-xl transition-colors shadow-md mt-2 cursor-pointer"
+              disabled={isLoading}
+              className={`w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 px-6 rounded-xl transition-colors shadow-md mt-2 cursor-pointer ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {isRegister ? <Mail size={20} /> : <ShieldAlert size={20} />}
-              {isRegister ? 'Đăng ký tài khoản' : 'Đăng nhập'}
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                isRegister ? <Mail size={20} /> : <ShieldAlert size={20} />
+              )}
+              {isLoading ? 'Đang xử lý kết nối CSDL...' : (isRegister ? 'Đăng ký tài khoản' : 'Đăng nhập')}
             </button>
           </form>
 

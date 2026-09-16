@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useAuthStore, Role, RegisteredAccount } from '@/store/useAuthStore';
 
 export default function AdminUsersManagement() {
-  const { registeredAccounts, updateUserRole, toggleUserLock, deleteUserAccount, user: currentAdmin } = useAuthStore();
+  const { registeredAccounts, updateUserRole, toggleUserLock, deleteUserAccount, syncUsersFromDb, user: currentAdmin } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -18,7 +18,8 @@ export default function AdminUsersManagement() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    syncUsersFromDb();
+  }, [syncUsersFromDb]);
 
   if (!mounted) return null;
 
@@ -39,11 +40,11 @@ export default function AdminUsersManagement() {
     setIsRoleModalOpen(true);
   };
 
-  const handleSaveRole = (e: React.FormEvent) => {
+  const handleSaveRole = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
 
-    const res = updateUserRole(selectedUser.id, selectedRole);
+    const res = await updateUserRole(selectedUser.id, selectedRole);
     if (res.success) {
       toast.success(res.message);
       setIsRoleModalOpen(false);
@@ -61,13 +62,13 @@ export default function AdminUsersManagement() {
     }
   };
 
-  const handleDeleteUser = (userId: string, name: string) => {
+  const handleDeleteUser = async (userId: string, name: string) => {
     if (userId === currentAdmin?.id) {
       toast.error('Bạn không thể tự xóa tài khoản Quản trị viên đang đăng nhập!');
       return;
     }
-    if (confirm(`CẢNH BÁO: Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản: ${name}?`)) {
-      const res = deleteUserAccount(userId);
+    if (confirm(`CẢNH BÁO: Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản: ${name} khỏi cơ sở dữ liệu?`)) {
+      const res = await deleteUserAccount(userId);
       if (res.success) {
         toast.success(res.message);
       }
