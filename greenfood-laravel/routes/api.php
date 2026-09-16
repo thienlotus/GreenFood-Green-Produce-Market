@@ -17,6 +17,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/users', [AuthController::class, 'users']);
     Route::put('/users/{id}/role', [AuthController::class, 'updateRole']);
     Route::delete('/users/{id}', [AuthController::class, 'deleteUser']);
+    Route::put('/users/{id}/profile', [AuthController::class, 'updateProfile']);
+    Route::post('/users/{id}/change-password', [AuthController::class, 'changePassword']);
 
     // 1. Categories
     Route::get('/categories', [CategoryController::class, 'index']);
@@ -83,4 +85,6 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/users', [AuthController::class, 'users']);
 Route::put('/users/{id}/role', [AuthController::class, 'updateRole']);
 Route::delete('/users/{id}', [AuthController::class, 'deleteUser']);
+Route::put('/users/{id}/profile', [AuthController::class, 'updateProfile']);
+Route::post('/users/{id}/change-password', [AuthController::class, 'changePassword']);
 

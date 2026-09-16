@@ -148,6 +148,19 @@ class OrderController extends Controller
             $query->where('status', $status);
         }
 
+        if ($request->has('customer_phone') && trim($request->customer_phone) !== '') {
+            $phone = preg_replace('/\D/', '', (string) $request->customer_phone);
+            $query->where(function ($q) use ($phone, $request) {
+                $q->where('customer_phone', $request->customer_phone)
+                  ->orWhere('customer_phone', $phone)
+                  ->orWhere('customer_phone', 'like', "%{$phone}%");
+            });
+        }
+
+        if ($request->has('customer_email') && trim($request->customer_email) !== '') {
+            $query->where('customer_email', strtolower(trim($request->customer_email)));
+        }
+
         if ($request->has('search') && trim($request->search) !== '') {
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {

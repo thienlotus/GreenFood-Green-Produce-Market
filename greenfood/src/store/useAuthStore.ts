@@ -23,6 +23,72 @@ export interface RegisteredAccount extends User {
   passwordHash: string;
 }
 
+export interface SavedAddress {
+  id: string;
+  label: 'Nhà riêng' | 'Văn phòng' | 'Khác';
+  recipientName: string;
+  recipientPhone: string;
+  addressDetail: string;
+  isDefault: boolean;
+}
+
+export interface VoucherItem {
+  id: string;
+  code: string;
+  title: string;
+  discountAmount: number;
+  discountType: 'fixed' | 'freeship';
+  minOrder: number;
+  pointsCost: number;
+  redeemedAt: string;
+  expiryDate: string;
+  isUsed: boolean;
+  description: string;
+}
+
+export const AVAILABLE_VOUCHERS = [
+  {
+    id: 'vch-20k',
+    code: 'GF20K',
+    title: 'Voucher Giảm 20.000đ',
+    discountAmount: 20000,
+    discountType: 'fixed' as const,
+    pointsCost: 100,
+    minOrder: 150000,
+    description: 'Áp dụng cho mọi giỏ hàng nông sản tươi sạch từ 150.000đ.',
+  },
+  {
+    id: 'vch-50k',
+    code: 'GF50K',
+    title: 'Voucher Giảm 50.000đ',
+    discountAmount: 50000,
+    discountType: 'fixed' as const,
+    pointsCost: 250,
+    minOrder: 300000,
+    description: 'Áp dụng cho đơn hàng nông sản từ 300.000đ.',
+  },
+  {
+    id: 'vch-free',
+    code: 'GFFREESHIP',
+    title: 'Voucher Miễn Phí Vận Chuyển',
+    discountAmount: 30000,
+    discountType: 'freeship' as const,
+    pointsCost: 150,
+    minOrder: 200000,
+    description: 'Giảm tối đa 30.000đ chi phí giao hàng tận nơi.',
+  },
+  {
+    id: 'vch-100k',
+    code: 'GF100K',
+    title: 'Voucher Khủng 100.000đ',
+    discountAmount: 100000,
+    discountType: 'fixed' as const,
+    pointsCost: 500,
+    minOrder: 600000,
+    description: 'Dành riêng cho khách hàng thân thiết mua đơn từ 600.000đ.',
+  },
+];
+
 export const INITIAL_DEMO_ACCOUNTS: RegisteredAccount[] = [
   {
     id: 'usr-admin-01',
@@ -75,6 +141,8 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   registeredAccounts: RegisteredAccount[];
+  savedAddresses: SavedAddress[];
+  userVouchers: VoucherItem[];
   login: (userData: User) => void;
   logout: () => void;
   authenticate: (identifier: string, password: string) => Promise<{ success: boolean; message: string; user?: User }>;
@@ -88,6 +156,14 @@ interface AuthState {
   syncUsersFromDb: () => Promise<void>;
   resetPassword: (identifier: string, newPassword: string) => { success: boolean; message: string };
   updateProfile: (data: Partial<User>) => void;
+  updateProfileApi: (data: Partial<User>) => Promise<{ success: boolean; message: string; user?: User }>;
+  changePasswordApi: (oldPassword: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
+  // Loyalty points & vouchers
+  redeemVoucher: (voucherDef: typeof AVAILABLE_VOUCHERS[0]) => { success: boolean; message: string; voucher?: VoucherItem };
+  // Saved addresses
+  addSavedAddress: (addr: Omit<SavedAddress, 'id'>) => void;
+  removeSavedAddress: (id: string) => void;
+  setDefaultAddress: (id: string) => void;
   // Admin only role & user management functions
   updateUserRole: (userId: string, newRole: Role) => Promise<{ success: boolean; message: string }>;
   toggleUserLock: (userId: string) => { success: boolean; message: string; newStatus: string };
@@ -100,6 +176,31 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       registeredAccounts: INITIAL_DEMO_ACCOUNTS,
+      savedAddresses: [
+        {
+          id: 'addr-default-1',
+          label: 'Nhà riêng',
+          recipientName: 'Nguyễn Văn Khách',
+          recipientPhone: '0912345678',
+          addressDetail: '123 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
+          isDefault: true,
+        },
+      ],
+      userVouchers: [
+        {
+          id: 'vch-welcome-01',
+          code: 'GF-WELCOME50',
+          title: 'Voucher Thành Viên Mới - Giảm 50.000đ',
+          discountAmount: 50000,
+          discountType: 'fixed',
+          minOrder: 250000,
+          pointsCost: 0,
+          redeemedAt: '2026-09-01',
+          expiryDate: '2026-12-31',
+          isUsed: false,
+          description: 'Quà tặng chào mừng thành viên gia nhập gia đình Nông Sản Sạch GreenFood.',
+        },
+      ],
 
       login: (userData: User) => {
         set({ user: userData, isAuthenticated: true });
@@ -175,6 +276,23 @@ export const useAuthStore = create<AuthState>()(
               updated.unshift(accObj);
             }
 
+            // Đồng bộ địa chỉ nếu user có sẵn
+            if (safeUser.address) {
+              const addrs = get().savedAddresses;
+              if (addrs.length === 0) {
+                set({
+                  savedAddresses: [{
+                    id: 'addr-' + Date.now(),
+                    label: 'Nhà riêng',
+                    recipientName: safeUser.name,
+                    recipientPhone: safeUser.phone || '',
+                    addressDetail: safeUser.address,
+                    isDefault: true,
+                  }]
+                });
+              }
+            }
+
             set({
               user: safeUser,
               isAuthenticated: true,
@@ -187,7 +305,6 @@ export const useAuthStore = create<AuthState>()(
               user: safeUser,
             };
           } else if (json && json.message) {
-            // Lỗi từ backend (sai mật khẩu, tài khoản không tồn tại, v.v.)
             return {
               success: false,
               message: json.message,
@@ -283,7 +400,7 @@ export const useAuthStore = create<AuthState>()(
               name: dbUser.name,
               email: dbUser.email,
               phone: dbUser.phone,
-              role: 'customer', // Mặc định luôn là Khách Hàng
+              role: 'customer',
               tier: 'BRONZE',
               loyaltyPoints: dbUser.loyaltyPoints || 50,
               farmName: data.farmName?.trim() || '',
@@ -361,6 +478,194 @@ export const useAuthStore = create<AuthState>()(
           message: 'Đăng ký tài khoản thành công! Tài khoản của bạn có vai trò Khách Hàng.',
           user: safeUser,
         };
+      },
+
+      /**
+       * Cập nhật thông tin tài khoản và đồng bộ trực tiếp vào CSDL Backend
+       */
+      updateProfileApi: async (data: Partial<User>) => {
+        const currentUser = get().user;
+        if (!currentUser) {
+          return { success: false, message: 'Vui lòng đăng nhập để cập nhật thông tin!' };
+        }
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/users/${currentUser.id}/profile`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+              name: data.name,
+              phone: data.phone,
+              avatar: data.avatar,
+            }),
+          });
+
+          const json = await res.json().catch(() => null);
+
+          if (res.ok && json && json.success) {
+            const updatedUser: User = { ...currentUser, ...data };
+            const accounts = get().registeredAccounts.map((acc) =>
+              acc.id === currentUser.id ? { ...acc, ...data } : acc
+            );
+
+            set({ user: updatedUser, registeredAccounts: accounts });
+            return {
+              success: true,
+              message: json.message || 'Cập nhật thông tin vào CSDL thành công!',
+              user: updatedUser,
+            };
+          } else if (json && json.message) {
+            return { success: false, message: json.message };
+          }
+        } catch (e) {
+          console.warn('Backend update profile connection fallback:', e);
+        }
+
+        // Fallback local update
+        get().updateProfile(data);
+        return { success: true, message: 'Cập nhật thông tin thành công (lưu cục bộ)!' };
+      },
+
+      /**
+       * Đổi mật khẩu tài khoản và cập nhật mật khẩu Bcrypt mới vào CSDL Backend
+       */
+      changePasswordApi: async (oldPassword: string, newPassword: string) => {
+        const currentUser = get().user;
+        if (!currentUser) {
+          return { success: false, message: 'Vui lòng đăng nhập trước khi đổi mật khẩu!' };
+        }
+
+        if (!oldPassword) {
+          return { success: false, message: 'Vui lòng nhập mật khẩu hiện tại!' };
+        }
+
+        if (newPassword.length < 6) {
+          return { success: false, message: 'Mật khẩu mới phải có ít nhất 6 ký tự!' };
+        }
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/users/${currentUser.id}/change-password`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+              old_password: oldPassword,
+              new_password: newPassword,
+            }),
+          });
+
+          const json = await res.json().catch(() => null);
+
+          if (res.ok && json && json.success) {
+            return { success: true, message: json.message || 'Đổi mật khẩu tài khoản trong CSDL thành công!' };
+          } else if (json && json.message) {
+            return { success: false, message: json.message };
+          }
+        } catch (e) {
+          console.warn('Backend change password connection fallback:', e);
+        }
+
+        return { success: false, message: 'Lỗi kết nối máy chủ CSDL khi đổi mật khẩu!' };
+      },
+
+      /**
+       * Đổi điểm thưởng tích lũy lấy Voucher
+       */
+      redeemVoucher: (voucherDef) => {
+        const currentUser = get().user;
+        if (!currentUser) {
+          return { success: false, message: 'Vui lòng đăng nhập để đổi điểm thưởng!' };
+        }
+
+        const currentPoints = currentUser.loyaltyPoints || 0;
+        if (currentPoints < voucherDef.pointsCost) {
+          return {
+            success: false,
+            message: `Bạn chưa đủ điểm! Cần ${voucherDef.pointsCost} điểm (Hiện có: ${currentPoints} điểm).`,
+          };
+        }
+
+        const newPoints = currentPoints - voucherDef.pointsCost;
+        const newVoucher: VoucherItem = {
+          id: `vch-${Date.now()}`,
+          code: `${voucherDef.code}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+          title: voucherDef.title,
+          discountAmount: voucherDef.discountAmount,
+          discountType: voucherDef.discountType,
+          minOrder: voucherDef.minOrder,
+          pointsCost: voucherDef.pointsCost,
+          redeemedAt: new Date().toISOString().split('T')[0],
+          expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          isUsed: false,
+          description: voucherDef.description,
+        };
+
+        const updatedUser = { ...currentUser, loyaltyPoints: newPoints };
+        const updatedVouchers = [newVoucher, ...get().userVouchers];
+
+        set({
+          user: updatedUser,
+          userVouchers: updatedVouchers,
+        });
+
+        return {
+          success: true,
+          message: `Đổi thành công mã ${newVoucher.code}! Bạn đã được trừ ${voucherDef.pointsCost} điểm.`,
+          voucher: newVoucher,
+        };
+      },
+
+      /**
+       * Quản lý Sổ địa chỉ giao hàng
+       */
+      addSavedAddress: (addr) => {
+        const currentAddrs = get().savedAddresses;
+        const newAddr: SavedAddress = {
+          ...addr,
+          id: `addr-${Date.now()}`,
+        };
+
+        let updated = [...currentAddrs];
+        if (addr.isDefault) {
+          updated = updated.map((a) => ({ ...a, isDefault: false }));
+        }
+        updated.unshift(newAddr);
+
+        set({ savedAddresses: updated });
+
+        // Cập nhật địa chỉ mặc định vào user nếu là default
+        if (addr.isDefault && get().user) {
+          get().updateProfile({ address: addr.addressDetail });
+        }
+      },
+
+      removeSavedAddress: (id: string) => {
+        const currentAddrs = get().savedAddresses;
+        const updated = currentAddrs.filter((a) => a.id !== id);
+        set({ savedAddresses: updated });
+      },
+
+      setDefaultAddress: (id: string) => {
+        const currentAddrs = get().savedAddresses;
+        let selectedAddrDetail = '';
+        const updated = currentAddrs.map((a) => {
+          if (a.id === id) {
+            selectedAddrDetail = a.addressDetail;
+            return { ...a, isDefault: true };
+          }
+          return { ...a, isDefault: false };
+        });
+
+        set({ savedAddresses: updated });
+
+        if (selectedAddrDetail && get().user) {
+          get().updateProfile({ address: selectedAddrDetail });
+        }
       },
 
       /**
