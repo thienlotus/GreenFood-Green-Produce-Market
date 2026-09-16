@@ -329,7 +329,7 @@ export const useAuthStore = create<AuthState>()(
         });
 
         if (!found) {
-          return { success: false, message: 'Tài khoản không tồn tại trên hệ thống CSDL!' };
+          return { success: false, message: 'Tài khoản không tồn tại!' };
         }
 
         if (found.status === 'Khóa') {
@@ -514,7 +514,7 @@ export const useAuthStore = create<AuthState>()(
             set({ user: updatedUser, registeredAccounts: accounts });
             return {
               success: true,
-              message: json.message || 'Cập nhật thông tin vào CSDL thành công!',
+              message: json.message || 'Cập nhật thông tin thành công!',
               user: updatedUser,
             };
           } else if (json && json.message) {
@@ -526,11 +526,11 @@ export const useAuthStore = create<AuthState>()(
 
         // Fallback local update
         get().updateProfile(data);
-        return { success: true, message: 'Cập nhật thông tin thành công (lưu cục bộ)!' };
+        return { success: true, message: 'Cập nhật thông tin thành công!' };
       },
 
       /**
-       * Đổi mật khẩu tài khoản và cập nhật mật khẩu Bcrypt mới vào CSDL Backend
+       * Đổi mật khẩu tài khoản và cập nhật mật khẩu Bcrypt mới
        */
       changePasswordApi: async (oldPassword: string, newPassword: string) => {
         const currentUser = get().user;
@@ -562,7 +562,7 @@ export const useAuthStore = create<AuthState>()(
           const json = await res.json().catch(() => null);
 
           if (res.ok && json && json.success) {
-            return { success: true, message: json.message || 'Đổi mật khẩu tài khoản trong CSDL thành công!' };
+            return { success: true, message: json.message || 'Đổi mật khẩu tài khoản thành công!' };
           } else if (json && json.message) {
             return { success: false, message: json.message };
           }
@@ -570,7 +570,7 @@ export const useAuthStore = create<AuthState>()(
           console.warn('Backend change password connection fallback:', e);
         }
 
-        return { success: false, message: 'Lỗi kết nối máy chủ CSDL khi đổi mật khẩu!' };
+        return { success: false, message: 'Lỗi kết nối máy chủ khi đổi mật khẩu!' };
       },
 
       /**

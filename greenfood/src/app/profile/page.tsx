@@ -233,7 +233,7 @@ export default function ProfilePage() {
     const seed = Math.random().toString(36).substring(7);
     const newAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
     setAvatar(newAvatar);
-    toast.success('Đã chọn avatar mới! Hãy bấm "Lưu thay đổi" để đồng bộ CSDL.');
+    toast.success('Đã chọn avatar mới! Hãy bấm "Lưu thay đổi" để cập nhật.');
   };
 
   // Handle Save Profile
@@ -568,7 +568,7 @@ export default function ProfilePage() {
             }`}
           >
             <Lock size={16} />
-            <span>Bảo mật & CSDL</span>
+            <span>Bảo mật tài khoản</span>
           </button>
         </div>
 
@@ -639,7 +639,7 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
                   <div>
                     <h2 className="text-lg font-bold text-gray-900">Thông Tin Hồ Sơ Khách Hàng</h2>
-                    <p className="text-xs text-gray-500 mt-0.5">Dữ liệu được lưu trữ và bảo mật trực tiếp trong CSDL bảng users.</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Quản lý thông tin hồ sơ và địa chỉ giao hàng của bạn.</p>
                   </div>
 
                   <button
@@ -760,7 +760,7 @@ export default function ProfilePage() {
                         ) : (
                           <Save size={16} />
                         )}
-                        <span>{isSavingProfile ? 'Đang lưu vào CSDL...' : 'Lưu Thay Đổi CSDL'}</span>
+                        <span>{isSavingProfile ? 'Đang lưu...' : 'Lưu Thay Đổi'}</span>
                       </button>
                     </div>
                   )}
@@ -851,7 +851,7 @@ export default function ProfilePage() {
             {isLoadingOrders ? (
               <div className="py-12 text-center">
                 <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                <p className="text-xs text-gray-500">Đang đồng bộ danh sách đơn hàng từ CSDL...</p>
+                <p className="text-xs text-gray-500">Đang tải danh sách đơn hàng...</p>
               </div>
             ) : filteredOrders.length === 0 ? (
               <div className="py-16 text-center space-y-3">
@@ -1269,7 +1269,7 @@ export default function ProfilePage() {
                   <span>Đổi Mật Khẩu Bảo Mật</span>
                 </h2>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Mật khẩu được mã hóa an toàn bằng chuẩn Bcrypt và cập nhật trực tiếp vào CSDL backend Laravel.
+                  Mật khẩu được mã hóa an toàn bằng tiêu chuẩn mã hóa hiện đại.
                 </p>
               </div>
 
@@ -1345,7 +1345,7 @@ export default function ProfilePage() {
                     ) : (
                       <CheckCircle2 size={16} />
                     )}
-                    <span>{isChangingPass ? 'Đang cập nhật CSDL...' : 'Cập Nhật Mật Khẩu Mới'}</span>
+                    <span>{isChangingPass ? 'Đang cập nhật...' : 'Cập Nhật Mật Khẩu Mới'}</span>
                   </button>
                 </div>
               </form>
@@ -1365,8 +1365,8 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="p-3.5 bg-blue-50/60 rounded-xl border border-blue-100">
-                  <span className="font-bold text-blue-900 block mb-1">Kiểm soát tập trung CSDL</span>
-                  Dữ liệu tài khoản của bạn được quản lý và bảo vệ trực tiếp trên cơ sở dữ liệu SQLite/MySQL máy chủ, không lưu trữ tùy tiện tại trình duyệt.
+                  <span className="font-bold text-blue-900 block mb-1">Kiểm soát bảo mật tập trung</span>
+                  Dữ liệu tài khoản của bạn được mã hóa an toàn và bảo vệ tuyệt đối trên hệ thống máy chủ của GreenFood.
                 </div>
 
                 <div className="p-3.5 bg-amber-50/60 rounded-xl border border-amber-100">

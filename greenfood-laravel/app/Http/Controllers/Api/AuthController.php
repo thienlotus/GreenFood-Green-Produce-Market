@@ -57,7 +57,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Đăng ký tài khoản thành công! Dữ liệu đã được lưu vào cơ sở dữ liệu.',
+            'message' => 'Đăng ký tài khoản thành công!',
             'data' => [
                 'id' => $user->id,
                 'name' => $user->full_name,
@@ -109,7 +109,7 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tài khoản không tồn tại trên hệ thống CSDL!'
+                'message' => 'Tài khoản không tồn tại!'
             ], 404);
         }
 
@@ -186,7 +186,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cập nhật vai trò người dùng trong CSDL thành công!',
+            'message' => 'Cập nhật vai trò người dùng thành công!',
             'data' => [
                 'id' => $user->id,
                 'role' => strtolower($user->role),
@@ -208,7 +208,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã xóa người dùng khỏi cơ sở dữ liệu!'
+            'message' => 'Đã xóa người dùng thành công!'
         ]);
     }
 
@@ -253,7 +253,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cập nhật thông tin tài khoản trong CSDL thành công!',
+            'message' => 'Cập nhật thông tin tài khoản thành công!',
             'data' => [
                 'id' => $user->id,
                 'name' => $user->full_name,
@@ -299,7 +299,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Đổi mật khẩu tài khoản trong CSDL thành công!'
+            'message' => 'Đổi mật khẩu tài khoản thành công!'
         ]);
     }
 }

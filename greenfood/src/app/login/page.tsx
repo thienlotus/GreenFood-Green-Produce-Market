@@ -95,7 +95,7 @@ export default function LoginPage() {
       setError(res.message || 'Tên đăng nhập hoặc mật khẩu không chính xác!');
       toast.error(res.message || 'Đăng nhập thất bại!');
     } catch (err: any) {
-      setError('Lỗi kết nối máy chủ CSDL!');
+      setError('Lỗi kết nối máy chủ!');
     } finally {
       setIsLoading(false);
     }
@@ -236,7 +236,7 @@ export default function LoginPage() {
               ) : (
                 isRegister ? <Mail size={20} /> : <ShieldAlert size={20} />
               )}
-              {isLoading ? 'Đang xử lý kết nối CSDL...' : (isRegister ? 'Đăng ký tài khoản' : 'Đăng nhập')}
+              {isLoading ? 'Đang xử lý...' : (isRegister ? 'Đăng ký tài khoản' : 'Đăng nhập')}
             </button>
           </form>
 
