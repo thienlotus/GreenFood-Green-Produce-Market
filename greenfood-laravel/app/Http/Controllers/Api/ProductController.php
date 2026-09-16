@@ -9,6 +9,18 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    private function removeVietnameseAccents(string $str): string
+    {
+        $str = preg_replace("/(à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ)/iu", 'a', $str);
+        $str = preg_replace("/(è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ)/iu", 'e', $str);
+        $str = preg_replace("/(ì|í|ị|ỉ|ĩ)/iu", 'i', $str);
+        $str = preg_replace("/(ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ)/iu", 'o', $str);
+        $str = preg_replace("/(ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ)/iu", 'u', $str);
+        $str = preg_replace("/(ỳ|ý|ỵ|ỷ|ỹ)/iu", 'y', $str);
+        $str = preg_replace("/(đ)/iu", 'd', $str);
+        return mb_strtolower($str, 'UTF-8');
+    }
+
     public function index(Request $request)
     {
         $query = Product::with(['category', 'farmer.region', 'variants']);
@@ -21,19 +33,6 @@ class ProductController extends Controller
             });
         }
 
-        // Search keyword
-        if ($request->has('search') && trim($request->search) !== '') {
-            $search = trim($request->search);
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhereHas('farmer', function ($fq) use ($search) {
-                      $fq->where('farm_name', 'like', "%{$search}%")
-                         ->orWhere('address', 'like', "%{$search}%");
-                  });
-            });
-        }
-
         // Region filter
         if ($request->has('region') && $request->region !== 'all' && $request->region !== '') {
             $region = $request->region;
@@ -42,29 +41,77 @@ class ProductController extends Controller
             });
         }
 
-        // Sort
-        $sort = $request->get('sort', 'default');
-        if ($sort === 'popular') {
-            $query->orderBy('sold_count', 'desc');
-        } elseif ($sort === 'price-asc') {
-            $query->join('product_variants', 'products.id', '=', 'product_variants.product_id')
-                  ->select('products.*')
-                  ->orderBy('product_variants.price', 'asc');
-        } elseif ($sort === 'price-desc') {
-            $query->join('product_variants', 'products.id', '=', 'product_variants.product_id')
-                  ->select('products.*')
-                  ->orderBy('product_variants.price', 'desc');
-        } else {
-            $query->latest();
+        $products = $query->distinct()->get();
+
+        // Smart Hierarchical Search
+        if ($request->has('search') && trim($request->search) !== '') {
+            $cleanKey = trim($request->search);
+            $cleanKeyLower = mb_strtolower($cleanKey, 'UTF-8');
+            $cleanKeyNoAccent = $this->removeVietnameseAccents($cleanKey);
+
+            // Cấp 1: Ưu tiên tuyệt đối Tên Sản Phẩm (Name Match)
+            $nameMatches = $products->filter(function ($p) use ($cleanKeyLower, $cleanKeyNoAccent) {
+                $nameLower = mb_strtolower($p->name, 'UTF-8');
+                $nameNoAccent = $this->removeVietnameseAccents($p->name);
+                return str_contains($nameLower, $cleanKeyLower) || str_contains($nameNoAccent, $cleanKeyNoAccent);
+            });
+
+            if ($nameMatches->isNotEmpty()) {
+                $products = $nameMatches;
+            } else {
+                // Cấp 2: Nếu không có tên khớp, tìm theo Danh mục, Nhà vườn, Vùng miền
+                $secondaryMatches = $products->filter(function ($p) use ($cleanKeyLower, $cleanKeyNoAccent) {
+                    $cat = $p->category->name ?? '';
+                    $farm = $p->farmer->farm_name ?? '';
+                    $addr = ($p->farmer->region->name ?? '') . ' ' . ($p->farmer->address ?? '');
+                    $combined = $cat . ' ' . $farm . ' ' . $addr;
+
+                    $combinedLower = mb_strtolower($combined, 'UTF-8');
+                    $combinedNoAccent = $this->removeVietnameseAccents($combined);
+                    return str_contains($combinedLower, $cleanKeyLower) || str_contains($combinedNoAccent, $cleanKeyNoAccent);
+                });
+
+                if ($secondaryMatches->isNotEmpty()) {
+                    $products = $secondaryMatches;
+                } else {
+                    // Cấp 3: Tìm trong mô tả (chỉ khi từ khóa dài > 3 ký tự để tránh từ như 'cam' dính 'cam kết')
+                    if (mb_strlen($cleanKey) > 3) {
+                        $descMatches = $products->filter(function ($p) use ($cleanKeyLower, $cleanKeyNoAccent) {
+                            $descLower = mb_strtolower($p->description ?? '', 'UTF-8');
+                            $descNoAccent = $this->removeVietnameseAccents($p->description ?? '');
+                            return str_contains($descLower, $cleanKeyLower) || str_contains($descNoAccent, $cleanKeyNoAccent);
+                        });
+                        $products = $descMatches;
+                    } else {
+                        $products = collect();
+                    }
+                }
+            }
         }
 
-        $limit = $request->get('limit', 50);
-        $products = $query->distinct()->take($limit)->get();
+        // Sort on collection
+        $sort = $request->get('sort', 'default');
+        if ($sort === 'popular') {
+            $products = $products->sortByDesc('sold_count')->values();
+        } elseif ($sort === 'price-asc') {
+            $products = $products->sortBy(function ($p) {
+                return $p->variants->first()?->price ?? 0;
+            })->values();
+        } elseif ($sort === 'price-desc') {
+            $products = $products->sortByDesc(function ($p) {
+                return $p->variants->first()?->price ?? 0;
+            })->values();
+        } else {
+            $products = $products->sortByDesc('created_at')->values();
+        }
+
+        $limit = (int) $request->get('limit', 50);
+        $paged = $products->take($limit)->values();
 
         return response()->json([
             'success' => true,
-            'count' => $products->count(),
-            'data' => $products
+            'count' => $paged->count(),
+            'data' => $paged
         ]);
     }
 

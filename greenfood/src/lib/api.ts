@@ -101,6 +101,14 @@ function mapProduct(p: any): ProductItem {
   };
 }
 
+function removeVietnameseAccents(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/gi, 'd')
+    .toLowerCase();
+}
+
 export async function getProducts(params?: { category?: string; search?: string; region?: string; sort?: string; limit?: number }): Promise<ProductItem[]> {
   const queryParams = new URLSearchParams();
   if (params?.category) queryParams.set('category', params.category);
@@ -122,14 +130,39 @@ export async function getProducts(params?: { category?: string; search?: string;
     fallbackList = getMockProductsByCategory(params.category);
   }
   if (params?.search && params.search.trim()) {
-    const s = params.search.toLowerCase().trim();
-    fallbackList = fallbackList.filter(p => 
-      p.name.toLowerCase().includes(s) || 
-      p.description.toLowerCase().includes(s) ||
-      p.farmer?.name.toLowerCase().includes(s) ||
-      p.farmer?.region?.toLowerCase().includes(s) ||
-      p.categoryName?.toLowerCase().includes(s)
-    );
+    const rawKey = params.search.trim().toLowerCase();
+    const cleanKey = removeVietnameseAccents(rawKey);
+
+    // Cấp 1: Ưu tiên tuyệt đối Tên Sản Phẩm
+    const nameMatches = fallbackList.filter(p => {
+      const pName = p.name.toLowerCase();
+      const pNameClean = removeVietnameseAccents(p.name);
+      return pName.includes(rawKey) || pNameClean.includes(cleanKey);
+    });
+
+    if (nameMatches.length > 0) {
+      fallbackList = nameMatches;
+    } else {
+      // Cấp 2: Danh mục, Nông hộ, Vùng miền
+      const secondaryMatches = fallbackList.filter(p => {
+        const combined = `${p.categoryName || ''} ${p.farmer?.name || ''} ${p.farmer?.region || ''}`.toLowerCase();
+        const combinedClean = removeVietnameseAccents(combined);
+        return combined.includes(rawKey) || combinedClean.includes(cleanKey);
+      });
+
+      if (secondaryMatches.length > 0) {
+        fallbackList = secondaryMatches;
+      } else if (rawKey.length > 3) {
+        // Cấp 3: Mô tả (chỉ khi từ khóa dài > 3 ký tự)
+        fallbackList = fallbackList.filter(p => {
+          const desc = (p.description || '').toLowerCase();
+          const descClean = removeVietnameseAccents(p.description || '');
+          return desc.includes(rawKey) || descClean.includes(cleanKey);
+        });
+      } else {
+        fallbackList = [];
+      }
+    }
   }
   if (params?.region && params.region !== 'all') {
     fallbackList = fallbackList.filter(p => p.farmer?.region === params.region);
