@@ -112,15 +112,29 @@ export async function getProducts(params?: { category?: string; search?: string;
   const queryStr = queryParams.toString() ? `?${queryParams.toString()}` : '';
   const res = await fetchApi<{ success: boolean; data: any[] }>(`/products${queryStr}`);
 
-  if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+  if (res && res.success && Array.isArray(res.data)) {
     return res.data.map(mapProduct);
   }
 
   // Fallback to local mock data
+  let fallbackList = ALL_PRODUCTS;
   if (params?.category) {
-    return getMockProductsByCategory(params.category);
+    fallbackList = getMockProductsByCategory(params.category);
   }
-  return ALL_PRODUCTS;
+  if (params?.search && params.search.trim()) {
+    const s = params.search.toLowerCase().trim();
+    fallbackList = fallbackList.filter(p => 
+      p.name.toLowerCase().includes(s) || 
+      p.description.toLowerCase().includes(s) ||
+      p.farmer?.name.toLowerCase().includes(s) ||
+      p.farmer?.region?.toLowerCase().includes(s) ||
+      p.categoryName?.toLowerCase().includes(s)
+    );
+  }
+  if (params?.region && params.region !== 'all') {
+    fallbackList = fallbackList.filter(p => p.farmer?.region === params.region);
+  }
+  return fallbackList;
 }
 
 export async function getProductBySlug(slug: string): Promise<ProductItem | undefined> {

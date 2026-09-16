@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, ChevronDown, List, Map, Package, LogOut, ShieldCheck, X } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -8,17 +9,30 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
 export default function Navbar() {
+  const router = useRouter();
   const { items, setIsOpen } = useCartStore();
   const { user, isAuthenticated, logout } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
   
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = searchKeyword.trim();
+    if (!trimmed) {
+      toast.error('Vui lòng nhập từ khóa tìm kiếm!');
+      return;
+    }
+    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <header className="bg-white sticky top-0 z-50 shadow-sm relative">
@@ -58,16 +72,22 @@ export default function Navbar() {
           </Link>
 
           {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-2xl relative">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl relative">
             <input 
               type="text" 
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
               placeholder="Nhập nội dung tìm kiếm (vd: bưởi, sầu riêng, rau củ...)" 
               className="w-full pl-5 pr-12 py-3 bg-gray-100 border border-transparent rounded-full text-sm focus:outline-none focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-inner"
             />
-            <button onClick={() => toast.error('Vui lòng nhập từ khóa tìm kiếm!')} className="absolute right-1 top-1/2 -translate-y-1/2 bg-emerald-600 text-white p-2 rounded-full hover:bg-emerald-700 transition-colors cursor-pointer">
+            <button 
+              type="submit" 
+              title="Tìm kiếm"
+              className="absolute right-1 top-1/2 -translate-y-1/2 bg-emerald-600 text-white p-2 rounded-full hover:bg-emerald-700 transition-colors cursor-pointer"
+            >
               <Search size={18} />
             </button>
-          </div>
+          </form>
 
           {/* Actions */}
           <div className="flex items-center gap-4 lg:gap-5 shrink-0">
@@ -303,6 +323,24 @@ export default function Navbar() {
                 <span>Đăng nhập / Đăng ký</span>
               </Link>
             )}
+
+            {/* Mobile Search Bar */}
+            <form onSubmit={handleSearch} className="relative">
+              <input 
+                type="text" 
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="Tìm nông sản, hoa quả, nhà vườn..." 
+                className="w-full pl-4 pr-11 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-emerald-500 transition-all"
+              />
+              <button 
+                type="submit"
+                title="Tìm kiếm"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-emerald-600 text-white p-2 rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                <Search size={15} />
+              </button>
+            </form>
 
             {/* Navigation links */}
             <div className="space-y-1">
