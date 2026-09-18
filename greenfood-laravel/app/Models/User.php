@@ -24,6 +24,31 @@ class User extends Authenticatable
         'password',
     ];
 
+    protected $appends = [
+        'name',
+        'avatar',
+    ];
+
+    public function getNameAttribute()
+    {
+        return $this->attributes['full_name'] ?? null;
+    }
+
+    public function setNameAttribute($value)
+    {
+        $this->attributes['full_name'] = $value;
+    }
+
+    public function getAvatarAttribute()
+    {
+        return $this->attributes['avatar_url'] ?? null;
+    }
+
+    public function setAvatarAttribute($value)
+    {
+        $this->attributes['avatar_url'] = $value;
+    }
+
     public function farmer()
     {
         return $this->hasOne(Farmer::class);
