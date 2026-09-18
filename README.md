@@ -205,11 +205,12 @@ Truy cập giao diện người dùng tại: `http://localhost:3000`
 
 ---
 
-## Kiểm thử & Quản lý chất lượng (QA Lead: Thiều Hưng Lê)
+## Tài liệu dự án & Kiểm thử
 
+- **Báo cáo đề tài hoàn chỉnh:** [Bao_Cao_De_Tai_Website_TMDT_GreenFood.docx](Bao_Cao_De_Tai_Website_TMDT_GreenFood.docx)
+- **Sơ đồ thiết kế UML (ERD, Class, Sequence, Activity, State):** [docs/diagrams/](docs/diagrams/)
 - **Postman API Test Collection:** [GreenFood_Postman_Test_Collection.json](greenfood-laravel/GreenFood_Postman_Test_Collection.json)
-- **Tài liệu kiểm thử chi tiết:** [Test_Cases_GreenFood_Duong.xlsx](Test_Cases_GreenFood_Duong.xlsx) (100% PASS)
-- **Báo cáo Jira & Bug Lifecycle:** [BAO_CAO_THUC_HANH_LOG_VA_QUAN_LY_BUG_JIRA.docx](greenfood-laravel/BAO_CAO_THUC_HANH_LOG_VA_QUAN_LY_BUG_JIRA.docx)
+- **Tài liệu kiểm thử Test Cases:** [Test_Cases_GreenFood_Duong.xlsx](Test_Cases_GreenFood_Duong.xlsx) & [Test_Cases_GreenFood_Register.xlsx](Test_Cases_GreenFood_Register.xlsx)
 
 ---
 
