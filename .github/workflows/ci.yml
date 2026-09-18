@@ -4,12 +4,10 @@ on:
   push:
     branches:
       - main
+      - admin-service
       - auth-service
       - product-service
-      - cart-service
-      - order-service
-      - payment-service
-      - promotion-service
+      - delivery-service
       - '**'
   pull_request:
     branches:
