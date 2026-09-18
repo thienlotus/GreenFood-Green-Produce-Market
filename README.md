@@ -50,19 +50,16 @@ Dự án được xây dựng theo kiến trúc **Modular Monolith** chuẩn hó
 
 ---
 
-## Phân vùng Service & Phân công thành viên
+## Phân chia công việc & Phân công nhánh cho từng thành viên
 
-Dự án chia nhánh Git theo từng Service/Module chuyên trách tương ứng với từng thành viên đảm nhiệm:
+Khối lượng công việc được phân chia công bằng, rõ ràng theo đúng năng lực và vai trò của 4 thành viên trong nhóm, trong đó **Team Leader** đảm nhiệm khối lượng nhiều nhất (Kiến trúc, Routing, 2 Service và DevOps CI/CD):
 
-| STT | Service / Phân hệ | Git Branch | Endpoint Tiền tố | Bảng dữ liệu chính | Thành viên phụ trách | Vai trò |
-|:---:|---|---|---|---|---|---|
-| 1 | **Auth & User Service** | `auth-service` | `/api/v1/auth`, `/api/v1/users` | `users`, `sessions` | **Lê Vũ Thiên** ([@thienlotus](https://github.com/thienlotus)) | Team Leader & Architecture |
-| 2 | **Product & Category Service** | `product-service` | `/api/v1/products`, `/api/v1/categories` | `products`, `product_variants`, `categories` | **Lương Văn Quý** ([@QUY-LUONG-VAN](https://github.com/QUY-LUONG-VAN)) | Backend Developer |
-| 3 | **Order & Tracking Service** | `order-service` | `/api/v1/orders` | `orders`, `order_items` | **Thiều Hưng Lê** ([@0912lethieuhung-hub](https://github.com/0912lethieuhung-hub)) | Tester & QA / Dev |
-| 4 | **Cart & Calculation Service** | `cart-service` | `/api/v1/cart` | In-memory session / Cart rules | **Nguyễn Đại Dương** ([@OceanDDz](https://github.com/OceanDDz)) | Fullstack Developer |
-| 5 | **Payment Service** | `payment-service` | `/api/v1/payment` | `orders.payment_method`, `orders.status` | **Nguyễn Đại Dương** ([@OceanDDz](https://github.com/OceanDDz)) | Fullstack Developer |
-| 6 | **Promotion & Shipping Service** | `promotion-service` | `/api/v1/promotions`, `/api/v1/shipping-zones` | `shipping_zones` | **Lê Vũ Thiên** ([@thienlotus](https://github.com/thienlotus)) | Team Leader & Architecture |
-| 7 | **Farmer & GIS Map Service** | `farmer-service` | `/api/v1/farmers` | `farmers`, `regions` | **Lương Văn Quý** ([@QUY-LUONG-VAN](https://github.com/QUY-LUONG-VAN)) | Backend Developer |
+| STT | Thành viên | Vai trò | Phân hệ / Service phụ trách | Nhánh Git | Nhiệm vụ cụ thể |
+|:---:|---|---|---|---|---|
+| 1 | **Lê Vũ Thiên**<br>([@thienlotus](https://github.com/thienlotus)) | **Team Leader & System Architect** *(Trách nhiệm cao nhất)* | • **Auth & User Service**<br>• **Promotion Service** | [`auth-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/auth-service)<br>[`promotion-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/promotion-service)<br>[`main`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/main) | - Thiết kế kiến trúc tổng thể Modular Monolith / Microservices.<br>- Xây dựng Auth & User Service: Đăng ký, đăng nhập, phân quyền.<br>- Xây dựng Promotion Service: Voucher giảm giá, biểu phí vận chuyển (`shipping_zones`).<br>- Thiết lập GitHub Actions CI/CD (`✓ 2/2`), quản lý kho mã nguồn và điều phối Sprint. |
+| 2 | **Lương Văn Quý**<br>([@QUY-LUONG-VAN](https://github.com/QUY-LUONG-VAN)) | **Backend & Fullstack Developer** | • **Product & Category Service**<br>• **Farmer & GIS Service** | [`product-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/product-service)<br>[`farmer-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/farmer-service) | - Xây dựng Product & Category Service: Quản lý danh mục, sản phẩm, biến thể, lọc & tìm kiếm nâng cao.<br>- Xây dựng Farmer Service: Quản lý nông hộ, vùng trồng và tọa độ bản đồ số GIS truy xuất nguồn gốc.<br>- Xây dựng giao diện trang Chi tiết sản phẩm và Bản đồ nguồn gốc. |
+| 3 | **Nguyễn Đại Dương**<br>([@OceanDDz](https://github.com/OceanDDz)) | **Backend & Fullstack Developer** | • **Cart Service**<br>• **Payment Service** | [`cart-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/cart-service)<br>[`payment-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/payment-service) | - Xây dựng Cart Service: Tính toán giá giỏ hàng, xác thực tồn kho, tự động áp phí ship khu vực.<br>- Xây dựng Payment Service: Xử lý các phương thức thanh toán COD, Chuyển khoản QR, MoMo, VNPay.<br>- Phát triển giao diện Drawer Giỏ hàng & Quy trình Checkout thanh toán. |
+| 4 | **Thiều Hưng Lê**<br>([@0912lethieuhung-hub](https://github.com/0912lethieuhung-hub)) | **Developer & QA/QC Lead** | • **Order & Tracking Service**<br>• **QA / Testing & Jira** | [`order-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/order-service) | - Xây dựng Order Service: Quy trình tạo đơn, sinh mã vận đơn `GF...`, cập nhật máy trạng thái đơn hàng.<br>- Xây dựng Live Order Tracking (theo dõi tiến độ đơn hàng 4 bước) và tra cứu lịch sử mua hàng.<br>- Lead mảng Kiểm thử & QA: Xây dựng Postman Test Collection, bộ test cases Excel (100% PASS), quản lý Bug Lifecycle trên Jira Software. |
 
 ---
 
@@ -163,14 +160,14 @@ Truy cập giao diện người dùng tại: `http://localhost:3000`
 
 ## Danh mục API Endpoints chính
 
-### 1. Auth & User Service
+### 1. Auth & User Service (Phụ trách: Lê Vũ Thiên)
 - `POST /api/v1/auth/register` — Đăng ký tài khoản khách hàng mới.
 - `POST /api/v1/auth/login` — Đăng nhập hệ thống, phát hành token.
 - `GET /api/v1/users` — Lấy danh sách người dùng (Admin).
 - `GET /api/v1/users/{id}` — Xem thông tin chi tiết người dùng.
 - `PUT /api/v1/users/{id}` — Cập nhật hồ sơ tài khoản.
 
-### 2. Product & Category Service
+### 2. Product & Category Service (Phụ trách: Lương Văn Quý)
 - `GET /api/v1/categories` — Danh sách danh mục rau củ, quả ngọt, nấm tươi.
 - `GET /api/v1/categories/{slug}` — Xem chi tiết danh mục theo slug.
 - `GET /api/v1/products` — Danh sách sản phẩm (hỗ trợ search, filter vùng, sort giá/bán chạy).
@@ -179,28 +176,32 @@ Truy cập giao diện người dùng tại: `http://localhost:3000`
 - `PUT /api/v1/products/{id}` — Cập nhật thông tin/giá sản phẩm.
 - `DELETE /api/v1/products/{id}` — Xóa sản phẩm.
 
-### 3. Cart & Calculation Service
+### 3. Cart Service (Phụ trách: Nguyễn Đại Dương)
 - `POST /api/v1/cart/calculate` — Tính toán giỏ hàng, cước phí ship theo vùng và ngưỡng freeship.
 
-### 4. Order & Tracking Service
+### 4. Order & Tracking Service (Phụ trách: Thiều Hưng Lê)
 - `POST /api/v1/orders` — Tạo đơn hàng mới, sinh mã vận đơn `GF...`.
 - `GET /api/v1/orders` — Danh sách đơn hàng toàn hệ thống.
 - `GET /api/v1/orders/my-orders?phone={phone}` — Danh sách đơn của khách hàng theo số điện thoại.
 - `GET /api/v1/orders/tracking/{trackingNumber}` — Tra cứu tiến độ đơn hàng thời gian thực.
 - `PUT /api/v1/orders/{id}/status` — Cập nhật trạng thái đơn (`PENDING` -> `CONFIRMED` -> `SHIPPING` -> `DELIVERED`).
 
-### 5. Payment Service
+### 5. Payment Service (Phụ trách: Nguyễn Đại Dương)
 - `GET /api/v1/payment/methods` — Danh sách phương thức thanh toán hỗ trợ (COD, BANK_TRANSFER, MOMO, VNPAY).
 - `POST /api/v1/payment/process` — Xử lý và xác nhận giao dịch thanh toán đơn hàng.
 
-### 6. Promotion & Shipping Service
+### 6. Promotion & Shipping Service (Phụ trách: Lê Vũ Thiên)
 - `POST /api/v1/promotions/check-voucher` — Kiểm tra tính hợp lệ và giá trị chiết khấu của voucher.
 - `GET /api/v1/shipping-zones` — Danh sách biểu phí giao hàng theo khu vực.
 - `POST /api/v1/shipping-zones` — Thêm cấu hình khu vực giao hàng mới.
 
+### 7. Farmer & GIS Service (Phụ trách: Lương Văn Quý)
+- `GET /api/v1/farmers` — Danh sách nông hộ đối tác và tọa độ bản đồ GIS.
+- `GET /api/v1/farmers/{id}` — Chi tiết thông tin nông hộ, chứng nhận VietGAP.
+
 ---
 
-## Kiểm thử & Quản lý chất lượng
+## Kiểm thử & Quản lý chất lượng (QA Lead: Thiều Hưng Lê)
 
 - **Postman API Test Collection:** [GreenFood_Postman_Test_Collection.json](greenfood-laravel/GreenFood_Postman_Test_Collection.json)
 - **Tài liệu kiểm thử chi tiết:** [Test_Cases_GreenFood_Duong.xlsx](Test_Cases_GreenFood_Duong.xlsx) (100% PASS)
@@ -210,7 +211,7 @@ Truy cập giao diện người dùng tại: `http://localhost:3000`
 
 ## Đội ngũ phát triển
 
-- **Lê Vũ Thiên** — Team Leader, System Architect ([@thienlotus](https://github.com/thienlotus))
-- **Thiều Hưng Lê** — Tester / QA Engineer ([@0912lethieuhung-hub](https://github.com/0912lethieuhung-hub))
-- **Lương Văn Quý** — Backend Developer ([@QUY-LUONG-VAN](https://github.com/QUY-LUONG-VAN))
-- **Nguyễn Đại Dương** — Fullstack Developer & QA Retest ([@OceanDDz](https://github.com/OceanDDz))
+- **Lê Vũ Thiên** — Team Leader & System Architect ([@thienlotus](https://github.com/thienlotus))
+- **Lương Văn Quý** — Backend & Fullstack Developer ([@QUY-LUONG-VAN](https://github.com/QUY-LUONG-VAN))
+- **Nguyễn Đại Dương** — Backend & Fullstack Developer ([@OceanDDz](https://github.com/OceanDDz))
+- **Thiều Hưng Lê** — Developer & QA/QC Lead ([@0912lethieuhung-hub](https://github.com/0912lethieuhung-hub))
