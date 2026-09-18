@@ -1,0 +1,580 @@
+{
+    "info": {
+        "_postman_id": "c1f7a29e-4b3d-4e89-9a8b-cartpayment01",
+        "name": "Cart Payment CRUD Report",
+        "description": "Collection kiểm thử CRUD tài liệu (/api/documents) và đơn hàng (/api/orders) theo báo cáo kiểm thử API Cart Payment ngày 08/09/2026.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080",
+            "type": "string"
+        },
+        {
+            "key": "documentId",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "orderId",
+            "value": "1",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "01 Create document",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 201 Created\", function () {",
+                            "    pm.response.to.have.status(201);",
+                            "});",
+                            "",
+                            "pm.test(\"Response is valid JSON with document details\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('id');",
+                            "    pm.expect(jsonData.title).to.eql(\"Kiem thu phan mem\");",
+                            "    pm.expect(jsonData.price).to.eql(25000);",
+                            "    // Lưu documentId tự động vào biến môi trường / collection",
+                            "    pm.collectionVariables.set(\"documentId\", jsonData.id);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"title\": \"Kiem thu phan mem\",\n    \"price\": 25000,\n    \"description\": \"Tai lieu test API\",\n    \"author\": \"HUNRE\",\n    \"fileUrl\": \"/files/testing.pdf\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/documents",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "documents"
+                    ]
+                },
+                "description": "Tạo tài liệu ID 1 với giá 25000; response trả lại các trường đã lưu."
+            },
+            "response": []
+        },
+        {
+            "name": "02 List documents",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Response is JSON array containing created document\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.be.an('array');",
+                            "    pm.expect(jsonData.length).to.be.greaterThan(0);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/documents",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "documents"
+                    ]
+                },
+                "description": "Response là mảng JSON chứa tài liệu ID 1 vừa tạo."
+            },
+            "response": []
+        },
+        {
+            "name": "03 Get document",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Response matches created document details\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.id).to.eql(parseInt(pm.collectionVariables.get(\"documentId\")) || 1);",
+                            "    pm.expect(jsonData.title).to.eql(\"Kiem thu phan mem\");",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/documents/{{documentId}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "documents",
+                        "{{documentId}}"
+                    ]
+                },
+                "description": "Response trả đúng tài liệu ID 1, tên và giá trùng dữ liệu đã tạo."
+            },
+            "response": []
+        },
+        {
+            "name": "04 Update document",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Document is updated successfully\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.title).to.eql(\"Kiem thu phan mem cap nhat\");",
+                            "    pm.expect(jsonData.price).to.eql(30000);",
+                            "    pm.expect(jsonData.description).to.eql(\"Da cap nhat\");",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"title\": \"Kiem thu phan mem cap nhat\",\n    \"price\": 30000,\n    \"description\": \"Da cap nhat\",\n    \"author\": \"HUNRE\",\n    \"fileUrl\": \"/files/testing.pdf\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/documents/{{documentId}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "documents",
+                        "{{documentId}}"
+                    ]
+                },
+                "description": "Tên đổi thành Kiem thu phan mem cap nhat; giá đổi từ 25000 thành 30000."
+            },
+            "response": []
+        },
+        {
+            "name": "05 Create order",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 201 Created\", function () {",
+                            "    pm.response.to.have.status(201);",
+                            "});",
+                            "",
+                            "pm.test(\"Order created with reference to document\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('id');",
+                            "    pm.expect(jsonData.status).to.eql(\"PENDING\");",
+                            "    pm.expect(jsonData.totalAmount).to.eql(30000);",
+                            "    pm.collectionVariables.set(\"orderId\", jsonData.id);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"customerName\": \"API Test User\",\n    \"customerEmail\": \"api-test@example.com\",\n    \"documentIds\": [\n        {{documentId}}\n    ],\n    \"note\": \"Don hang kiem thu\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/orders",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "orders"
+                    ]
+                },
+                "description": "Đơn hàng ID 1 tham chiếu tài liệu ID 1; tổng tiền 30000, trạng thái PENDING."
+            },
+            "response": []
+        },
+        {
+            "name": "06 List orders",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Response is JSON array containing orders\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.be.an('array');",
+                            "    pm.expect(jsonData.length).to.be.greaterThan(0);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/orders",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "orders"
+                    ]
+                },
+                "description": "Response là mảng JSON chứa đơn hàng ID 1 và tổng tiền 30000."
+            },
+            "response": []
+        },
+        {
+            "name": "07 Get order",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Response contains order details and documentIds\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.id).to.eql(parseInt(pm.collectionVariables.get(\"orderId\")) || 1);",
+                            "    pm.expect(jsonData.documentIds).to.include(parseInt(pm.collectionVariables.get(\"documentId\")) || 1);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "orders",
+                        "{{orderId}}"
+                    ]
+                },
+                "description": "Response trả đúng đơn hàng ID 1 cùng danh sách documentIds chứa ID 1."
+            },
+            "response": []
+        },
+        {
+            "name": "08 Update order",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Order updated successfully\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.customerName).to.eql(\"API Test Updated\");",
+                            "    pm.expect(jsonData.note).to.eql(\"Da cap nhat don hang\");",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"customerName\": \"API Test Updated\",\n    \"customerEmail\": \"api-test@example.com\",\n    \"documentIds\": [\n        {{documentId}}\n    ],\n    \"note\": \"Da cap nhat don hang\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "orders",
+                        "{{orderId}}"
+                    ]
+                },
+                "description": "customerName đổi thành API Test Updated; note đổi thành Da cap nhat don hang."
+            },
+            "response": []
+        },
+        {
+            "name": "09 Protect referenced document",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 409 Conflict\", function () {",
+                            "    pm.response.to.have.status(409);",
+                            "});",
+                            "",
+                            "pm.test(\"Returns error message protecting referenced document\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.status).to.eql(409);",
+                            "    pm.expect(jsonData.message).to.eql(\"Document is referenced by an order\");",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/documents/{{documentId}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "documents",
+                        "{{documentId}}"
+                    ]
+                },
+                "description": "Response báo Document is referenced by an order; tài liệu được giữ lại."
+            },
+            "response": []
+        },
+        {
+            "name": "10 Delete order",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Order deleted successfully\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.message).to.eql(\"Order deleted\");",
+                            "    pm.expect(jsonData.id).to.eql(1);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "orders",
+                        "{{orderId}}"
+                    ]
+                },
+                "description": "Response trả id 1 và thông báo Order deleted; đơn hàng kiểm thử được xóa."
+            },
+            "response": []
+        },
+        {
+            "name": "11 Delete document",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Document deleted successfully\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.message).to.eql(\"Document deleted\");",
+                            "    pm.expect(jsonData.id).to.eql(1);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/documents/{{documentId}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "documents",
+                        "{{documentId}}"
+                    ]
+                },
+                "description": "Sau khi xóa đơn hàng, tài liệu được xóa; response báo Document deleted."
+            },
+            "response": []
+        },
+        {
+            "name": "12 Get deleted document",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 404 Not Found\", function () {",
+                            "    pm.response.to.have.status(404);",
+                            "});",
+                            "",
+                            "pm.test(\"Returns 404 error message\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.status).to.eql(404);",
+                            "    pm.expect(jsonData.message).to.eql(\"Document 1 not found\");",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/documents/{{documentId}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "documents",
+                        "{{documentId}}"
+                    ]
+                },
+                "description": "Response báo Document 1 not found, xác nhận không còn truy vấn được tài liệu đã xóa."
+            },
+            "response": []
+        },
+        {
+            "name": "13 Invalid document",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 400 Bad Request\", function () {",
+                            "    pm.response.to.have.status(400);",
+                            "});",
+                            "",
+                            "pm.test(\"Returns 400 validation error message\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.status).to.eql(400);",
+                            "    pm.expect(jsonData.message).to.eql(\"title is required\");",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"title\": \"\",\n    \"price\": -1\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/documents",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "documents"
+                    ]
+                },
+                "description": "Body có title rỗng và price âm; kiểm tra title diễn ra trước, response báo title is required."
+            },
+            "response": []
+        }
+    ]
+}
