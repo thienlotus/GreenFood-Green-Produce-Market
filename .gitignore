@@ -25,6 +25,7 @@ GreenFood_Cart_Postman_Collection.json
 
 # Scratch & Temporary Folders
 scratch/
+profile-template/
 esp32_water_level_sensor/
 __pycache__/
 *.pyc
