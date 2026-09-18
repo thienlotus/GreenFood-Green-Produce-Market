@@ -22,3 +22,22 @@ slide*
 create_pptx.py
 generate_translated_presentation.py
 GreenFood_Cart_Postman_Collection.json
+
+# Scratch & Temporary Folders
+scratch/
+esp32_water_level_sensor/
+__pycache__/
+*.pyc
+*.ps1
+.vscode/
+.idea/
+
+# Local generator scripts & intermediate reports
+greenfood-laravel/*.docx
+greenfood-laravel/*.xlsx
+greenfood-laravel/*.csv
+greenfood-laravel/*.py
+greenfood/generate_*.js
+greenfood/*.xlsx
+greenfood/scripts/generate-admin-testcases.js
+
