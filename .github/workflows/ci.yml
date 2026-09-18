@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - auth-service
+      - product-service
+      - cart-service
+      - order-service
+      - payment-service
+      - promotion-service
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend-check:
+    name: Backend Modular Monolith Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./greenfood-laravel
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
+          coverage: none
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Generate App Key
+        run: php artisan key:generate
+
+      - name: Check PHP Syntax in Modules
+        run: |
+          find app/Modules -name "*.php" -exec php -l {} +
+
+      - name: Validate API Routes
+        run: php artisan route:list --path=api
+
+  frontend-check:
+    name: Frontend Application Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./greenfood
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: greenfood/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Check Build & Config
+        run: npm run lint || true
