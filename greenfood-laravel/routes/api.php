@@ -26,6 +26,8 @@ Route::prefix('v1')->group(function () {
     // 1. User & Auth Module
     Route::post('/auth/register', [UserController::class, 'register']);
     Route::post('/auth/login', [UserController::class, 'login']);
+    Route::post('/register', [UserController::class, 'register']);
+    Route::post('/login', [UserController::class, 'login']);
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::put('/users/{id}', [UserController::class, 'update']);
@@ -76,6 +78,8 @@ Route::prefix('v1')->group(function () {
 // Direct aliases without v1 prefix for backward compatibility
 Route::post('/auth/register', [UserController::class, 'register']);
 Route::post('/auth/login', [UserController::class, 'login']);
+Route::post('/register', [UserController::class, 'register']);
+Route::post('/login', [UserController::class, 'login']);
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 Route::put('/users/{id}', [UserController::class, 'update']);

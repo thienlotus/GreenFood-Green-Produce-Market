@@ -13,6 +13,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'full_name',
+        'name',
         'phone',
         'email',
         'password',
@@ -20,9 +21,23 @@ class User extends Authenticatable
         'avatar_url',
     ];
 
+    protected $appends = [
+        'name',
+    ];
+
     protected $hidden = [
         'password',
     ];
+
+    public function getNameAttribute(): string
+    {
+        return $this->attributes['full_name'] ?? $this->attributes['name'] ?? '';
+    }
+
+    public function setNameAttribute($value): void
+    {
+        $this->attributes['full_name'] = $value;
+    }
 
     public function farmer()
     {

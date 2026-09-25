@@ -23,11 +23,12 @@ class UserService
         }
 
         $user = $this->userRepository->create([
-            'name' => $data['name'],
+            'full_name' => $data['name'] ?? $data['full_name'] ?? '',
+            'name' => $data['name'] ?? $data['full_name'] ?? '',
             'email' => $data['email'],
             'phone' => $data['phone'] ?? null,
             'password' => Hash::make($data['password']),
-            'role' => $data['role'] ?? 'customer',
+            'role' => strtoupper($data['role'] ?? 'CUSTOMER') === 'ADMIN' ? 'ADMIN' : (strtoupper($data['role'] ?? 'CUSTOMER') === 'VENDOR' ? 'VENDOR' : 'CUSTOMER'),
         ]);
 
         return [
@@ -38,14 +39,15 @@ class UserService
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->role
+                'phone' => $user->phone,
+                'role' => strtolower($user->role)
             ]
         ];
     }
 
     public function login(string $email, string $password): array
     {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->userRepository->findByEmail($email) ?: $this->userRepository->findByPhone($email);
         if (!$user || !Hash::check($password, $user->password)) {
             return [
                 'success' => false,
@@ -62,7 +64,8 @@ class UserService
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->role,
+                'phone' => $user->phone,
+                'role' => strtolower($user->role),
                 'token' => base64_encode(Str::random(40))
             ]
         ];
