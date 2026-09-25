@@ -46,11 +46,15 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
+        if (!$request->has('email') && $request->has('account')) {
+            $request->merge(['email' => $request->input('account')]);
+        }
+
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'email' => 'required|string',
             'password' => 'required|string',
         ], [
-            'email.required' => 'Vui lòng nhập email!',
+            'email.required' => 'Vui lòng nhập email hoặc tài khoản!',
             'password.required' => 'Vui lòng nhập mật khẩu!'
         ]);
 

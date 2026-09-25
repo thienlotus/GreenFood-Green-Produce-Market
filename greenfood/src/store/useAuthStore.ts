@@ -232,6 +232,7 @@ export const useAuthStore = create<AuthState>()(
             },
             body: JSON.stringify({
               account: cleanIdent,
+              email: cleanIdent,
               password: password,
             }),
           });

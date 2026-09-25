@@ -16,6 +16,9 @@ import { Toaster } from 'react-hot-toast';
 export const metadata: Metadata = {
   title: "GreenFood - Chợ Nông Sản Sạch Việt Nam",
   description: "Trái cây tươi, đặc sản vùng miền sạch từ nông hộ đến tay bạn.",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
