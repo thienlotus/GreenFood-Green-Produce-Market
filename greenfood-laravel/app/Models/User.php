@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -19,10 +21,12 @@ class User extends Authenticatable
         'password',
         'role',
         'avatar_url',
+        'address',
     ];
 
     protected $appends = [
         'name',
+        'avatar',
     ];
 
     protected $hidden = [
@@ -39,6 +43,15 @@ class User extends Authenticatable
         $this->attributes['full_name'] = $value;
     }
 
+    public function getAvatarAttribute(): ?string
+    {
+        return $this->attributes['avatar_url'] ?? null;
+    }
+
+    public function setAvatarAttribute($value): void
+    {
+        $this->attributes['avatar_url'] = $value;
+    }
     public function farmer()
     {
         return $this->hasOne(Farmer::class);
