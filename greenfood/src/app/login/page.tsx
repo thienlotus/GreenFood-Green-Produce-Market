@@ -84,7 +84,7 @@ export default function LoginPage() {
       const res = await authenticate(username, password);
       if (res.success && res.user) {
         toast.success(`Đăng nhập thành công! Chào mừng ${res.user.name}.`);
-        if (res.user.role === 'admin') {
+        if (res.user.role?.toLowerCase() === 'admin') {
           router.push('/admin');
         } else {
           router.push('/');

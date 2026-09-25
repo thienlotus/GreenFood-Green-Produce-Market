@@ -16,7 +16,8 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     if (mounted) {
-      if (!isAuthenticated || user?.role !== 'admin') {
+      const role = user?.role?.toLowerCase();
+      if (!isAuthenticated || role !== 'admin') {
         toast.error('Truy cập bị từ chối! Bạn không có quyền quản trị.');
         router.push('/login');
       }

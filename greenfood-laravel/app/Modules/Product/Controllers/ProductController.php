@@ -58,6 +58,7 @@ class ProductController extends Controller
             'farmer_id' => 'nullable|string|exists:farmers,id',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'stock' => 'nullable|integer|min:0',
             'unit' => 'nullable|string|max:50',
             'image_url' => 'nullable|string',
         ], [
@@ -91,7 +92,11 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'price' => 'nullable|numeric|min:0',
+            'stock' => 'nullable|integer|min:0',
+            'unit' => 'nullable|string|max:50',
+            'category_id' => 'nullable|integer|exists:categories,id',
             'description' => 'nullable|string',
+            'image_url' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {

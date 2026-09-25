@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Eye, CheckCircle2, XCircle, Clock, X, Save, Package, RefreshCw, MapPin, Phone, Mail, CreditCard, Printer } from 'lucide-react';
+import { Search, Eye, CheckCircle2, XCircle, Clock, X, Save, Package, RefreshCw, MapPin, Phone, Mail, CreditCard, Printer, Download } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { getAdminOrders, updateOrderStatus, AdminOrder } from '@/lib/api';
@@ -83,6 +83,34 @@ export default function AdminOrders() {
     setIsSubmitting(false);
   };
 
+  const exportToCsv = () => {
+    if (orders.length === 0) {
+      toast.error('Không có dữ liệu đơn hàng để xuất!');
+      return;
+    }
+    const headers = ['Mã đơn', 'Khách hàng', 'SĐT', 'Địa chỉ', 'Phương thức', 'Tổng tiền', 'Trạng thái', 'Ngày tạo'];
+    const rows = orders.map(o => [
+      `"${o.id}"`,
+      `"${o.customer.replace(/"/g, '""')}"`,
+      `"${o.phone}"`,
+      `"${o.address.replace(/"/g, '""')}"`,
+      `"${o.payment_method}"`,
+      `"${o.total}"`,
+      `"${o.status}"`,
+      `"${o.date}"`
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `GreenFood_DonHang_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Đã xuất danh sách đơn hàng thành công!');
+  };
+
   return (
     <>
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -91,14 +119,24 @@ export default function AdminOrders() {
             <h2 className="text-xl font-bold text-gray-800">Quản lý Đơn hàng</h2>
             <p className="text-sm text-gray-500 mt-1">Theo dõi và xử lý các đơn đặt hàng trực tiếp từ hệ thống.</p>
           </div>
-          <button 
-            onClick={fetchOrders}
-            disabled={loading}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors self-start sm:self-auto"
-          >
-            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-            Làm mới
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <button 
+              onClick={exportToCsv}
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg transition-colors font-medium"
+              title="Xuất file CSV"
+            >
+              <Download size={15} />
+              Xuất CSV
+            </button>
+            <button 
+              onClick={fetchOrders}
+              disabled={loading}
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+            >
+              <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+              Làm mới
+            </button>
+          </div>
         </div>
 
         <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between gap-4">
