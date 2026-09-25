@@ -25,9 +25,14 @@ export interface RegisteredAccount extends User {
 
 export interface SavedAddress {
   id: string;
+  userId?: string;
   label: 'Nhà riêng' | 'Văn phòng' | 'Khác';
   recipientName: string;
   recipientPhone: string;
+  province?: string;
+  district?: string;
+  ward?: string;
+  street?: string;
   addressDetail: string;
   isDefault: boolean;
 }
@@ -137,11 +142,44 @@ export const INITIAL_DEMO_ACCOUNTS: RegisteredAccount[] = [
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
 
+/**
+ * Lấy danh sách sổ địa chỉ bảo mật thuộc riêng quyền sở hữu của User (Data Isolation)
+ * Ngăn chặn tuyệt đối lỗ hổng rò rỉ dữ liệu (Data Leakage) giữa các tài khoản người dùng
+ */
+function getScopedUserAddresses(
+  userId: string,
+  addressBook: Record<string, SavedAddress[]>,
+  currentUser?: User | null
+): SavedAddress[] {
+  if (!userId) return [];
+  const existing = addressBook[userId];
+  if (Array.isArray(existing) && existing.length > 0) {
+    return existing;
+  }
+  // Nếu người dùng có địa chỉ trong hồ sơ cá nhân nhưng sổ địa chỉ chưa có mục nào,
+  // tạo địa chỉ ban đầu của chính người dùng đó
+  if (currentUser && currentUser.address) {
+    const userDefaultAddr: SavedAddress = {
+      id: `addr-${Date.now()}`,
+      userId: currentUser.id,
+      label: 'Nhà riêng',
+      recipientName: currentUser.name,
+      recipientPhone: currentUser.phone || '',
+      addressDetail: currentUser.address,
+      isDefault: true,
+    };
+    addressBook[userId] = [userDefaultAddr];
+    return [userDefaultAddr];
+  }
+  return [];
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   registeredAccounts: RegisteredAccount[];
   savedAddresses: SavedAddress[];
+  userAddressBook: Record<string, SavedAddress[]>;
   userVouchers: VoucherItem[];
   login: (userData: User) => void;
   logout: () => void;
@@ -176,16 +214,39 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       registeredAccounts: INITIAL_DEMO_ACCOUNTS,
-      savedAddresses: [
-        {
-          id: 'addr-default-1',
-          label: 'Nhà riêng',
-          recipientName: 'Nguyễn Văn Khách',
-          recipientPhone: '0912345678',
-          addressDetail: '123 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
-          isDefault: true,
-        },
-      ],
+      savedAddresses: [],
+      userAddressBook: {
+        'usr-cust-02': [
+          {
+            id: 'addr-default-khach',
+            userId: 'usr-cust-02',
+            label: 'Nhà riêng',
+            recipientName: 'Nguyễn Văn Khách',
+            recipientPhone: '0912345678',
+            province: 'TP. Hồ Chí Minh',
+            district: 'Quận 1',
+            ward: 'Phường Bến Nghé',
+            street: '123 Đường Nguyễn Huệ',
+            addressDetail: '123 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
+            isDefault: true,
+          },
+        ],
+        'usr-admin-01': [
+          {
+            id: 'addr-default-admin',
+            userId: 'usr-admin-01',
+            label: 'Văn phòng',
+            recipientName: 'Trần Quản Trị',
+            recipientPhone: '0901234567',
+            province: 'TP. Hồ Chí Minh',
+            district: 'Quận 1',
+            ward: 'Phường Bến Nghé',
+            street: 'Văn phòng GreenFood',
+            addressDetail: 'Văn phòng GreenFood, Quận 1, TP. Hồ Chí Minh',
+            isDefault: true,
+          },
+        ],
+      },
       userVouchers: [
         {
           id: 'vch-welcome-01',
@@ -203,11 +264,23 @@ export const useAuthStore = create<AuthState>()(
       ],
 
       login: (userData: User) => {
-        set({ user: userData, isAuthenticated: true });
+        const book = { ...(get().userAddressBook || {}) };
+        const userAddrs = getScopedUserAddresses(userData.id, book, userData);
+        book[userData.id] = userAddrs;
+        set({
+          user: userData,
+          isAuthenticated: true,
+          savedAddresses: userAddrs,
+          userAddressBook: book,
+        });
       },
 
       logout: () => {
-        set({ user: null, isAuthenticated: false });
+        set({
+          user: null,
+          isAuthenticated: false,
+          savedAddresses: [],
+        });
       },
 
       /**
@@ -277,27 +350,17 @@ export const useAuthStore = create<AuthState>()(
               updated.unshift(accObj);
             }
 
-            // Đồng bộ địa chỉ nếu user có sẵn
-            if (safeUser.address) {
-              const addrs = get().savedAddresses;
-              if (addrs.length === 0) {
-                set({
-                  savedAddresses: [{
-                    id: 'addr-' + Date.now(),
-                    label: 'Nhà riêng',
-                    recipientName: safeUser.name,
-                    recipientPhone: safeUser.phone || '',
-                    addressDetail: safeUser.address,
-                    isDefault: true,
-                  }]
-                });
-              }
-            }
+            // Đồng bộ sổ địa chỉ thuộc riêng quyền sở hữu của người dùng (Data Isolation)
+            const book = { ...(get().userAddressBook || {}) };
+            const userAddrs = getScopedUserAddresses(safeUser.id, book, safeUser);
+            book[safeUser.id] = userAddrs;
 
             set({
               user: safeUser,
               isAuthenticated: true,
               registeredAccounts: updated,
+              savedAddresses: userAddrs,
+              userAddressBook: book,
             });
 
             return {
@@ -344,7 +407,16 @@ export const useAuthStore = create<AuthState>()(
         }
 
         const { passwordHash: _, ...safeUser } = found;
-        set({ user: safeUser, isAuthenticated: true });
+        const book = { ...(get().userAddressBook || {}) };
+        const userAddrs = getScopedUserAddresses(safeUser.id, book, safeUser);
+        book[safeUser.id] = userAddrs;
+
+        set({
+          user: safeUser,
+          isAuthenticated: true,
+          savedAddresses: userAddrs,
+          userAddressBook: book,
+        });
         return { success: true, message: 'Đăng nhập thành công!', user: safeUser };
       },
 
@@ -501,6 +573,7 @@ export const useAuthStore = create<AuthState>()(
               name: data.name,
               phone: data.phone,
               avatar: data.avatar,
+              address: data.address,
             }),
           });
 
@@ -622,13 +695,19 @@ export const useAuthStore = create<AuthState>()(
       },
 
       /**
-       * Quản lý Sổ địa chỉ giao hàng
+       * Quản lý Sổ địa chỉ giao hàng - Phân vùng bảo mật theo từng người dùng (Data Isolation)
        */
       addSavedAddress: (addr) => {
-        const currentAddrs = get().savedAddresses;
+        const currentUser = get().user;
+        if (!currentUser) return;
+
+        const book = { ...(get().userAddressBook || {}) };
+        const currentAddrs = book[currentUser.id] || [];
+
         const newAddr: SavedAddress = {
           ...addr,
           id: `addr-${Date.now()}`,
+          userId: currentUser.id,
         };
 
         let updated = [...currentAddrs];
@@ -637,22 +716,41 @@ export const useAuthStore = create<AuthState>()(
         }
         updated.unshift(newAddr);
 
-        set({ savedAddresses: updated });
+        book[currentUser.id] = updated;
+
+        set({
+          savedAddresses: updated,
+          userAddressBook: book,
+        });
 
         // Cập nhật địa chỉ mặc định vào user nếu là default
-        if (addr.isDefault && get().user) {
-          get().updateProfile({ address: addr.addressDetail });
+        if (addr.isDefault) {
+          get().updateProfileApi({ address: addr.addressDetail });
         }
       },
 
       removeSavedAddress: (id: string) => {
-        const currentAddrs = get().savedAddresses;
+        const currentUser = get().user;
+        if (!currentUser) return;
+
+        const book = { ...(get().userAddressBook || {}) };
+        const currentAddrs = book[currentUser.id] || [];
         const updated = currentAddrs.filter((a) => a.id !== id);
-        set({ savedAddresses: updated });
+
+        book[currentUser.id] = updated;
+
+        set({
+          savedAddresses: updated,
+          userAddressBook: book,
+        });
       },
 
       setDefaultAddress: (id: string) => {
-        const currentAddrs = get().savedAddresses;
+        const currentUser = get().user;
+        if (!currentUser) return;
+
+        const book = { ...(get().userAddressBook || {}) };
+        const currentAddrs = book[currentUser.id] || [];
         let selectedAddrDetail = '';
         const updated = currentAddrs.map((a) => {
           if (a.id === id) {
@@ -662,10 +760,15 @@ export const useAuthStore = create<AuthState>()(
           return { ...a, isDefault: false };
         });
 
-        set({ savedAddresses: updated });
+        book[currentUser.id] = updated;
 
-        if (selectedAddrDetail && get().user) {
-          get().updateProfile({ address: selectedAddrDetail });
+        set({
+          savedAddresses: updated,
+          userAddressBook: book,
+        });
+
+        if (selectedAddrDetail) {
+          get().updateProfileApi({ address: selectedAddrDetail });
         }
       },
 

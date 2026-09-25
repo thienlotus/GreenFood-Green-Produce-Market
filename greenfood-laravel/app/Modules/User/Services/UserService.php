@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\User\Services;
 
 use App\Modules\User\Repositories\UserRepository;
@@ -44,6 +46,7 @@ class UserService
             'phone' => $phone,
             'password' => Hash::make($data['password']),
             'role' => $role,
+            'address' => $data['address'] ?? null,
         ]);
 
         return [
@@ -56,6 +59,7 @@ class UserService
                 'full_name' => $user->full_name,
                 'email' => $user->email,
                 'phone' => $user->phone,
+                'address' => $user->address ?? '',
                 'role' => strtolower($user->role),
             ]
         ];
@@ -94,6 +98,7 @@ class UserService
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'avatar' => $user->avatar_url,
+                'address' => $user->address ?? '',
                 'role' => strtolower($user->role),
                 'token' => base64_encode(Str::random(40))
             ]
@@ -120,6 +125,7 @@ class UserService
         if (!empty($data['avatar_url'])) $updateData['avatar_url'] = $data['avatar_url'];
         if (!empty($data['role'])) $updateData['role'] = strtoupper($data['role']);
         if (!empty($data['password'])) $updateData['password'] = Hash::make($data['password']);
+        if (isset($data['address'])) $updateData['address'] = $data['address'];
 
         $updated = $this->userRepository->update($user, $updateData);
 
@@ -129,6 +135,7 @@ class UserService
             'full_name' => $updated->full_name,
             'email' => $updated->email,
             'phone' => $updated->phone,
+            'address' => $updated->address ?? '',
             'role' => strtolower($updated->role)
         ];
     }
