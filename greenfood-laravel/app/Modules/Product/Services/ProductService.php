@@ -46,11 +46,11 @@ class ProductService
 
         $variant = $this->productRepository->createVariant([
             'product_id' => $product->id,
-            'unit' => $data['unit'] ?? 'Hộp / Kg',
+            'unit' => $data['unit'] ?? '1kg',
             'price' => $data['price'],
-            'original_price' => $data['original_price'] ?? $data['price'],
-            'stock' => $data['stock'] ?? 100,
-            'is_default' => true
+            'compare_at_price' => $data['original_price'] ?? null,
+            'stock_quantity' => $data['stock'] ?? 100,
+            'sku' => 'SKU-' . strtoupper(Str::random(6))
         ]);
 
         return [
@@ -59,6 +59,7 @@ class ProductService
             'slug' => $product->slug,
             'category_id' => $product->category_id,
             'price' => (float)$variant->price,
+            'stock' => (int)$variant->stock_quantity,
             'unit' => $variant->unit,
             'description' => $product->description,
             'image_url' => $product->image_url
@@ -79,24 +80,38 @@ class ProductService
         if (array_key_exists('description', $data)) {
             $updateData['description'] = $data['description'];
         }
+        if (array_key_exists('image_url', $data)) {
+            $updateData['image_url'] = $data['image_url'];
+        }
+        if (array_key_exists('category_id', $data)) {
+            $updateData['category_id'] = $data['category_id'];
+        }
 
         if (!empty($updateData)) {
             $this->productRepository->update($product, $updateData);
         }
 
-        if (array_key_exists('price', $data)) {
-            $defaultVariant = $product->variants()->first();
-            if ($defaultVariant) {
+        $defaultVariant = $product->variants()->first();
+        if ($defaultVariant) {
+            if (array_key_exists('price', $data)) {
                 $defaultVariant->price = $data['price'];
-                $defaultVariant->save();
             }
+            if (array_key_exists('stock', $data)) {
+                $defaultVariant->stock_quantity = $data['stock'];
+            }
+            if (array_key_exists('unit', $data)) {
+                $defaultVariant->unit = $data['unit'];
+            }
+            $defaultVariant->save();
         }
 
         return [
             'id' => $product->id,
             'name' => $product->name,
             'description' => $product->description,
-            'price' => (float)($product->variants()->first()?->price ?? 0)
+            'price' => (float)($defaultVariant?->price ?? 0),
+            'stock' => (int)($defaultVariant?->stock_quantity ?? 0),
+            'unit' => $defaultVariant?->unit ?? '1kg'
         ];
     }
 

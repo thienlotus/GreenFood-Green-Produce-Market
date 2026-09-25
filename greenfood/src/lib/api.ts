@@ -8,6 +8,8 @@ import {
   getCategoryBySlug as getMockCategoryBySlug
 } from '@/data/products';
 
+export type { ProductItem, CategoryInfo };
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
 
 // Generic Fetch Wrapper
@@ -359,8 +361,73 @@ export interface DashboardStats {
   total_products: number;
   total_farmers: number;
   total_users: number;
+  order_status?: {
+    pending: number;
+    confirmed: number;
+    shipping: number;
+    delivered: number;
+    cancelled: number;
+  };
+  daily_revenue?: {
+    name: string;
+    date: string;
+    total: number;
+  }[];
+  top_products?: {
+    name: string;
+    sales: number;
+    revenue: string;
+  }[];
+  low_stock_alerts?: {
+    id: string;
+    product_name: string;
+    unit: string;
+    stock: number;
+    price: number;
+  }[];
   recent_orders: any[];
 }
+
+export async function createProduct(payload: {
+  name: string;
+  category_id: number;
+  farmer_id?: string;
+  price: number;
+  stock?: number;
+  unit?: string;
+  description?: string;
+  image_url?: string;
+}): Promise<{ success: boolean; message: string; data?: any }> {
+  const res = await fetchApi<{ success: boolean; message: string; data?: any }>('/products', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return { success: res?.success || false, message: res?.message || 'Tạo sản phẩm thất bại', data: res?.data };
+}
+
+export async function updateProduct(id: string | number, payload: Partial<{
+  name: string;
+  price: number;
+  stock: number;
+  category_id: number;
+  description: string;
+  unit: string;
+  image_url: string;
+}>): Promise<{ success: boolean; message: string; data?: any }> {
+  const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/products/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+  return { success: res?.success || false, message: res?.message || 'Cập nhật thất bại', data: res?.data };
+}
+
+export async function deleteProduct(id: string | number): Promise<{ success: boolean; message: string }> {
+  const res = await fetchApi<{ success: boolean; message: string }>(`/products/${id}`, {
+    method: 'DELETE'
+  });
+  return { success: res?.success || false, message: res?.message || 'Xóa sản phẩm thất bại' };
+}
+
 
 export async function createOrder(payload: {
   customerName: string;

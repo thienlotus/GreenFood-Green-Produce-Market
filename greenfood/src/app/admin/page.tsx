@@ -42,22 +42,34 @@ export default function AdminDashboard() {
     { name: 'Sản Phẩm', value: totalProd, change: '+100%', icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-100' },
   ];
 
-  const revenueData = [
-    { name: 'T2', total: 450000 },
-    { name: 'T3', total: 520000 },
-    { name: 'T4', total: 480000 },
-    { name: 'T5', total: 610000 },
-    { name: 'T6', total: 590000 },
-    { name: 'T7', total: 850000 },
-    { name: 'CN', total: 720000 },
-  ];
+  const revenueData = (statsData?.daily_revenue && statsData.daily_revenue.length > 0)
+    ? statsData.daily_revenue
+    : [
+        { name: 'T2', total: 450000 },
+        { name: 'T3', total: 520000 },
+        { name: 'T4', total: 480000 },
+        { name: 'T5', total: 610000 },
+        { name: 'T6', total: 590000 },
+        { name: 'T7', total: 850000 },
+        { name: 'CN', total: 720000 },
+      ];
 
-  const topProducts = [
-    { name: 'Sầu riêng Ri6 Hạt Lép', sales: 124, revenue: '18.500.000đ' },
-    { name: 'Bưởi Da Xanh Ruột Hồng', sales: 98, revenue: '5.400.000đ' },
-    { name: 'Dâu Tây Đà Lạt Cấp Đông', sales: 85, revenue: '8.500.000đ' },
-    { name: 'Cam Sành Mọng Nước', sales: 62, revenue: '3.200.000đ' },
-  ];
+  const topProducts = (statsData?.top_products && statsData.top_products.length > 0)
+    ? statsData.top_products
+    : [
+        { name: 'Sầu riêng Ri6 Hạt Lép', sales: 124, revenue: '18.500.000đ' },
+        { name: 'Bưởi Da Xanh Ruột Hồng', sales: 98, revenue: '5.400.000đ' },
+        { name: 'Dâu Tây Đà Lạt Cấp Đông', sales: 85, revenue: '8.500.000đ' },
+        { name: 'Cam Sành Mọng Nước', sales: 62, revenue: '3.200.000đ' },
+      ];
+
+  const orderStatusCounts = statsData?.order_status || {
+    pending: 0,
+    confirmed: 0,
+    shipping: 0,
+    delivered: 0,
+    cancelled: 0
+  };
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -113,6 +125,40 @@ export default function AdminDashboard() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Tiến độ xử lý đơn hàng toàn hệ thống */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider">
+            Tiến độ xử lý đơn hàng toàn hệ thống
+          </h3>
+          <Link href="/admin/orders" className="text-xs font-semibold text-emerald-600 hover:text-emerald-700">
+            Quản lý đơn hàng &rarr;
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div className="bg-amber-50 border border-amber-200/60 rounded-lg p-3 text-center">
+            <span className="text-xs font-medium text-amber-700">Chờ duyệt</span>
+            <p className="text-xl font-bold text-amber-900 mt-0.5">{orderStatusCounts.pending}</p>
+          </div>
+          <div className="bg-blue-50 border border-blue-200/60 rounded-lg p-3 text-center">
+            <span className="text-xs font-medium text-blue-700">Đã xác nhận</span>
+            <p className="text-xl font-bold text-blue-900 mt-0.5">{orderStatusCounts.confirmed}</p>
+          </div>
+          <div className="bg-indigo-50 border border-indigo-200/60 rounded-lg p-3 text-center">
+            <span className="text-xs font-medium text-indigo-700">Đang giao</span>
+            <p className="text-xl font-bold text-indigo-900 mt-0.5">{orderStatusCounts.shipping}</p>
+          </div>
+          <div className="bg-emerald-50 border border-emerald-200/60 rounded-lg p-3 text-center">
+            <span className="text-xs font-medium text-emerald-700">Đã giao</span>
+            <p className="text-xl font-bold text-emerald-900 mt-0.5">{orderStatusCounts.delivered}</p>
+          </div>
+          <div className="bg-rose-50 border border-rose-200/60 rounded-lg p-3 text-center">
+            <span className="text-xs font-medium text-rose-700">Đã hủy</span>
+            <p className="text-xl font-bold text-rose-900 mt-0.5">{orderStatusCounts.cancelled}</p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
