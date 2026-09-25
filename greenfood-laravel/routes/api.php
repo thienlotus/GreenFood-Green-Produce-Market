@@ -31,6 +31,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::put('/users/{id}/profile', [UserController::class, 'updateProfile']);
+    Route::post('/users/{id}/change-password', [UserController::class, 'changePassword']);
+    Route::put('/users/{id}/change-password', [UserController::class, 'changePassword']);
+    Route::put('/users/{id}/role', [UserController::class, 'updateRole']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
     // 2. Product & Category Module
     Route::get('/categories', [CategoryController::class, 'index']);
@@ -83,6 +88,11 @@ Route::post('/login', [UserController::class, 'login']);
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 Route::put('/users/{id}', [UserController::class, 'update']);
+Route::put('/users/{id}/profile', [UserController::class, 'updateProfile']);
+Route::post('/users/{id}/change-password', [UserController::class, 'changePassword']);
+Route::put('/users/{id}/change-password', [UserController::class, 'changePassword']);
+Route::put('/users/{id}/role', [UserController::class, 'updateRole']);
+Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [CategoryController::class, 'show']);

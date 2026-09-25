@@ -46,28 +46,26 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-        if (!$request->has('email') && $request->has('account')) {
-            $request->merge(['email' => $request->input('account')]);
-        }
+        $account = $request->input('account') ?? $request->input('email') ?? $request->input('username');
+        $password = $request->input('password');
 
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|string',
-            'password' => 'required|string',
-        ], [
-            'email.required' => 'Vui lòng nhập email hoặc tài khoản!',
-            'password.required' => 'Vui lòng nhập mật khẩu!'
-        ]);
-
-        if ($validator->fails()) {
+        if (empty($account)) {
             return response()->json([
                 'success' => false,
                 'status' => 400,
-                'message' => $validator->errors()->first(),
-                'errors' => $validator->errors()
+                'message' => 'Vui lòng nhập email hoặc số điện thoại đăng nhập!'
             ], 400);
         }
 
-        $result = $this->userService->login($request->email, $request->password);
+        if (empty($password)) {
+            return response()->json([
+                'success' => false,
+                'status' => 400,
+                'message' => 'Vui lòng nhập mật khẩu!'
+            ], 400);
+        }
+
+        $result = $this->userService->login($account, $password);
 
         return response()->json($result, $result['status'] ?? 200);
     }
@@ -112,6 +110,82 @@ class UserController extends Controller
             'success' => true,
             'message' => 'Cập nhật thông tin thành công!',
             'data' => $updated
+        ]);
+    }
+
+    public function updateProfile(Request $request, $id)
+    {
+        $updated = $this->userService->updateUser($id, $request->all());
+        if (!$updated) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Người dùng không tồn tại'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật thông tin thành công!',
+            'data' => $updated
+        ]);
+    }
+
+    public function changePassword(Request $request, $id)
+    {
+        $oldPassword = $request->input('old_password') ?? $request->input('oldPassword');
+        $newPassword = $request->input('new_password') ?? $request->input('newPassword');
+
+        if (empty($oldPassword) || empty($newPassword)) {
+            return response()->json([
+                'success' => false,
+                'status' => 400,
+                'message' => 'Vui lòng cung cấp đầy đủ mật khẩu cũ và mới!'
+            ], 400);
+        }
+
+        $res = $this->userService->changePassword($id, $oldPassword, $newPassword);
+        return response()->json($res, $res['status'] ?? 200);
+    }
+
+    public function updateRole(Request $request, $id)
+    {
+        $role = $request->input('role');
+        if (empty($role)) {
+            return response()->json([
+                'success' => false,
+                'status' => 400,
+                'message' => 'Vui lòng chỉ định vai trò mới!'
+            ], 400);
+        }
+
+        $updated = $this->userService->updateUser($id, ['role' => $role]);
+        if (!$updated) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Người dùng không tồn tại'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật quyền tài khoản thành công!',
+            'data' => $updated
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $deleted = $this->userService->deleteUser($id);
+        if (!$deleted) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Người dùng không tồn tại hoặc không thể xóa'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xóa tài khoản người dùng thành công!'
         ]);
     }
 }
