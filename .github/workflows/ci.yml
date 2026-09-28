@@ -21,8 +21,11 @@ permissions:
   contents: read
 
 jobs:
-  backend-check:
-    name: Backend Modular Monolith Check
+  # ──────────────────────────────────────────────
+  # Job 1/5: Backend - Kiểm tra cú pháp PHP & Routes
+  # ──────────────────────────────────────────────
+  backend-syntax:
+    name: "🔍 Backend Syntax & Routes"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -49,13 +52,113 @@ jobs:
 
       - name: Check PHP Syntax in Modules
         run: |
+          echo "🔍 Kiểm tra cú pháp PHP trong app/Modules..."
           find app/Modules -name "*.php" -exec php -l {} +
 
-      - name: Validate API Routes
-        run: php artisan route:list --path=api
+      - name: Check PHP Syntax in Models
+        run: |
+          echo "🔍 Kiểm tra cú pháp PHP trong app/Models..."
+          find app/Models -name "*.php" -exec php -l {} +
 
-  frontend-check:
-    name: Frontend Application Check
+      - name: Validate API Routes
+        run: |
+          echo "🔍 Kiểm tra tất cả API routes có hợp lệ..."
+          php artisan route:list --path=api
+
+      - name: Validate Config Cache
+        run: |
+          echo "🔍 Kiểm tra config có cache được không (phát hiện lỗi cú pháp config)..."
+          php artisan config:cache
+
+  # ──────────────────────────────────────────────
+  # Job 2/5: Backend - Database Migration & Seeding
+  # ──────────────────────────────────────────────
+  backend-database:
+    name: "🗄️ Database Migration Check"
+    runs-on: ubuntu-latest
+    needs: backend-syntax
+    defaults:
+      run:
+        working-directory: ./greenfood-laravel
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
+          coverage: none
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Generate App Key
+        run: php artisan key:generate
+
+      - name: Run Migrations (SQLite in-memory)
+        run: |
+          echo "🗄️ Chạy tất cả migrations trên SQLite in-memory..."
+          php artisan migrate --force --database=sqlite
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Verify Migration Rollback
+        run: |
+          echo "🔄 Kiểm tra rollback migrations..."
+          php artisan migrate:rollback --force --database=sqlite
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+  # ──────────────────────────────────────────────
+  # Job 3/5: Backend - PHPUnit Tests
+  # ──────────────────────────────────────────────
+  backend-tests:
+    name: "🧪 Backend Tests (PHPUnit)"
+    runs-on: ubuntu-latest
+    needs: backend-database
+    defaults:
+      run:
+        working-directory: ./greenfood-laravel
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
+          coverage: none
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Generate App Key
+        run: php artisan key:generate
+
+      - name: Run PHPUnit Tests
+        run: |
+          echo "🧪 Chạy PHPUnit test suite..."
+          php artisan test --parallel
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+  # ──────────────────────────────────────────────
+  # Job 4/5: Frontend - TypeScript & Lint Check
+  # ──────────────────────────────────────────────
+  frontend-lint:
+    name: "📝 Frontend Lint & TypeScript"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -74,5 +177,41 @@ jobs:
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Check Build & Config
-        run: npm run lint || true
+      - name: Run ESLint
+        run: |
+          echo "📝 Kiểm tra ESLint (code style & best practices)..."
+          npm run lint
+
+      - name: TypeScript Type Check
+        run: |
+          echo "🔎 Kiểm tra TypeScript types (không cho lỗi type)..."
+          npx tsc --noEmit
+
+  # ──────────────────────────────────────────────
+  # Job 5/5: Frontend - Next.js Build
+  # ──────────────────────────────────────────────
+  frontend-build:
+    name: "🏗️ Frontend Build Check"
+    runs-on: ubuntu-latest
+    needs: frontend-lint
+    defaults:
+      run:
+        working-directory: ./greenfood
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: greenfood/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build Next.js Application
+        run: |
+          echo "🏗️ Build production Next.js (phát hiện lỗi runtime imports, missing modules)..."
+          npm run build

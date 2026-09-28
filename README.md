@@ -62,6 +62,28 @@ Dự án bao gồm **4 thành viên** phụ trách **4 nhánh chức năng chuy�
 
 ---
 
+## 📋 Sprint 2 — Tính Năng Mới (28/09/2026 → 05/10/2026)
+
+### Tổng quan phân công Sprint 2
+
+| STT | Tính năng mới | Thành viên phụ trách | Nhánh Git | Mức độ |
+|:---:|---|---|---|:---:|
+| 1 | **Xác thực Email OTP khi Đăng ký** — Gửi mã xác thực 6 số qua Gmail, xác minh trước khi kích hoạt tài khoản | **Lê Thiều Hưng** | `auth-service` | 🔴 Cao |
+| 2 | **Tích hợp Giao Hàng Nhanh (GHN API)** — Tính cước phí ship real-time, tạo đơn vận chuyển, theo dõi đơn trực tiếp từ [dev.ghn.vn](https://dev.ghn.vn) | **Nguyễn Đại Dương** | `delivery-service` | 🔴 Cao |
+| 3 | **Tích hợp Thanh Toán MoMo API** — Liên kết cổng thanh toán Ví MoMo, xử lý callback IPN, xác thực chữ ký HMAC-SHA256 | **Lương Văn Quý** | `product-service` | 🟡 Trung bình |
+| 4 | **Live Chat + Quản trị Admin nâng cao** — Hệ thống chat hỗ trợ khách hàng real-time; Bộ lọc trạng thái đơn hàng, chuyển/hủy đơn có logic nghiệp vụ (đang giao → không cho hủy), dashboard chỉ số | **Lê Vũ Thiên** *(Leader)* | `admin-service` / `main` | 🔴 Rất cao |
+
+### Lý do phân công
+
+- **Hưng → Email OTP:** Hưng đã xây dựng toàn bộ module Auth (Đăng ký, Đăng nhập, Profile), OTP là mở rộng tự nhiên của luồng đăng ký hiện tại.
+- **Dương → GHN API:** Dương đang phụ trách Delivery & Logistics (cước phí ship, GIS, live tracking), GHN là nâng cấp trực tiếp trên nền tảng logistics sẵn có.
+- **Quý → MoMo API:** Quý đang quản lý luồng Giỏ hàng → Checkout → Voucher, MoMo là bước tiếp nối tự nhiên trong luồng thanh toán.
+- **Thiên → Live Chat + Admin:** Khối lượng công việc lớn nhất (2 tính năng lớn), phù hợp vai trò Team Leader & System Architect.
+
+> 📄 **Chi tiết đầy đủ yêu cầu từng tính năng:** Xem file [`docs/Sprint2_Task_Allocation.md`](docs/Sprint2_Task_Allocation.md)
+
+---
+
 ## Cấu trúc nhánh Git chuẩn (1 Nhánh chính + 4 Nhánh theo thành viên)
 
 ```
@@ -84,7 +106,7 @@ Dự án bao gồm **4 thành viên** phụ trách **4 nhánh chức năng chuy�
 | **Kiến trúc tầng dữ liệu** | Eloquent ORM + Repository Pattern | Chuẩn PSR-4 |
 | **Quản lý quy trình & Lỗi** | Jira Software Cloud (Agile Scrum, Bug Lifecycle) | Cloud (`GREEN`) |
 | **Kiểm thử API** | Postman Test Collection + PowerShell Test Scripts | v2.1 |
-| **CI/CD** | GitHub Actions (Build, Lint, Route & Config Validation) | `ci.yml` (`✓ 2/2`) |
+| **CI/CD** | GitHub Actions (Syntax, Migration, PHPUnit, ESLint + TypeScript, Build) | `ci.yml` (`✓ 5/5`) |
 
 ---
 
