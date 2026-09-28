@@ -106,7 +106,7 @@ Dự án bao gồm **4 thành viên** phụ trách **4 nhánh chức năng chuy�
 | **Kiến trúc tầng dữ liệu** | Eloquent ORM + Repository Pattern | Chuẩn PSR-4 |
 | **Quản lý quy trình & Lỗi** | Jira Software Cloud (Agile Scrum, Bug Lifecycle) | Cloud (`GREEN`) |
 | **Kiểm thử API** | Postman Test Collection + PowerShell Test Scripts | v2.1 |
-| **CI/CD** | GitHub Actions (Build, Lint, Route & Config Validation) | `ci.yml` (`✓ 2/2`) |
+| **CI/CD** | GitHub Actions (Syntax, Migration, PHPUnit, ESLint + TypeScript, Build) | `ci.yml` (`✓ 5/5`) |
 
 ---
 
