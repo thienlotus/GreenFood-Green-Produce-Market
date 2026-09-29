@@ -30,34 +30,34 @@ Hưng đang phụ trách toàn bộ module Auth & User Service (Đăng ký, Đă
 ### Yêu cầu chi tiết
 
 #### Backend (Laravel)
-- [ ] Cấu hình SMTP Gmail trong `.env` (`MAIL_MAILER=smtp`, `MAIL_HOST=smtp.gmail.com`, `MAIL_PORT=587`, `MAIL_USERNAME`, `MAIL_PASSWORD`)
-- [ ] Tạo bảng `email_verifications` (migration):
+- [x] Cấu hình SMTP Gmail trong `.env` (`MAIL_MAILER=smtp`, `MAIL_HOST=smtp.gmail.com`, `MAIL_PORT=587`, `MAIL_USERNAME`, `MAIL_PASSWORD`)
+- [x] Tạo bảng `email_verifications` (migration):
   ```
   id, user_id, email, otp_code (6 chữ số), expires_at, verified_at, created_at
   ```
-- [ ] Tạo `App\Mail\VerificationCodeMail` (Mailable class) với template HTML đẹp mắt mang thương hiệu GreenFood
-- [ ] Cập nhật `UserService::register()`:
+- [x] Tạo `App\Mail\VerificationCodeMail` (Mailable class) với template HTML đẹp mắt mang thương hiệu GreenFood
+- [x] Cập nhật `UserService::register()`:
   - Sau khi tạo user, sinh mã OTP 6 chữ số ngẫu nhiên
   - Lưu vào bảng `email_verifications` với `expires_at = now() + 10 phút`
   - Gửi email chứa mã OTP qua `Mail::to($user->email)->send(new VerificationCodeMail($otp))`
   - Đánh dấu user `email_verified = false` ban đầu
-- [ ] Tạo API endpoint `POST /api/verify-email` nhận `{ email, otp_code }`:
+- [x] Tạo API endpoint `POST /api/verify-email` nhận `{ email, otp_code }`:
   - Kiểm tra mã OTP khớp và chưa hết hạn
   - Cập nhật `email_verified = true` cho user
   - Trả về `{ success: true, message: "Xác thực email thành công!" }`
-- [ ] Tạo API endpoint `POST /api/resend-otp` để gửi lại mã OTP mới (giới hạn 3 lần / 15 phút)
-- [ ] Thêm cột `email_verified` (boolean, default false) vào bảng `users`
+- [x] Tạo API endpoint `POST /api/resend-otp` để gửi lại mã OTP mới (giới hạn 3 lần / 15 phút)
+- [x] Thêm cột `email_verified` (boolean, default false) vào bảng `users`
 
 #### Frontend (Next.js)
-- [ ] Sau khi đăng ký thành công, chuyển đến trang/modal nhập mã OTP
-- [ ] Giao diện nhập 6 ô số OTP (mỗi ô 1 chữ số, auto-focus sang ô tiếp theo)
-- [ ] Hiển thị đếm ngược 10 phút (thời gian hết hạn OTP)
-- [ ] Nút "Gửi lại mã" (disabled trong 60 giây đầu, hiển thị số lần còn lại)
-- [ ] Thông báo thành công khi xác thực xong → tự động đăng nhập
+- [x] Sau khi đăng ký thành công, chuyển đến trang/modal nhập mã OTP
+- [x] Giao diện nhập 6 ô số OTP (mỗi ô 1 chữ số, auto-focus sang ô tiếp theo)
+- [x] Hiển thị đếm ngược 10 phút (thời gian hết hạn OTP)
+- [x] Nút "Gửi lại mã" (disabled trong 60 giây đầu, hiển thị số lần còn lại)
+- [x] Thông báo thành công khi xác thực xong → tự động đăng nhập
 
 #### Test Cases
-- [ ] Viết test cases cho luồng xác thực email (bổ sung vào file test cases đăng ký)
-- [ ] Kiểm thử: OTP đúng, OTP sai, OTP hết hạn, gửi lại OTP, giới hạn gửi lại
+- [x] Viết test cases cho luồng xác thực email (bổ sung vào file test cases đăng ký và `tests/Feature/EmailVerificationTest.php`)
+- [x] Kiểm thử: OTP đúng, OTP sai, OTP hết hạn, gửi lại OTP, giới hạn gửi lại (5/5 tests passed)
 
 ---
 

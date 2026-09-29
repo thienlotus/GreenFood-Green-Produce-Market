@@ -6,9 +6,10 @@ import { toast } from 'react-hot-toast';
 import { ShieldAlert, User as UserIcon, Lock, Mail, Phone, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import EmailOtpModal from '@/components/EmailOtpModal';
 
 export default function LoginPage() {
-  const { authenticate, register } = useAuthStore();
+  const { authenticate, register, verifyEmailApi, resendOtpApi } = useAuthStore();
   const router = useRouter();
   
   const [username, setUsername] = useState('');
@@ -20,6 +21,11 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isRegister, setIsRegister] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Email OTP state (Sprint 2)
+  const [showOtpModal, setShowOtpModal] = useState<boolean>(false);
+  const [pendingEmail, setPendingEmail] = useState<string>('');
+  const [pendingDebugOtp, setPendingDebugOtp] = useState<string | undefined>(undefined);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +69,12 @@ export default function LoginPage() {
           password: password,
         });
 
-        if (res.success && res.user) {
+        if (res.success && res.requireOtp) {
+          toast.success(res.message);
+          setPendingEmail(cleanEmail);
+          setPendingDebugOtp(res.debugOtp);
+          setShowOtpModal(true);
+        } else if (res.success && res.user) {
           toast.success(res.message);
           router.push('/');
         } else {
@@ -99,6 +110,22 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleVerifyOtp = async (otpCode: string) => {
+    const res = await verifyEmailApi(pendingEmail, otpCode);
+    if (res.success && res.user) {
+      toast.success(res.message || 'Xác thực email thành công! Đang đăng nhập...');
+      setTimeout(() => {
+        router.push('/');
+      }, 400);
+      return { success: true, message: res.message };
+    }
+    return { success: false, message: res.message || 'Mã xác thực không hợp lệ!' };
+  };
+
+  const handleResendOtp = async () => {
+    return await resendOtpApi(pendingEmail);
   };
 
   return (
@@ -267,6 +294,16 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal nhập mã OTP xác thực Email (Sprint 2) */}
+      <EmailOtpModal
+        isOpen={showOtpModal}
+        email={pendingEmail}
+        debugOtp={pendingDebugOtp}
+        onVerify={handleVerifyOtp}
+        onResend={handleResendOtp}
+        onClose={() => setShowOtpModal(false)}
+      />
     </div>
   );
 }

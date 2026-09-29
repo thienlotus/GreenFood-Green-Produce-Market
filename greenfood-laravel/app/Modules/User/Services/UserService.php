@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace App\Modules\User\Services;
 
+use App\Mail\VerificationCodeMail;
+use App\Modules\User\Repositories\EmailVerificationRepository;
 use App\Modules\User\Repositories\UserRepository;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class UserService
 {
     public function __construct(
-        protected UserRepository $userRepository
+        protected UserRepository $userRepository,
+        protected EmailVerificationRepository $emailVerificationRepository
     ) {}
 
     public function register(array $data): array
     {
-        $email = $data['email'] ?? null;
+        $email = isset($data['email']) ? strtolower(trim((string) $data['email'])) : null;
         if ($email && $this->userRepository->findByEmail($email)) {
             return [
                 'success' => false,
@@ -25,7 +31,7 @@ class UserService
             ];
         }
 
-        $phone = $data['phone'] ?? null;
+        $phone = isset($data['phone']) ? trim((string) $data['phone']) : null;
         if ($phone && $this->userRepository->findByPhone($phone)) {
             return [
                 'success' => false,
@@ -36,7 +42,7 @@ class UserService
 
         $fullName = $data['full_name'] ?? $data['name'] ?? 'Người dùng';
         $role = strtoupper($data['role'] ?? 'CUSTOMER');
-        if (!in_array($role, ['CUSTOMER', 'VENDOR', 'ADMIN'])) {
+        if (!in_array($role, ['CUSTOMER', 'VENDOR', 'ADMIN'], true)) {
             $role = 'CUSTOMER';
         }
 
@@ -44,25 +50,184 @@ class UserService
             'full_name' => $fullName,
             'name' => $fullName,
             'email' => $email,
+            'email_verified' => false,
             'phone' => $phone,
             'password' => Hash::make($data['password']),
             'role' => $role,
             'address' => $data['address'] ?? null,
         ]);
 
+        // Tạo mã OTP 6 chữ số xác thực email
+        $otpCode = sprintf('%06d', mt_rand(0, 999999));
+        $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
+
+        // Gửi email xác thực OTP
+        try {
+            Mail::to($user->email)->send(new VerificationCodeMail($otpCode, $user->full_name, 10));
+        } catch (\Throwable $e) {
+            Log::error('Không thể gửi email xác thực OTP', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        Log::info("GreenFood OTP Created for [{$user->email}]: {$otpCode}");
+
         return [
             'success' => true,
             'status' => 201,
-            'message' => 'Đăng ký tài khoản thành công!',
+            'message' => 'Đăng ký tài khoản thành công! Vui lòng nhập mã OTP đã gửi đến email của bạn để xác thực.',
+            'require_otp' => true,
             'data' => [
                 'id' => $user->id,
                 'name' => $user->full_name,
                 'full_name' => $user->full_name,
                 'email' => $user->email,
                 'phone' => $user->phone,
+                'email_verified' => false,
                 'address' => $user->address ?? '',
                 'role' => strtolower($user->role),
+            ],
+            'debug_otp' => config('app.debug') ? $otpCode : null,
+        ];
+    }
+
+    public function verifyEmail(string $email, string $otpCode): array
+    {
+        $email = strtolower(trim($email));
+        $otpCode = trim($otpCode);
+
+        $user = $this->userRepository->findByEmail($email);
+        if (!$user) {
+            return [
+                'success' => false,
+                'status' => 404,
+                'message' => 'Không tìm thấy tài khoản với email này!',
+            ];
+        }
+
+        if ($user->email_verified) {
+            return [
+                'success' => true,
+                'status' => 200,
+                'message' => 'Email tài khoản đã được xác thực trước đó!',
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->full_name,
+                    'full_name' => $user->full_name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'email_verified' => true,
+                    'address' => $user->address ?? '',
+                    'role' => strtolower($user->role),
+                    'token' => base64_encode(Str::random(40)),
+                ]
+            ];
+        }
+
+        $verification = $this->emailVerificationRepository->findLatestPending($email);
+        if (!$verification) {
+            return [
+                'success' => false,
+                'status' => 400,
+                'message' => 'Không tìm thấy yêu cầu xác thực hoặc mã đã hết hạn. Vui lòng bấm gửi lại mã mới!',
+            ];
+        }
+
+        if ($verification->isExpired()) {
+            return [
+                'success' => false,
+                'status' => 400,
+                'message' => 'Mã xác thực OTP đã hết hạn (chỉ có hiệu lực trong 10 phút)! Vui lòng nhấn gửi lại mã mới.',
+            ];
+        }
+
+        if (!hash_equals((string) $verification->otp_code, $otpCode)) {
+            return [
+                'success' => false,
+                'status' => 400,
+                'message' => 'Mã xác thực OTP không chính xác! Vui lòng kiểm tra lại hộp thư.',
+            ];
+        }
+
+        // Đánh dấu đã xác thực
+        $this->emailVerificationRepository->markAsVerified($verification);
+        $this->userRepository->update($user, ['email_verified' => true]);
+
+        return [
+            'success' => true,
+            'status' => 200,
+            'message' => 'Xác thực email thành công! Tài khoản của bạn đã được kích hoạt hoàn toàn.',
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->full_name,
+                'full_name' => $user->full_name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'email_verified' => true,
+                'address' => $user->address ?? '',
+                'role' => strtolower($user->role),
+                'token' => base64_encode(Str::random(40)),
             ]
+        ];
+    }
+
+    public function resendOtp(string $email): array
+    {
+        $email = strtolower(trim($email));
+        $user = $this->userRepository->findByEmail($email);
+
+        if (!$user) {
+            return [
+                'success' => false,
+                'status' => 404,
+                'message' => 'Không tìm thấy tài khoản với email này!',
+            ];
+        }
+
+        if ($user->email_verified) {
+            return [
+                'success' => false,
+                'status' => 400,
+                'message' => 'Tài khoản này đã được xác thực email, không cần gửi lại mã!',
+            ];
+        }
+
+        // Giới hạn 3 lần trong vòng 15 phút
+        $recentCount = $this->emailVerificationRepository->getRecentAttemptsCount($email, 15);
+        if ($recentCount >= 3) {
+            return [
+                'success' => false,
+                'status' => 429,
+                'message' => 'Bạn đã gửi yêu cầu quá 3 lần trong vòng 15 phút. Vui lòng chờ trước khi thử lại!',
+            ];
+        }
+
+        // Vô hiệu hóa mã pending cũ
+        $this->emailVerificationRepository->invalidatePreviousPending($email);
+
+        // Sinh mã mới
+        $otpCode = sprintf('%06d', mt_rand(0, 999999));
+        $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
+
+        try {
+            Mail::to($user->email)->send(new VerificationCodeMail($otpCode, $user->full_name, 10));
+        } catch (\Throwable $e) {
+            Log::error('Lỗi gửi lại mã OTP email: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+        }
+
+        Log::info("GreenFood Resent OTP for [{$user->email}]: {$otpCode}");
+
+        return [
+            'success' => true,
+            'status' => 200,
+            'message' => 'Mã xác thực OTP mới đã được gửi đến email của bạn!',
+            'remaining_attempts' => max(0, 2 - $recentCount),
+            'debug_otp' => config('app.debug') ? $otpCode : null,
         ];
     }
 
