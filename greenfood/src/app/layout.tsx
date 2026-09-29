@@ -10,6 +10,9 @@ const pacifico = Pacifico({
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import dynamic from 'next/dynamic';
+
+const ChatWidget = dynamic(() => import('@/components/ChatWidget'), { ssr: false });
 
 import { Toaster } from 'react-hot-toast';
 
@@ -36,6 +39,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <ChatWidget />
       </body>
     </html>
   );

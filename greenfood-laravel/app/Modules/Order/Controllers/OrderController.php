@@ -107,7 +107,7 @@ class OrderController extends Controller
         $cleanId = strtoupper(trim(str_replace(['#', '{', '}', ' '], '', $id)));
 
         $validator = Validator::make($request->all(), [
-            'status' => 'required|string|in:PENDING,CONFIRMED,SHIPPING,DELIVERED,CANCELLED,pending,processing,completed,cancelled'
+            'status' => 'required|string|in:PENDING,CONFIRMED,SHIPPING,DELIVERED,CANCELLED,pending,processing,confirmed,shipping,completed,delivered,cancelled'
         ]);
 
         if ($validator->fails()) {
@@ -119,17 +119,18 @@ class OrderController extends Controller
 
         $result = $this->orderService->updateOrderStatus($cleanId, $request->status);
 
-        if (!$result) {
+        if (!$result['success']) {
+            $code = $result['code'] ?? 400;
             return response()->json([
                 'success' => false,
-                'message' => 'Không tìm thấy đơn hàng'
-            ], 404);
+                'message' => $result['message']
+            ], $code);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Cập nhật trạng thái thành công',
-            'data' => $result
+            'message' => $result['message'],
+            'data' => $result['data']
         ]);
     }
 

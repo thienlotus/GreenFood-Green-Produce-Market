@@ -152,31 +152,74 @@ class OrderService
         return $this->orderRepository->findByIdOrTracking($id);
     }
 
-    public function updateOrderStatus(string $id, string $status): ?array
+    public function updateOrderStatus(string $id, string $status): array
     {
         $order = $this->orderRepository->findByIdOrTracking($id);
         if (!$order) {
-            return null;
+            return ['success' => false, 'message' => 'Không tìm thấy đơn hàng', 'code' => 404];
         }
 
         $inputStatus = strtolower($status);
         $dbStatus = match ($inputStatus) {
             'pending' => 'PENDING',
-            'processing' => 'SHIPPING',
-            'shipping' => 'SHIPPING',
+            'processing' => 'CONFIRMED',
             'confirmed' => 'CONFIRMED',
+            'shipping' => 'SHIPPING',
             'completed' => 'DELIVERED',
             'delivered' => 'DELIVERED',
             'cancelled' => 'CANCELLED',
             default => strtoupper($status)
         };
 
+        // ── Strict State Machine: Order Status Transitions ──
+        // PENDING → CONFIRMED or CANCELLED
+        // CONFIRMED → SHIPPING or CANCELLED
+        // SHIPPING → DELIVERED only (NO CANCEL allowed!)
+        // DELIVERED → final state
+        // CANCELLED → final state
+        $allowedTransitions = [
+            'PENDING'   => ['CONFIRMED', 'CANCELLED'],
+            'CONFIRMED' => ['SHIPPING', 'CANCELLED'],
+            'SHIPPING'  => ['DELIVERED'],
+            'DELIVERED' => [],
+            'CANCELLED' => [],
+        ];
+
+        $currentStatus = $order->status;
+        $allowed = $allowedTransitions[$currentStatus] ?? [];
+
+        if (!in_array($dbStatus, $allowed)) {
+            $statusLabels = [
+                'PENDING' => 'Chờ xử lý',
+                'CONFIRMED' => 'Đã xác nhận',
+                'SHIPPING' => 'Đang giao',
+                'DELIVERED' => 'Đã giao',
+                'CANCELLED' => 'Đã hủy',
+            ];
+            $currentLabel = $statusLabels[$currentStatus] ?? $currentStatus;
+            $targetLabel = $statusLabels[$dbStatus] ?? $dbStatus;
+
+            if ($currentStatus === 'SHIPPING' && $dbStatus === 'CANCELLED') {
+                $message = "Không thể hủy đơn hàng đang giao! Đơn hàng ở trạng thái \"{$currentLabel}\" chỉ có thể chuyển sang \"Đã giao\".";
+            } elseif (in_array($currentStatus, ['DELIVERED', 'CANCELLED'])) {
+                $message = "Đơn hàng đã ở trạng thái cuối cùng \"{$currentLabel}\", không thể thay đổi.";
+            } else {
+                $message = "Không thể chuyển từ \"{$currentLabel}\" sang \"{$targetLabel}\".";
+            }
+
+            return ['success' => false, 'message' => $message, 'code' => 400];
+        }
+
         $updated = $this->orderRepository->updateStatus($order, $dbStatus);
 
         return [
-            'id' => '#' . $updated->tracking_number,
-            'status' => strtolower($dbStatus),
-            'raw_status' => $dbStatus
+            'success' => true,
+            'message' => 'Cập nhật trạng thái thành công',
+            'data' => [
+                'id' => '#' . $updated->tracking_number,
+                'status' => strtolower($dbStatus),
+                'raw_status' => $dbStatus,
+            ]
         ];
     }
 

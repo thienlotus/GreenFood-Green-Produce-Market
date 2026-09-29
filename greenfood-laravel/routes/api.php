@@ -13,6 +13,7 @@ use App\Modules\Promotion\Controllers\PromotionController;
 use App\Modules\Promotion\Controllers\ShippingZoneController;
 use App\Modules\Farmer\Controllers\FarmerController;
 use App\Modules\Dashboard\Controllers\DashboardController;
+use App\Modules\Chat\Controllers\ChatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -129,3 +130,15 @@ Route::get('/admin/orders', [OrderController::class, 'index']);
 Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
 Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
 Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
+
+// 9. Chat Module (Live Chat Support)
+Route::prefix('chat')->group(function () {
+    Route::get('/conversations', [ChatController::class, 'index']);
+    Route::post('/conversations', [ChatController::class, 'store']);
+    Route::get('/conversations/{id}', [ChatController::class, 'show']);
+    Route::get('/conversations/{id}/customer', [ChatController::class, 'customerMessages']);
+    Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']);
+    Route::put('/conversations/{id}/assign', [ChatController::class, 'assign']);
+    Route::put('/conversations/{id}/close', [ChatController::class, 'close']);
+    Route::get('/unread-count', [ChatController::class, 'unreadCount']);
+});

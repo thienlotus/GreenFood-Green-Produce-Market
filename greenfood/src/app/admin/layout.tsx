@@ -10,6 +10,7 @@ import {
   Users, 
   Tractor,
   Truck,
+  MessageCircle,
   Settings,
   LogOut,
   ArrowLeft
@@ -30,6 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Tổng quan', href: '/admin', icon: LayoutDashboard },
     { name: 'Đơn hàng', href: '/admin/orders', icon: ShoppingBag },
     { name: 'Sản phẩm', href: '/admin/products', icon: Package },
+    { name: 'Chat hỗ trợ', href: '/admin/chat', icon: MessageCircle },
     { name: 'Người dùng & Phân quyền', href: '/admin/customers', icon: Users },
     { name: 'Nông hộ & Vườn', href: '/admin/farmers', icon: Tractor },
     { name: 'Phí giao hàng', href: '/admin/shipping', icon: Truck },
