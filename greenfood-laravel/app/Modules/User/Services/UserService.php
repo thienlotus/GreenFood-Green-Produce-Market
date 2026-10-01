@@ -89,7 +89,7 @@ class UserService
                 'address' => $user->address ?? '',
                 'role' => strtolower($user->role),
             ],
-            'debug_otp' => config('app.debug') ? $otpCode : null,
+            'debug_otp' => null,
         ];
     }
 
@@ -227,7 +227,7 @@ class UserService
             'status' => 200,
             'message' => 'Mã xác thực OTP mới đã được gửi đến email của bạn!',
             'remaining_attempts' => max(0, 2 - $recentCount),
-            'debug_otp' => config('app.debug') ? $otpCode : null,
+            'debug_otp' => null,
         ];
     }
 

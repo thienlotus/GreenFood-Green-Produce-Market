@@ -216,12 +216,7 @@ export default function EmailOtpModal({
             <div className="font-semibold text-gray-900 mt-0.5 break-all">{email}</div>
           </div>
 
-          {debugOtp && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-3 py-2 rounded-xl text-center flex items-center justify-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Mã thử nghiệm nhanh: <strong>{debugOtp}</strong></span>
-            </div>
-          )}
+
 
           {errorMessage && (
             <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm px-4 py-3 rounded-xl flex items-start gap-2.5">
