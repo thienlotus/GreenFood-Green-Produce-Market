@@ -16,8 +16,25 @@ class CartService
         $processedItems = [];
 
         foreach ($items as $item) {
-            $qty = (int)($item['quantity'] ?? 1);
-            $price = (float)($item['price'] ?? 0);
+            $qty = max(1, (int)($item['quantity'] ?? 1));
+
+            // Bảo mật (Senior QA/QC): Luôn ưu tiên tra cứu giá niêm yết từ CSDL theo variant_id hoặc product_id
+            $realPrice = null;
+            if (!empty($item['variant_id'])) {
+                $variant = $this->cartRepository->getVariantById($item['variant_id']);
+                if ($variant) {
+                    $realPrice = (float)$variant->price;
+                }
+            } elseif (!empty($item['product_id'])) {
+                $product = $this->cartRepository->getProductById($item['product_id']);
+                $firstVariant = $product?->variants()->first();
+                if ($firstVariant) {
+                    $realPrice = (float)$firstVariant->price;
+                }
+            }
+
+            // Fallback giá gửi lên nếu không tìm thấy trong DB (phục vụ test hoặc item tùy biến)
+            $price = $realPrice ?? (float)($item['price'] ?? 0);
             $itemTotal = $price * $qty;
             $subtotal += $itemTotal;
 

@@ -24,46 +24,48 @@ class ProductService
 
     public function createProduct(array $data): array
     {
-        $slug = Str::slug($data['name']) . '-' . time();
-        $farmerId = $data['farmer_id'] ?? null;
-        if (!$farmerId) {
-            $firstFarmer = Farmer::first();
-            $farmerId = $firstFarmer ? $firstFarmer->id : null;
-        }
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($data) {
+            $slug = Str::slug($data['name']) . '-' . time();
+            $farmerId = $data['farmer_id'] ?? null;
+            if (!$farmerId) {
+                $firstFarmer = Farmer::first();
+                $farmerId = $firstFarmer ? $firstFarmer->id : null;
+            }
 
-        $product = $this->productRepository->create([
-            'name' => $data['name'],
-            'slug' => $slug,
-            'category_id' => $data['category_id'],
-            'farmer_id' => $farmerId,
-            'description' => $data['description'] ?? '',
-            'image_url' => $data['image_url'] ?? 'https://images.unsplash.com/photo-1542838132-92c53300491e',
-            'badge' => $data['badge'] ?? 'Mới',
-            'sold_count' => 0,
-            'rating' => 5.0,
-            'is_seasonal' => false
-        ]);
+            $product = $this->productRepository->create([
+                'name' => $data['name'],
+                'slug' => $slug,
+                'category_id' => $data['category_id'],
+                'farmer_id' => $farmerId,
+                'description' => $data['description'] ?? '',
+                'image_url' => $data['image_url'] ?? 'https://images.unsplash.com/photo-1542838132-92c53300491e',
+                'badge' => $data['badge'] ?? 'Mới',
+                'sold_count' => 0,
+                'rating' => 5.0,
+                'is_seasonal' => false
+            ]);
 
-        $variant = $this->productRepository->createVariant([
-            'product_id' => $product->id,
-            'unit' => $data['unit'] ?? '1kg',
-            'price' => $data['price'],
-            'compare_at_price' => $data['original_price'] ?? null,
-            'stock_quantity' => $data['stock'] ?? 100,
-            'sku' => 'SKU-' . strtoupper(Str::random(6))
-        ]);
+            $variant = $this->productRepository->createVariant([
+                'product_id' => $product->id,
+                'unit' => $data['unit'] ?? '1kg',
+                'price' => $data['price'],
+                'compare_at_price' => $data['original_price'] ?? null,
+                'stock_quantity' => $data['stock'] ?? 100,
+                'sku' => 'SKU-' . strtoupper(Str::random(6))
+            ]);
 
-        return [
-            'id' => $product->id,
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'category_id' => $product->category_id,
-            'price' => (float)$variant->price,
-            'stock' => (int)$variant->stock_quantity,
-            'unit' => $variant->unit,
-            'description' => $product->description,
-            'image_url' => $product->image_url
-        ];
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'category_id' => $product->category_id,
+                'price' => (float)$variant->price,
+                'stock' => (int)$variant->stock_quantity,
+                'unit' => $variant->unit,
+                'description' => $product->description,
+                'image_url' => $product->image_url
+            ];
+        });
     }
 
     public function updateProduct(string|int $id, array $data): ?array
