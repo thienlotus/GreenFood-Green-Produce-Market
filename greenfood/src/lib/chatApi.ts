@@ -124,8 +124,12 @@ export async function getCustomerChatMessages(conversationId: string, customerId
   return null;
 }
 
-export async function sendChatMessage(conversationId: string, senderId: string, senderRole: 'customer' | 'admin', message: string): Promise<{ success: boolean; data?: ChatMessageItem }> {
-  const res = await chatFetch<{ success: boolean; data?: ChatMessageItem }>(`/chat/conversations/${conversationId}/messages`, {
+export interface ChatSendResponseData extends ChatMessageItem {
+  bot_reply?: ChatMessageItem | null;
+}
+
+export async function sendChatMessage(conversationId: string, senderId: string, senderRole: 'customer' | 'admin', message: string): Promise<{ success: boolean; data?: ChatSendResponseData }> {
+  const res = await chatFetch<{ success: boolean; data?: ChatSendResponseData }>(`/chat/conversations/${conversationId}/messages`, {
     method: 'POST',
     body: JSON.stringify({
       sender_id: senderId,

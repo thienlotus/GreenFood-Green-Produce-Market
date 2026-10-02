@@ -225,26 +225,38 @@ export default function AdminChatPage() {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.sender_role === 'admin' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`max-w-[70%] ${
-                    msg.sender_role === 'admin'
-                      ? 'bg-emerald-600 text-white rounded-2xl rounded-br-md'
-                      : 'bg-white text-gray-800 rounded-2xl rounded-bl-md shadow-sm border border-gray-100'
-                  } px-4 py-2.5`}>
-                    <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
-                    <p className={`text-[10px] mt-1 ${
-                      msg.sender_role === 'admin' ? 'text-emerald-200' : 'text-gray-400'
-                    }`}>
-                      {msg.created_at}
-                      {msg.sender_role === 'admin' && msg.is_read && ' ✓✓'}
-                    </p>
+              {messages.map((msg) => {
+                const isAdmin = msg.sender_role === 'admin';
+                const isBot = isAdmin && msg.message.startsWith('🤖');
+
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-[70%] ${
+                      isAdmin
+                        ? isBot
+                          ? 'bg-emerald-700 text-white rounded-2xl rounded-br-md border border-emerald-600'
+                          : 'bg-emerald-600 text-white rounded-2xl rounded-br-md'
+                        : 'bg-white text-gray-800 rounded-2xl rounded-bl-md shadow-sm border border-gray-100'
+                    } px-4 py-2.5`}>
+                      {isBot && (
+                        <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-200 mb-1">
+                          <span>🤖 Trợ lý AI (Gemini Flash)</span>
+                        </div>
+                      )}
+                      <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                      <p className={`text-[10px] mt-1 ${
+                        isAdmin ? 'text-emerald-200' : 'text-gray-400'
+                      }`}>
+                        {msg.created_at}
+                        {isAdmin && msg.is_read && ' ✓✓'}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
 

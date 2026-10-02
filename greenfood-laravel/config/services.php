@@ -45,4 +45,12 @@ return [
         'default_weight' => env('GHN_DEFAULT_WEIGHT', 200),     // Trọng lượng ước tính mặc định
     ],
 
+    // Cấu hình Google Gemini AI Chatbot (Tối ưu token & hỗ trợ khách hàng tự động)
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY', ''),
+        'model' => env('GEMINI_MODEL', 'gemini-1.5-flash'),
+        'auto_reply' => env('GEMINI_AUTO_REPLY', true),
+        'max_tokens' => (int) env('GEMINI_MAX_TOKENS', 200),
+    ],
+
 ];

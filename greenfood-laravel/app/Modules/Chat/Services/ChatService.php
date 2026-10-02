@@ -8,7 +8,8 @@ use Illuminate\Support\Str;
 class ChatService
 {
     public function __construct(
-        protected ChatRepository $chatRepository
+        protected ChatRepository $chatRepository,
+        protected GeminiChatbotService $geminiChatbotService
     ) {}
 
     public function getConversations(array $filters = [])
@@ -99,6 +100,40 @@ class ChatService
                 'message' => $initialMessage,
                 'message_type' => 'text',
             ]);
+
+            // Tự động kích hoạt AI Trợ lý trả lời tin nhắn đầu tiên nếu chưa có Admin nhận
+            if ($this->geminiChatbotService->isAutoReplyEnabled() && empty($conversation->admin_id)) {
+                $botReply = $this->geminiChatbotService->reply($conversation->id, $initialMessage);
+                if ($botReply) {
+                    $botSenderId = $this->geminiChatbotService->getBotSenderId();
+                    if ($botSenderId) {
+                        $this->chatRepository->createMessage([
+                            'conversation_id' => $conversation->id,
+                            'sender_id' => $botSenderId,
+                            'sender_role' => 'admin',
+                            'message' => $botReply,
+                            'message_type' => 'text',
+                        ]);
+                    }
+                }
+            }
+        } else {
+            // Chào mừng tự động khi bắt đầu mở chatbox
+            if ($this->geminiChatbotService->isAutoReplyEnabled() && empty($conversation->admin_id)) {
+                $existingMessagesCount = $this->chatRepository->getMessages($conversation->id)->count();
+                if ($existingMessagesCount === 0) {
+                    $botSenderId = $this->geminiChatbotService->getBotSenderId();
+                    if ($botSenderId) {
+                        $this->chatRepository->createMessage([
+                            'conversation_id' => $conversation->id,
+                            'sender_id' => $botSenderId,
+                            'sender_role' => 'admin',
+                            'message' => "🤖 Chào bạn! Em là Trợ lý AI GreenFood 🌱. Em có thể giúp gì cho bạn hôm nay (tìm kiếm rau củ sạch, kiểm tra phí ship GHN hay mã ưu đãi)?",
+                            'message_type' => 'text',
+                        ]);
+                    }
+                }
+            }
         }
 
         return [
@@ -122,6 +157,36 @@ class ChatService
             'message_type' => $messageType,
         ]);
 
+        $botReplyData = null;
+
+        // Tự động trả lời qua Gemini AI nếu khách hàng gửi tin nhắn và cuộc trò chuyện chưa có admin tiếp quản
+        if ($senderRole === 'customer' && $this->geminiChatbotService->isAutoReplyEnabled() && empty($conversation->admin_id)) {
+            $replyText = $this->geminiChatbotService->reply($conversationId, $message);
+            if ($replyText) {
+                $botSenderId = $this->geminiChatbotService->getBotSenderId();
+                if ($botSenderId) {
+                    $bMsg = $this->chatRepository->createMessage([
+                        'conversation_id' => $conversationId,
+                        'sender_id' => $botSenderId,
+                        'sender_role' => 'admin',
+                        'message' => $replyText,
+                        'message_type' => 'text',
+                    ]);
+
+                    $botReplyData = [
+                        'id' => $bMsg->id,
+                        'sender_id' => $bMsg->sender_id,
+                        'sender_role' => $bMsg->sender_role,
+                        'sender_name' => 'Trợ lý AI (Gemini Flash)',
+                        'message' => $bMsg->message,
+                        'message_type' => $bMsg->message_type,
+                        'created_at' => $bMsg->created_at->format('H:i d/m'),
+                        'created_at_iso' => $bMsg->created_at->toIso8601String(),
+                    ];
+                }
+            }
+        }
+
         return [
             'id' => $msg->id,
             'conversation_id' => $conversationId,
@@ -130,6 +195,7 @@ class ChatService
             'message' => $msg->message,
             'message_type' => $msg->message_type,
             'created_at' => $msg->created_at->format('H:i d/m'),
+            'bot_reply' => $botReplyData,
         ];
     }
 
