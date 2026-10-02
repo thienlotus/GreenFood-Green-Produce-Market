@@ -18,10 +18,15 @@ class User extends Authenticatable
         'name',
         'phone',
         'email',
+        'email_verified',
         'password',
         'role',
         'avatar_url',
         'address',
+    ];
+
+    protected $casts = [
+        'email_verified' => 'boolean',
     ];
 
     protected $appends = [
@@ -60,5 +65,10 @@ class User extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function emailVerifications()
+    {
+        return $this->hasMany(EmailVerification::class);
     }
 }

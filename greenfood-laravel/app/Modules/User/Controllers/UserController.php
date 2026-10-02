@@ -3,6 +3,8 @@
 namespace App\Modules\User\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ResendOtpRequest;
+use App\Http\Requests\VerifyEmailRequest;
 use App\Modules\User\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -40,6 +42,25 @@ class UserController extends Controller
         }
 
         $result = $this->userService->register($request->all());
+
+        return response()->json($result, $result['status'] ?? 200);
+    }
+
+    public function verifyEmail(VerifyEmailRequest $request)
+    {
+        $result = $this->userService->verifyEmail(
+            $request->validated('email'),
+            $request->validated('otp_code')
+        );
+
+        return response()->json($result, $result['status'] ?? 200);
+    }
+
+    public function resendOtp(ResendOtpRequest $request)
+    {
+        $result = $this->userService->resendOtp(
+            $request->validated('email')
+        );
 
         return response()->json($result, $result['status'] ?? 200);
     }

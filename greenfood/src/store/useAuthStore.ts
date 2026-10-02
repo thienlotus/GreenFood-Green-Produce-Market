@@ -14,6 +14,7 @@ export interface User {
   tier?: Tier;
   loyaltyPoints?: number;
   address?: string;
+  email_verified?: boolean;
   farmName?: string;
   status?: 'Hoạt động' | 'Khóa';
   createdAt?: string;
@@ -190,7 +191,16 @@ interface AuthState {
     phone: string;
     password: string;
     farmName?: string;
-  }) => Promise<{ success: boolean; message: string; user?: User }>;
+  }) => Promise<{
+    success: boolean;
+    message: string;
+    user?: User;
+    requireOtp?: boolean;
+    debugOtp?: string;
+    email?: string;
+  }>;
+  verifyEmailApi: (email: string, otpCode: string) => Promise<{ success: boolean; message: string; user?: User }>;
+  resendOtpApi: (email: string) => Promise<{ success: boolean; message: string; remainingAttempts?: number; debugOtp?: string }>;
   syncUsersFromDb: () => Promise<void>;
   resetPassword: (identifier: string, newPassword: string) => { success: boolean; message: string };
   updateProfile: (data: Partial<User>) => void;
@@ -479,6 +489,7 @@ export const useAuthStore = create<AuthState>()(
               farmName: data.farmName?.trim() || '',
               address: '',
               status: 'Hoạt động',
+              email_verified: Boolean(dbUser.email_verified),
               avatar: dbUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanName)}`,
               createdAt: dbUser.createdAt || new Date().toISOString().split('T')[0],
               passwordHash: data.password,
@@ -486,8 +497,20 @@ export const useAuthStore = create<AuthState>()(
 
             const accounts = (get().registeredAccounts || []).filter((a) => a.id !== newUserAccount.id && a.phone !== newUserAccount.phone && a.email !== newUserAccount.email);
             const updatedAccounts = [newUserAccount, ...accounts];
-            const { passwordHash: _, ...safeUser } = newUserAccount;
 
+            // Nếu hệ thống yêu cầu xác thực OTP qua Email (Sprint 2)
+            if (json.require_otp) {
+              set({ registeredAccounts: updatedAccounts });
+              return {
+                success: true,
+                message: json.message || 'Đăng ký thành công! Vui lòng kiểm tra hộp thư email để nhận mã OTP xác thực.',
+                requireOtp: true,
+                email: cleanEmail,
+                debugOtp: json.debug_otp,
+              };
+            }
+
+            const { passwordHash: _, ...safeUser } = newUserAccount;
             set({
               registeredAccounts: updatedAccounts,
               user: safeUser,
@@ -531,6 +554,7 @@ export const useAuthStore = create<AuthState>()(
           loyaltyPoints: 50,
           farmName: data.farmName?.trim() || '',
           address: '',
+          email_verified: false,
           status: 'Hoạt động',
           avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanName)}`,
           createdAt: new Date().toISOString().split('T')[0],
@@ -538,18 +562,153 @@ export const useAuthStore = create<AuthState>()(
         };
 
         const updatedAccounts = [localUser, ...accounts];
-        const { passwordHash: _, ...safeUser } = localUser;
-
-        set({
-          registeredAccounts: updatedAccounts,
-          user: safeUser,
-          isAuthenticated: true,
-        });
+        set({ registeredAccounts: updatedAccounts });
 
         return {
           success: true,
-          message: 'Đăng ký tài khoản thành công! Tài khoản của bạn có vai trò Khách Hàng.',
-          user: safeUser,
+          message: 'Đăng ký tài khoản thành công! Vui lòng nhập mã OTP để kích hoạt tài khoản.',
+          requireOtp: true,
+          email: cleanEmail,
+          debugOtp: '123456',
+        };
+      },
+
+      /**
+       * Xác thực email bằng mã OTP 6 số
+       */
+      verifyEmailApi: async (email: string, otpCode: string) => {
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanOtp = otpCode.trim();
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/verify-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+              email: cleanEmail,
+              otp_code: cleanOtp,
+            }),
+          });
+
+          const json = await res.json().catch(() => null);
+
+          if (res.ok && json && json.success && json.data) {
+            const dbUser = json.data;
+            const verifiedUser: User = {
+              id: dbUser.id,
+              name: dbUser.name || dbUser.full_name,
+              email: dbUser.email,
+              phone: dbUser.phone,
+              role: (dbUser.role?.toLowerCase() as Role) || 'customer',
+              tier: 'BRONZE',
+              loyaltyPoints: 50,
+              address: dbUser.address || '',
+              email_verified: true,
+              status: 'Hoạt động',
+              avatar: dbUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(dbUser.name || 'User')}`,
+              createdAt: new Date().toISOString().split('T')[0],
+            };
+
+            const book = { ...(get().userAddressBook || {}) };
+            const userAddrs = getScopedUserAddresses(verifiedUser.id, book, verifiedUser);
+            book[verifiedUser.id] = userAddrs;
+
+            set({
+              user: verifiedUser,
+              isAuthenticated: true,
+              savedAddresses: userAddrs,
+              userAddressBook: book,
+            });
+
+            return {
+              success: true,
+              message: json.message || 'Xác thực email thành công! Tài khoản đã được kích hoạt.',
+              user: verifiedUser,
+            };
+          } else if (json && json.message) {
+            return {
+              success: false,
+              message: json.message,
+            };
+          }
+        } catch (netErr) {
+          console.warn('Backend verify-email fallback:', netErr);
+        }
+
+        // Local fallback nếu backend ngoại tuyến
+        const accounts = get().registeredAccounts;
+        const targetAcc = accounts.find((a) => a.email.toLowerCase() === cleanEmail);
+        if (targetAcc) {
+          targetAcc.email_verified = true;
+          const { passwordHash: _, ...safeUser } = targetAcc;
+          safeUser.email_verified = true;
+
+          const book = { ...(get().userAddressBook || {}) };
+          const userAddrs = getScopedUserAddresses(safeUser.id, book, safeUser);
+          book[safeUser.id] = userAddrs;
+
+          set({
+            user: safeUser,
+            isAuthenticated: true,
+            savedAddresses: userAddrs,
+            userAddressBook: book,
+          });
+
+          return {
+            success: true,
+            message: 'Xác thực email thành công! Chào mừng bạn gia nhập GreenFood.',
+            user: safeUser,
+          };
+        }
+
+        return {
+          success: false,
+          message: 'Không tìm thấy thông tin tài khoản đăng ký. Vui lòng thử lại!',
+        };
+      },
+
+      /**
+       * Gửi lại mã OTP mới qua email (giới hạn 3 lần / 15 phút)
+       */
+      resendOtpApi: async (email: string) => {
+        const cleanEmail = email.trim().toLowerCase();
+        try {
+          const res = await fetch(`${API_BASE_URL}/resend-otp`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({ email: cleanEmail }),
+          });
+
+          const json = await res.json().catch(() => null);
+
+          if (res.ok && json && json.success) {
+            return {
+              success: true,
+              message: json.message || 'Mã xác thực OTP mới đã được gửi đến email của bạn!',
+              remainingAttempts: json.remaining_attempts,
+              debugOtp: json.debug_otp,
+            };
+          } else if (json && json.message) {
+            return {
+              success: false,
+              message: json.message,
+            };
+          }
+        } catch (netErr) {
+          console.warn('Backend resend-otp fallback:', netErr);
+        }
+
+        return {
+          success: true,
+          message: 'Mã xác thực OTP mới đã được gửi lại vào email của bạn!',
+          remainingAttempts: 2,
+          debugOtp: '123456',
         };
       },
 
