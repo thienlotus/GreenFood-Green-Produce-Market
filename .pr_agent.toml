@@ -3,8 +3,8 @@
 
 [config]
 # Sử dụng Google Gemini 1.5 Flash: Tốc độ cao, chi phí cực thấp / miễn phí, hỗ trợ context lớn
-model = "gemini-1.5-flash"
-fallback_models = ["gemini-1.5-flash"]
+model = "gemini/gemini-1.5-flash"
+fallback_models = ["gemini/gemini-1.5-flash"]
 
 # Giới hạn trần Token (Token Budgeting)
 max_model_tokens = 16000

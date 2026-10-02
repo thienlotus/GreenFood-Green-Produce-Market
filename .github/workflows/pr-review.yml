@@ -34,13 +34,10 @@ jobs:
       - name: Run Qodo PR-Agent (Gemini Flash Token-Optimized)
         uses: qodo-ai/pr-agent@main
         env:
-          # Cung cấp GEMINI_API_KEY từ GitHub Secrets (đã dùng chung cho Chatbot GreenFood)
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Chỉ định mô hình tiết kiệm chi phí & token tối ưu
-          CONFIG.MODEL: "gemini-1.5-flash"
-          CONFIG.FALLBACK_MODELS: "['gemini-1.5-flash']"
-          # Ghi đè trực tiếp lệnh chạy mặc định khi mở PR
+          GOOGLE_AI_STUDIO.GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CONFIG.MODEL: "gemini/gemini-1.5-flash"
+          CONFIG.FALLBACK_MODELS: "['gemini/gemini-1.5-flash']"
           PR_REVIEWER.REQUIRE_SCORE_REVIEW: "false"
           PR_REVIEWER.REQUIRE_TESTS_REVIEW: "false"
           PR_REVIEWER.NUM_CODE_SUGGESTIONS: "3"
