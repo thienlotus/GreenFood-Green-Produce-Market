@@ -3,6 +3,7 @@
 import AdminGuard from '@/components/AdminGuard';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { 
   LayoutDashboard, 
   ShoppingBag, 
@@ -10,99 +11,255 @@ import {
   Users, 
   Tractor,
   Truck,
-  MessageCircle,
-  Settings,
-  LogOut,
-  ArrowLeft
+  MessageCircle, 
+  Settings, 
+  LogOut, 
+  ExternalLink,
+  Search,
+  Bell,
+  Sparkles,
+  ShieldCheck,
+  Menu,
+  X,
+  ChevronRight
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'react-hot-toast';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     toast.success('Đã đăng xuất khỏi trang quản trị');
   };
 
-  const navItems = [
-    { name: 'Tổng quan', href: '/admin', icon: LayoutDashboard },
-    { name: 'Đơn hàng', href: '/admin/orders', icon: ShoppingBag },
-    { name: 'Sản phẩm', href: '/admin/products', icon: Package },
-    { name: 'Chat hỗ trợ', href: '/admin/chat', icon: MessageCircle },
-    { name: 'Người dùng & Phân quyền', href: '/admin/customers', icon: Users },
-    { name: 'Nông hộ & Vườn', href: '/admin/farmers', icon: Tractor },
-    { name: 'Phí giao hàng', href: '/admin/shipping', icon: Truck },
-    { name: 'Cài đặt', href: '/admin/settings', icon: Settings },
+  const navGroups = [
+    {
+      title: 'TỔNG QUAN',
+      items: [
+        { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+      ],
+    },
+    {
+      title: 'QUẢN LÝ KINH DOANH',
+      items: [
+        { name: 'Đơn hàng', href: '/admin/orders', icon: ShoppingBag, badge: 'Mới' },
+        { name: 'Sản phẩm', href: '/admin/products', icon: Package },
+        { name: 'Nông hộ & Vườn', href: '/admin/farmers', icon: Tractor },
+        { name: 'Phí giao hàng GHN', href: '/admin/shipping', icon: Truck },
+      ],
+    },
+    {
+      title: 'CHĂM SÓC & HỖ TRỢ',
+      items: [
+        { name: 'Live Chat & AI Bot', href: '/admin/chat', icon: MessageCircle, badge: 'AI Flash', highlight: true },
+        { name: 'Khách hàng & User', href: '/admin/customers', icon: Users },
+      ],
+    },
+    {
+      title: 'CẤU HÌNH HỆ THỐNG',
+      items: [
+        { name: 'Cài đặt chung', href: '/admin/settings', icon: Settings },
+      ],
+    },
   ];
+
+  const getPageTitle = () => {
+    if (pathname === '/admin') return 'Bảng điều khiển Tổng quan';
+    if (pathname.startsWith('/admin/orders')) return 'Quản lý Đơn hàng';
+    if (pathname.startsWith('/admin/products')) return 'Quản lý Sản phẩm';
+    if (pathname.startsWith('/admin/chat')) return 'Live Chat & Trợ lý AI';
+    if (pathname.startsWith('/admin/customers')) return 'Người dùng & Phân quyền';
+    if (pathname.startsWith('/admin/farmers')) return 'Nông hộ & Vùng trồng';
+    if (pathname.startsWith('/admin/shipping')) return 'Cước phí vận chuyển GHN';
+    if (pathname.startsWith('/admin/settings')) return 'Cài đặt hệ thống';
+    return 'Quản trị hệ thống';
+  };
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-50 flex">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col hidden md:flex sticky top-0 h-screen">
-          <div className="h-16 flex items-center px-6 border-b border-gray-200">
-            <span className="text-2xl font-bold text-emerald-700 font-pacifico tracking-tight">GreenFood Admin</span>
-          </div>
-          
-          <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
-              
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive 
-                      ? 'bg-emerald-50 text-emerald-700' 
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                >
-                  <Icon size={18} className={isActive ? 'text-emerald-600' : 'text-gray-400'} />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-          
-          <div className="p-4 border-t border-gray-200 space-y-2">
-            <Link 
-              href="/"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-amber-600 hover:bg-amber-50 transition-colors w-full"
-            >
-              <ArrowLeft size={18} />
-              Về trang khách
+      <div className="min-h-screen bg-slate-50 flex">
+        {/* Mobile Backdrop */}
+        {mobileMenuOpen && (
+          <div 
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 md:hidden"
+          />
+        )}
+
+        {/* Professional Sidebar */}
+        <aside className={`
+          fixed md:sticky top-0 h-screen w-72 bg-slate-900 text-slate-300 z-50 flex flex-col 
+          transition-transform duration-300 ease-in-out border-r border-slate-800 shadow-2xl md:shadow-none
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}>
+          {/* Brand Header */}
+          <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/40">
+            <Link href="/admin" className="flex items-center gap-2.5 group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                <ShieldCheck size={20} className="stroke-[2.5]" />
+              </div>
+              <div>
+                <span className="text-lg font-bold text-white tracking-tight flex items-center gap-1.5">
+                  GreenFood
+                  <span className="text-[10px] font-semibold tracking-wider bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                    ADMIN
+                  </span>
+                </span>
+                <p className="text-[10px] text-slate-400 font-medium">Bản quyền Doanh Nghiệp v2.4</p>
+              </div>
             </Link>
+
             <button 
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors w-full"
+              onClick={() => setMobileMenuOpen(false)}
+              className="md:hidden p-1 text-slate-400 hover:text-white"
             >
-              <LogOut size={18} />
-              Đăng xuất
+              <X size={20} />
             </button>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex-1 py-5 px-3.5 space-y-6 overflow-y-auto no-scrollbar">
+            {navGroups.map((group, idx) => (
+              <div key={idx} className="space-y-1">
+                <p className="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  {group.title}
+                </p>
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href;
+                  const Icon = item.icon;
+
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all group ${
+                        isActive
+                          ? 'bg-emerald-600 text-white font-semibold shadow-lg shadow-emerald-900/40'
+                          : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon 
+                          size={18} 
+                          className={`transition-colors ${
+                            isActive ? 'text-white' : 'text-slate-400 group-hover:text-emerald-400'
+                          }`} 
+                        />
+                        <span>{item.name}</span>
+                      </div>
+
+                      {item.badge && (
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                          isActive 
+                            ? 'bg-white/20 text-white' 
+                            : item.highlight 
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                              : 'bg-slate-800 text-slate-400'
+                        }`}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </nav>
+
+          {/* Admin User Mini Card & Actions */}
+          <div className="p-3.5 border-t border-slate-800/80 bg-slate-950/40 space-y-2">
+            <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-slate-800/40 border border-slate-800/60">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-bold text-sm shadow">
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-white truncate">{user?.name || 'Lê Vũ Thiên'}</p>
+                <p className="text-[11px] text-emerald-400 truncate">Quản trị viên trưởng</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <Link 
+                href="/"
+                target="_blank"
+                className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition-colors"
+                title="Mở website giao diện khách hàng"
+              >
+                <ExternalLink size={14} className="text-amber-400" />
+                <span>Xem Store</span>
+              </Link>
+              <button 
+                onClick={handleLogout}
+                className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/30 transition-colors"
+              >
+                <LogOut size={14} />
+                <span>Đăng xuất</span>
+              </button>
+            </div>
           </div>
         </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 flex flex-col min-w-0">
-          {/* Admin Header (Mobile / Top) */}
-          <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-semibold text-gray-800 hidden md:block">Quản trị hệ thống</h1>
-              <span className="text-xl font-bold text-emerald-700 md:hidden font-pacifico">GreenFood Admin</span>
+        {/* Main Workspace */}
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Top Enterprise Header */}
+          <header className="h-16 bg-white border-b border-slate-200/80 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 shadow-xs">
+            {/* Left: Mobile trigger & Breadcrumb */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 md:hidden"
+                aria-label="Mở menu quản trị"
+              >
+                <Menu size={20} />
+              </button>
+
+              <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
+                <span>Trang quản trị</span>
+                <ChevronRight size={14} />
+                <span className="text-slate-800 font-semibold">{getPageTitle()}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="h-8 w-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">
-                A
+
+            {/* Right: Quick search, status & actions */}
+            <div className="flex items-center gap-3">
+              {/* Server live indicator */}
+              <div className="hidden lg:flex items-center gap-2 bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs px-3 py-1.5 rounded-full font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Hệ thống: Sẵn sàng</span>
+              </div>
+
+              {/* Notification icon */}
+              <button 
+                className="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
+                title="Thông báo mới"
+              >
+                <Bell size={18} />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full"></span>
+              </button>
+
+              {/* Quick Store link */}
+              <Link
+                href="/"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              >
+                <ExternalLink size={14} />
+                <span>Xem Cửa Hàng</span>
+              </Link>
+
+              {/* Profile Avatar */}
+              <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
               </div>
             </div>
           </header>
 
-          <div className="p-4 md:p-8 flex-1 overflow-y-auto">
+          {/* Page Content Body */}
+          <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50/70">
             {children}
           </div>
         </main>

@@ -9,13 +9,7 @@ const pacifico = Pacifico({
   display: 'swap',
   fallback: ['cursive', 'sans-serif'],
 });
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import CartDrawer from "@/components/CartDrawer";
-import dynamic from 'next/dynamic';
-
-const ChatWidget = dynamic(() => import('@/components/ChatWidget'), { ssr: false });
-
+import ClientLayoutWrapper from "@/components/ClientLayoutWrapper";
 import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
@@ -35,13 +29,9 @@ export default function RootLayout({
     <html lang="vi">
       <body className={`antialiased bg-gray-50 flex flex-col min-h-screen ${pacifico.variable}`}>
         <Toaster position="top-right" />
-        <Navbar />
-        <CartDrawer />
-        <main className="flex-1">
+        <ClientLayoutWrapper>
           {children}
-        </main>
-        <Footer />
-        <ChatWidget />
+        </ClientLayoutWrapper>
       </body>
     </html>
   );
