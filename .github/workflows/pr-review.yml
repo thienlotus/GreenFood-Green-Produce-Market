@@ -1,0 +1,46 @@
+name: "🤖 AI Code Review (Token-Optimized)"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  pr_agent_review:
+    name: "AI Code Review with Qodo PR-Agent"
+    runs-on: ubuntu-latest
+    # Chỉ chạy trên PR thật của các thành viên, không chạy trên Bot hoặc Draft PR
+    if: |
+      (github.event_name == 'pull_request' && !github.event.pull_request.draft && github.actor != 'dependabot[bot]') ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/review'))
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Qodo PR-Agent (Gemini Flash Token-Optimized)
+        uses: qodo-ai/pr-agent@main
+        env:
+          # Cung cấp GEMINI_API_KEY từ GitHub Secrets (đã dùng chung cho Chatbot GreenFood)
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Chỉ định mô hình tiết kiệm chi phí & token tối ưu
+          CONFIG.MODEL: "gemini-1.5-flash"
+          CONFIG.FALLBACK_MODELS: "['gemini-1.5-flash']"
+          # Ghi đè trực tiếp lệnh chạy mặc định khi mở PR
+          PR_REVIEWER.REQUIRE_SCORE_REVIEW: "false"
+          PR_REVIEWER.REQUIRE_TESTS_REVIEW: "false"
+          PR_REVIEWER.NUM_CODE_SUGGESTIONS: "3"
