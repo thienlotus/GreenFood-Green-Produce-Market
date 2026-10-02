@@ -6,6 +6,8 @@ const pacifico = Pacifico({
   weight: '400',
   subsets: ['latin', 'vietnamese'],
   variable: '--font-pacifico',
+  display: 'swap',
+  fallback: ['cursive', 'sans-serif'],
 });
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
