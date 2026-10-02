@@ -46,11 +46,13 @@ class ProductRepository
         } elseif ($sort === 'price-asc') {
             $query->join('product_variants', 'products.id', '=', 'product_variants.product_id')
                   ->select('products.*')
-                  ->orderBy('product_variants.price', 'asc');
+                  ->groupBy('products.id')
+                  ->orderByRaw('MIN(product_variants.price) asc');
         } elseif ($sort === 'price-desc') {
             $query->join('product_variants', 'products.id', '=', 'product_variants.product_id')
                   ->select('products.*')
-                  ->orderBy('product_variants.price', 'desc');
+                  ->groupBy('products.id')
+                  ->orderByRaw('MAX(product_variants.price) desc');
         } else {
             $query->latest();
         }
