@@ -72,6 +72,7 @@ export default function Navbar() {
                 src="/logo.png" 
                 alt="GreenFood Logo" 
                 className="h-16 w-auto sm:h-20 sm:w-auto md:h-[5.25rem] md:w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-sm" 
+                style={{ maxHeight: '84px', width: 'auto' }}
               />
             </div>
             <div className="flex flex-col justify-center">

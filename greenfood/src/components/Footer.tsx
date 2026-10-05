@@ -96,7 +96,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-3.5 mb-5">
               <div className="p-2 bg-white rounded-2xl shadow-sm shrink-0 flex items-center justify-center">
-                <img src="/logo.png" alt="GreenFood" className="h-14 w-auto object-contain" />
+                <img src="/logo.png" alt="GreenFood" className="h-14 w-auto object-contain" style={{ maxHeight: '56px', width: 'auto' }} />
               </div>
               <div className="flex flex-col justify-center">
                 <span className="text-3xl sm:text-4xl font-bold text-white font-pacifico leading-none pb-1 block select-none">GreenFood</span>
