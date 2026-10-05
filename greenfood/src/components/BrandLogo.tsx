@@ -68,7 +68,7 @@ export default function BrandLogo({
         {showTagline && (
           <span
             className={`font-bold uppercase whitespace-nowrap leading-none transition-colors block ${taglineSpacing} ${
-              isDark ? 'text-emerald-300' : 'text-emerald-800'
+              isDark ? 'slogan-wave-animated-dark' : 'slogan-wave-animated'
             }`}
           >
             Nông sản sạch từ tâm

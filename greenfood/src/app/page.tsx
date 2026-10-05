@@ -284,15 +284,15 @@ export default function Home() {
       <div className="absolute top-60 right-[-100px] w-96 h-96 bg-amber-500/[0.04] rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="absolute top-[800px] left-[-100px] w-96 h-96 bg-emerald-500/[0.05] rounded-full blur-3xl pointer-events-none -z-10" />
 
-      {/* Họa tiết chìm đơn giản (nhẹ 3%, tuyệt đối không che chữ/ảnh) */}
-      <div className="absolute top-20 right-8 w-96 h-96 opacity-[0.035] pointer-events-none select-none -z-10">
-        <img src="/watermark-leaf.svg" alt="" className="w-full h-full object-contain" />
+      {/* Họa tiết chìm biểu tượng cây lúa trĩu hạt đang rung rinh trong gió nhẹ (3.5% opacity, chìm tuyệt đối dưới nền, không che chữ hay ảnh) */}
+      <div className="absolute top-12 right-2 w-80 md:w-[440px] h-[580px] opacity-[0.038] pointer-events-none select-none -z-10 animate-rice-sway">
+        <img src="/watermark-rice-plant.svg" alt="" className="w-full h-full object-contain origin-bottom" />
       </div>
-      <div className="absolute top-[900px] left-6 w-80 h-80 opacity-[0.03] pointer-events-none select-none -z-10">
-        <img src="/watermark-botanical-dark.svg" alt="" className="w-full h-full object-contain" />
+      <div className="absolute top-[850px] -left-6 w-72 md:w-[400px] h-[540px] opacity-[0.032] pointer-events-none select-none -z-10 animate-rice-sway-delayed -scale-x-100">
+        <img src="/watermark-rice-plant.svg" alt="" className="w-full h-full object-contain origin-bottom" />
       </div>
-      <div className="absolute top-[1800px] right-10 w-96 h-96 opacity-[0.025] pointer-events-none select-none -z-10">
-        <img src="/watermark-leaf.svg" alt="" className="w-full h-full object-contain rotate-90" />
+      <div className="absolute top-[1850px] right-4 w-80 md:w-[420px] h-[560px] opacity-[0.028] pointer-events-none select-none -z-10 animate-rice-sway">
+        <img src="/watermark-rice-plant.svg" alt="" className="w-full h-full object-contain origin-bottom" />
       </div>
 
       {/* ============================ HERO ============================ */}
@@ -300,7 +300,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           
           {/* Sidebar danh mục sản phẩm (Desktop) - Modern Glassmorphic Elevation */}
-          <aside className="hidden xl:flex xl:col-span-3 flex-col justify-between bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden h-[480px]">
+          <aside className="hidden xl:flex xl:col-span-3 flex-col justify-between bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden h-[500px]">
             <div>
               <div className="px-5 py-3.5 bg-gradient-to-r from-emerald-800 via-emerald-900 to-teal-900 text-white font-bold text-sm flex items-center justify-between shadow-xs">
                 <span className="flex items-center gap-2">
@@ -308,14 +308,14 @@ export default function Home() {
                 </span>
                 <span className="text-[10px] bg-white/15 border border-white/20 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider text-emerald-200">VietGAP</span>
               </div>
-              <ul className="divide-y divide-slate-100/80 text-sm py-1">
+              <ul className="divide-y divide-slate-100/70 text-sm py-1">
                 {SIDEBAR_CATEGORIES.map((c) => {
                   const Icon = c.icon;
                   return (
                     <li key={c.name}>
                       <Link
                         href={c.href}
-                        className="flex items-center justify-between px-3.5 py-2 mx-2 my-0.5 rounded-2xl text-slate-700 hover:text-emerald-800 hover:bg-emerald-50/90 transition-all duration-200 group font-semibold text-xs"
+                        className="flex items-center justify-between px-3.5 py-1.5 mx-2 my-0.5 rounded-2xl text-slate-700 hover:text-emerald-800 hover:bg-emerald-50/90 transition-all duration-200 group font-semibold text-xs"
                       >
                         <span className="flex items-center gap-2.5">
                           <span className={`w-7 h-7 rounded-xl ${c.color} flex items-center justify-center border shadow-xs group-hover:scale-110 transition-transform`}>
@@ -331,20 +331,20 @@ export default function Home() {
               </ul>
             </div>
 
-            {/* Thẻ cam kết chất lượng lấp đầy đáy sidebar */}
-            <div className="p-3 m-2.5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-500/20">
+            {/* Thẻ cam kết chất lượng lấp đầy đáy sidebar không bao giờ bị cắt chữ */}
+            <div className="p-2.5 mx-2.5 mb-2.5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-500/20">
               <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs">
                 <Sparkles size={13} className="text-amber-500 fill-amber-500" />
                 <span>Bảo hành tươi ngon 24H</span>
               </div>
-              <p className="text-[11px] text-emerald-800/80 mt-1 leading-snug">
-                Đổi trả 100% miễn phí nếu nông sản không đạt độ tươi ngon tự nhiên.
+              <p className="text-[11px] text-emerald-800/80 mt-0.5 leading-snug">
+                Đổi trả 100% miễn phí nếu nông sản không đạt độ tươi giòn.
               </p>
             </div>
           </aside>
 
           {/* Carousel Banner chính - Modern Cinematic Presentation */}
-          <div className="lg:col-span-8 xl:col-span-6 relative rounded-3xl overflow-hidden shadow-elevated-card border border-slate-200/90 group h-[320px] sm:h-[400px] lg:h-[480px]">
+          <div className="lg:col-span-8 xl:col-span-6 relative rounded-3xl overflow-hidden shadow-elevated-card border border-slate-200/90 group h-[320px] sm:h-[420px] lg:h-[500px]">
             <div ref={emblaRef} className="overflow-hidden h-full">
               <div className="flex h-full">
                 {BANNERS.map((b) => (
@@ -436,8 +436,8 @@ export default function Home() {
           </div>
 
           {/* 2 Banner phụ (Desktop) - Modern Frosted Bento Cards */}
-          <div className="hidden lg:grid lg:col-span-4 xl:col-span-3 grid-rows-2 gap-4 h-[480px]">
-            <Link href="/category/trai-cay/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 border border-slate-200/90 block h-[232px]">
+          <div className="hidden lg:grid lg:col-span-4 xl:col-span-3 grid-rows-2 gap-4 h-[500px]">
+            <Link href="/category/trai-cay/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 border border-slate-200/90 block h-[242px]">
               <img
                 src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop"
                 alt="Trái cây tươi"
@@ -456,7 +456,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <Link href="/category/tra-ca-phe/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 border border-slate-200/90 block h-[232px]">
+            <Link href="/category/tra-ca-phe/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 border border-slate-200/90 block h-[242px]">
               <img
                 src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=800&auto=format&fit=crop"
                 alt="Trà và cà phê"

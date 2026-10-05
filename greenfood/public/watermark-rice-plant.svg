@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" fill="none" stroke="currentColor">
+  <!-- Vietnamese Golden Rice Plant (Cây lúa vàng trĩu hạt) -->
+  <g stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">
+    <!-- Main stem curving gracefully under the weight of rice grains -->
+    <path d="M 120 580 C 140 450, 160 300, 220 180 C 250 120, 290 80, 340 70" stroke="#059669" />
+    
+    <!-- Secondary stem -->
+    <path d="M 120 580 C 130 420, 120 280, 160 160 C 180 110, 220 70, 270 50" stroke="#10b981" />
+
+    <!-- Third young stem -->
+    <path d="M 120 580 C 110 460, 90 350, 95 240 C 100 180, 120 130, 150 90" stroke="#047857" />
+
+    <!-- Lush elongated rice leaves (Lá lúa thuôn dài mềm mại) -->
+    <!-- Leaf 1 (Left low) -->
+    <path d="M 130 460 C 90 420, 40 410, 10 450 C 50 400, 100 390, 135 440" fill="#10b981" fill-opacity="0.15" stroke="#059669" stroke-width="1.8" />
+    
+    <!-- Leaf 2 (Right mid) -->
+    <path d="M 150 380 C 220 360, 280 390, 330 440 C 270 370, 210 340, 155 365" fill="#10b981" fill-opacity="0.15" stroke="#059669" stroke-width="1.8" />
+    
+    <!-- Leaf 3 (Left high curving down) -->
+    <path d="M 140 300 C 90 260, 30 270, 15 320 C 35 250, 95 240, 145 285" fill="#10b981" fill-opacity="0.15" stroke="#059669" stroke-width="1.8" />
+
+    <!-- Leaf 4 (Right high arching gracefully) -->
+    <path d="M 175 250 C 250 220, 320 240, 380 300 C 310 220, 240 200, 180 235" fill="#10b981" fill-opacity="0.15" stroke="#059669" stroke-width="1.8" />
+
+    <!-- Heavy golden rice grains along the bending panicle (Bông lúa trĩu hạt) -->
+    <!-- Grain clusters on main stem -->
+    <g fill="#d97706" fill-opacity="0.25" stroke="#b45309" stroke-width="1.6">
+      <!-- Grains near tip -->
+      <path d="M 335 72 C 342 70, 348 76, 344 82 C 340 88, 332 86, 330 80 Z" />
+      <path d="M 325 80 C 333 78, 340 84, 337 92 C 332 98, 323 94, 320 88 Z" />
+      <path d="M 312 90 C 322 88, 328 95, 324 104 C 319 110, 309 106, 307 98 Z" />
+      <path d="M 298 102 C 309 100, 316 108, 311 118 C 305 125, 294 120, 292 111 Z" />
+      <path d="M 282 118 C 294 115, 302 124, 297 135 C 290 142, 278 137, 276 127 Z" />
+      <path d="M 265 135 C 278 132, 286 142, 280 154 C 273 162, 260 156, 258 145 Z" />
+      <path d="M 248 155 C 262 152, 270 163, 263 176 C 255 185, 242 178, 240 166 Z" />
+      <path d="M 230 178 C 245 175, 254 187, 246 200 C 237 210, 224 202, 222 190 Z" />
+
+      <!-- Secondary row of grains hanging down -->
+      <path d="M 330 85 C 334 95, 328 102, 322 98 C 318 94, 322 87, 326 84 Z" />
+      <path d="M 314 97 C 318 108, 310 115, 304 111 C 299 106, 305 98, 310 95 Z" />
+      <path d="M 295 112 C 300 124, 291 132, 284 127 C 278 122, 285 113, 291 110 Z" />
+      <path d="M 276 130 C 282 143, 272 151, 264 146 C 257 140, 265 130, 272 127 Z" />
+      <path d="M 256 150 C 262 164, 251 173, 243 167 C 235 161, 244 150, 252 147 Z" />
+    </g>
+
+    <!-- Grains on secondary stem -->
+    <g fill="#10b981" fill-opacity="0.2" stroke="#059669" stroke-width="1.5">
+      <path d="M 265 52 C 272 50, 277 56, 274 61 C 270 66, 263 64, 262 59 Z" />
+      <path d="M 252 62 C 260 59, 266 66, 262 73 C 257 78, 249 75, 248 69 Z" />
+      <path d="M 238 75 C 247 72, 253 80, 248 88 C 242 94, 233 90, 232 83 Z" />
+      <path d="M 220 90 C 230 87, 237 96, 231 105 C 224 112, 214 107, 213 99 Z" />
+      <path d="M 200 108 C 211 105, 218 115, 212 125 C 204 133, 193 127, 192 118 Z" />
+      <path d="M 180 128 C 192 125, 200 136, 193 147 C 184 156, 172 150, 171 139 Z" />
+    </g>
+
+    <!-- Rice Awns / Râu lúa (delicate fine bristles extending from grain tips) -->
+    <g stroke="#d97706" stroke-width="0.8" opacity="0.6">
+      <line x1="344" y1="82" x2="360" y2="88" />
+      <line x1="337" y1="92" x2="355" y2="102" />
+      <line x1="324" y1="104" x2="344" y2="118" />
+      <line x1="311" y1="118" x2="332" y2="135" />
+      <line x1="297" y1="135" x2="318" y2="155" />
+      <line x1="280" y1="154" x2="302" y2="176" />
+      <line x1="263" y1="176" x2="284" y2="200" />
+    </g>
+  </g>
+</svg>

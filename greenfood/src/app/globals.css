@@ -136,3 +136,83 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* =========================================================================
+   HIỆU ỨNG RUNG RINH CÂY LÚA (RICE PLANT GENTLE BREEZE SWAY)
+   ========================================================================= */
+@keyframes riceSwayGentle {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(1.8deg) translateY(-2px);
+  }
+  50% {
+    transform: rotate(0deg) translateY(0);
+  }
+  75% {
+    transform: rotate(-1.5deg) translateY(-1px);
+  }
+}
+
+.animate-rice-sway {
+  transform-origin: bottom center;
+  animation: riceSwayGentle 9s ease-in-out infinite;
+}
+
+.animate-rice-sway-delayed {
+  transform-origin: bottom center;
+  animation: riceSwayGentle 12s ease-in-out 3s infinite;
+}
+
+/* =========================================================================
+   HIỆU ỨNG GỢN SÓNG LIÊN TỤC SLOGAN (CONTINUOUS GENTLE WAVE SHIMMER)
+   ========================================================================= */
+@keyframes sloganWaveShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.slogan-wave-animated {
+  background: linear-gradient(
+    90deg,
+    #064e3b 0%,
+    #065f46 20%,
+    #059669 35%,
+    #10b981 48%,
+    #34d399 50%,
+    #10b981 52%,
+    #059669 65%,
+    #065f46 80%,
+    #064e3b 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: sloganWaveShimmer 4.5s linear infinite;
+  display: inline-block;
+}
+
+.slogan-wave-animated-dark {
+  background: linear-gradient(
+    90deg,
+    #a7f3d0 0%,
+    #6ee7b7 20%,
+    #34d399 35%,
+    #fef08a 48%,
+    #ffffff 50%,
+    #fef08a 52%,
+    #34d399 65%,
+    #6ee7b7 80%,
+    #a7f3d0 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: sloganWaveShimmer 4.5s linear infinite;
+  display: inline-block;
+}

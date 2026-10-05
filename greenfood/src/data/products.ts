@@ -41,36 +41,36 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     name: 'Đi chợ online',
     slug: 'di-cho-online',
-    description: 'Thực phẩm tươi ngon, rau củ sạch thu hoạch trong ngày giao tận nhà.',
-    icon: '🛒',
+    description: 'Thực phẩm tươi sạch, rau củ quả hữu cơ thu hoạch trong ngày giao hỏa tốc 2H tận cửa.',
+    icon: 'ShoppingBag',
     bannerImage: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1920&auto=format&fit=crop'
   },
   {
     name: 'Trái cây tươi ngon',
     slug: 'trai-cay',
-    description: 'Trái cây nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.',
-    icon: '🍉',
-    bannerImage: 'https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop'
+    description: 'Trái cây nhiệt đới chín cây tự nhiên, mọng nước ngọt thanh, chuẩn VietGAP từ các nhà vườn trứ danh.',
+    icon: 'Apple',
+    bannerImage: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=1920&auto=format&fit=crop'
   },
   {
     name: 'Trà - Cà phê - Socola',
     slug: 'tra-ca-phe',
-    description: 'Trà Thái Nguyên thượng hạng, Cà phê Robusta Mộc Châu rang mộc, Cacao Bến Tre nguyên chất.',
-    icon: '☕',
-    bannerImage: 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?q=80&w=1920&auto=format&fit=crop'
+    description: 'Trà Thái Nguyên thượng hạng, Cà phê Robusta & Arabica rang mộc nguyên chất, Cacao Bến Tre truyền thống.',
+    icon: 'Coffee',
+    bannerImage: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=1920&auto=format&fit=crop'
   },
   {
     name: 'Đặc sản vùng miền',
     slug: 'dac-san',
-    description: 'Đặc sản trứ danh 3 miền: Sầu riêng Ri6, Mật ong rừng Tràm, Bưởi da xanh Bến Tre.',
-    icon: '🎁',
+    description: 'Tinh hoa đặc sản quà tặng 3 miền: Sầu riêng Ri6, Mật ong hoa tràm nguyên chất, Bưởi da xanh Bến Tre chuẩn OCOP.',
+    icon: 'Sparkles',
     bannerImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1920&auto=format&fit=crop'
   },
   {
     name: 'Agrishow Triển Lãm',
     slug: 'agrishow',
-    description: 'Bộ sưu tập nông sản đạt chuẩn xuất khẩu chất lượng cao tại Hội chợ Nông sản Việt.',
-    icon: '🌾',
+    description: 'Triển lãm nông nghiệp công nghệ cao, kết nối trực tiếp nhà vườn hữu cơ và người tiêu dùng thông thái.',
+    icon: 'Store',
     bannerImage: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1920&auto=format&fit=crop'
   }
 ];

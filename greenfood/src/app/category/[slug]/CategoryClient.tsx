@@ -9,7 +9,13 @@ import {
   Search, 
   ShoppingBag,
   Sparkles,
-  Filter
+  Filter,
+  Apple,
+  Coffee,
+  Store,
+  ShieldCheck,
+  Truck,
+  Tag
 } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { getCategoryBySlug, getProducts, getCategories } from '@/lib/api';
@@ -106,6 +112,15 @@ export default function CategoryClient({ initialSlug }: CategoryClientProps) {
   const categoryDesc = category?.description || 'Nông sản sạch từ các nông hộ đối tác khắp Việt Nam.';
   const bannerImg = category?.bannerImage || 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1920&auto=format&fit=crop';
 
+  const CategoryIcon = useMemo(() => {
+    if (slug === 'di-cho-online') return ShoppingBag;
+    if (slug === 'trai-cay') return Apple;
+    if (slug === 'tra-ca-phe') return Coffee;
+    if (slug === 'dac-san') return Sparkles;
+    if (slug === 'agrishow') return Store;
+    return Leaf;
+  }, [slug]);
+
   if (!isLoading && !category && products.length === 0) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
@@ -123,35 +138,51 @@ export default function CategoryClient({ initialSlug }: CategoryClientProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* 1. Category Hero Banner */}
-      <div className="relative bg-emerald-950 text-white overflow-hidden py-10 md:py-14 border-b border-emerald-900/50">
+      {/* 1. Category Hero Banner - Modern Cinematic Presentation */}
+      <div className="relative bg-emerald-950 text-white overflow-hidden py-12 md:py-16 border-b border-emerald-900/50">
         <div 
-          className="absolute inset-0 opacity-25 bg-cover bg-center scale-105 transition-transform duration-1000"
+          className="absolute inset-0 opacity-35 bg-cover bg-center scale-105 transition-transform duration-1000"
           style={{ backgroundImage: `url(${bannerImg})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950 via-emerald-900/90 to-emerald-950/70" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-emerald-950/85 to-transparent" />
         
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
           {/* Breadcrumb */}
-          <div className="flex items-center text-xs md:text-sm text-emerald-200/90 mb-4">
+          <div className="flex items-center text-xs md:text-sm text-emerald-200/90 mb-5">
             <Link href="/" className="hover:text-white transition-colors">Trang chủ</Link>
             <ChevronRight size={14} className="mx-1.5 text-emerald-400" />
-            <span className="text-emerald-300">Danh mục</span>
+            <span className="text-emerald-300">Danh mục nông sản</span>
             <ChevronRight size={14} className="mx-1.5 text-emerald-400" />
             <span className="text-white font-semibold">{categoryName}</span>
           </div>
 
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 bg-emerald-800/80 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-200 mb-3 border border-emerald-700/60 shadow-xs">
-              <Leaf size={14} className="text-emerald-400" /> Nông sản chọn lọc GreenFood
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-300 mb-3.5 border border-white/15 shadow-sm">
+                <Leaf size={14} className="text-emerald-400" /> Nông sản chọn lọc GreenFood
+              </div>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-3 text-white flex items-center gap-3.5">
+                <span className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-400 shrink-0 shadow-lg">
+                  <CategoryIcon size={26} />
+                </span>
+                <span>{categoryName}</span>
+              </h1>
+              <p className="text-emerald-100/90 text-sm md:text-base leading-relaxed font-normal">
+                {categoryDesc}
+              </p>
             </div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-3 text-white flex items-center gap-3">
-              <span>{category?.icon || '🌿'}</span>
-              <span>{categoryName}</span>
-            </h1>
-            <p className="text-emerald-100/90 text-sm md:text-base leading-relaxed">
-              {categoryDesc}
-            </p>
+
+            {/* Floating Glass Badges */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 px-4 py-2.5 rounded-2xl shadow-sm">
+                <ShieldCheck size={18} className="text-emerald-400" />
+                <span className="text-xs font-bold text-white">100% Chuẩn VietGAP & OCOP</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 px-4 py-2.5 rounded-2xl shadow-sm">
+                <Truck size={18} className="text-amber-400" />
+                <span className="text-xs font-bold text-white">Giao hỏa tốc 2H</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

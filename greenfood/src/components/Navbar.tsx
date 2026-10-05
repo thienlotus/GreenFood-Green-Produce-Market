@@ -234,10 +234,10 @@ export default function Navbar() {
               onMouseEnter={() => setIsCategoryOpen(true)}
               onMouseLeave={() => setIsCategoryOpen(false)}
             >
-              <button className="flex items-center gap-2 bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white px-5 py-2 rounded-full font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow-md hover:shadow-emerald-950/20 active:scale-95 transition-all cursor-pointer">
-                <List size={16} />
+              <button className="flex items-center gap-2 bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-800 hover:from-emerald-800 hover:to-teal-900 text-white px-4.5 py-2 rounded-full font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow-md hover:shadow-emerald-950/20 active:scale-95 transition-all duration-300 cursor-pointer">
+                <List size={15} />
                 <span>Danh mục nông sản</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={13} className={`transition-transform duration-300 ${isCategoryOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Dropdown Content */}
@@ -273,46 +273,53 @@ export default function Navbar() {
             <nav className="flex items-center gap-1.5">
               <Link 
                 href="/category/di-cho-online/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-900 hover:bg-emerald-50/90 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide group"
               >
-                <ShoppingBag size={14} className="text-emerald-600" /> Đi chợ online
+                <ShoppingBag size={14} className="text-emerald-600 group-hover:scale-110 transition-transform" />
+                <span>Đi chợ online</span>
               </Link>
               <Link 
                 href="/category/trai-cay/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-900 hover:bg-rose-50/90 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide group"
               >
-                <Apple size={14} className="text-rose-500" /> Trái cây
+                <Apple size={14} className="text-rose-500 group-hover:scale-110 transition-transform" />
+                <span>Trái cây</span>
               </Link>
               <Link 
                 href="/category/tra-ca-phe/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-900 hover:bg-amber-50/90 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide group"
               >
-                <Coffee size={14} className="text-amber-700" /> Trà - Cà phê
+                <Coffee size={14} className="text-amber-700 group-hover:scale-110 transition-transform" />
+                <span>Trà - Cà phê</span>
               </Link>
               <Link 
                 href="/category/dac-san/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-900 hover:bg-purple-50/90 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide group"
               >
-                <Gift size={14} className="text-purple-600" /> Đặc sản
+                <Gift size={14} className="text-purple-600 group-hover:scale-110 transition-transform" />
+                <span>Đặc sản</span>
               </Link>
               <Link 
                 href="/map/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/80 hover:bg-emerald-100/90 border border-emerald-200/60 transition-all flex items-center gap-1.5 uppercase tracking-wide shadow-xs"
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-200/60 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide shadow-xs group"
               >
-                <Map size={14} className="text-emerald-600" /> Bản đồ nhà vườn
+                <Map size={14} className="text-emerald-600 group-hover:scale-110 transition-transform" />
+                <span>Bản đồ nhà vườn</span>
               </Link>
               <Link 
                 href="/tracking/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-800 hover:text-amber-950 bg-amber-50/80 hover:bg-amber-100/90 border border-amber-200/60 transition-all flex items-center gap-1.5 uppercase tracking-wide shadow-xs"
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-800 hover:text-amber-950 bg-amber-50/80 hover:bg-amber-100 border border-amber-200/60 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide shadow-xs group"
               >
-                <Package size={14} className="text-amber-600" /> Theo dõi đơn
+                <Package size={14} className="text-amber-600 group-hover:scale-110 transition-transform" />
+                <span>Theo dõi đơn</span>
               </Link>
               {mounted && isAuthenticated && user && (
                 <Link 
                   href="/profile/" 
-                  className="px-3.5 py-1.5 rounded-full text-xs font-bold text-teal-800 hover:text-teal-950 bg-teal-50/80 hover:bg-teal-100/90 border border-teal-200/60 transition-all flex items-center gap-1.5 uppercase tracking-wide shadow-xs"
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold text-teal-800 hover:text-teal-950 bg-teal-50/80 hover:bg-teal-100/90 border border-teal-200/60 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide shadow-xs group"
                 >
-                  <User size={14} className="text-teal-600" /> Hồ sơ của tôi
+                  <User size={14} className="text-teal-600 group-hover:scale-110 transition-transform" />
+                  <span>Hồ sơ của tôi</span>
                 </Link>
               )}
             </nav>
