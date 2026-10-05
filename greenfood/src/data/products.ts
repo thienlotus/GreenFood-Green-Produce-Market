@@ -366,18 +366,47 @@ export const ALL_PRODUCTS: ProductItem[] = [
   }
 ];
 
+export const STATIC_CATEGORY_SLUGS = [
+  'di-cho-online',
+  'di_cho_online',
+  'trai-cay',
+  'trai_cay',
+  'dac-san',
+  'dac_san',
+  'tra-ca-phe',
+  'tra_ca_phe',
+  'agrishow'
+];
+
 export function getProductsByCategory(slug: string): ProductItem[] {
-  // If "di-cho-online", return all fresh items or products matching
-  if (slug === 'di-cho-online') {
+  if (!slug) return ALL_PRODUCTS;
+  const cleanSlug = slug.replace(/_/g, '-');
+  if (cleanSlug === 'di-cho-online') {
     return ALL_PRODUCTS;
   }
-  return ALL_PRODUCTS.filter(p => p.categorySlug === slug);
+  if (cleanSlug === 'dac-san') {
+    const specialtySlugs = ['mat-ong-rung-tram', 'sau-rieng-ri6', 'buoi-da-xanh', 'che-thai-nguyen', 'ca-phe-robusta'];
+    return ALL_PRODUCTS.filter(p => p.categorySlug === 'dac-san' || specialtySlugs.includes(p.slug));
+  }
+  if (cleanSlug === 'agrishow') {
+    const agrishowSlugs = ['rau-huu-co-tong-hop', 'dua-luoi-mat', 'nho-mau-don', 'dau-tay'];
+    return ALL_PRODUCTS.filter(p => p.categorySlug === 'agrishow' || agrishowSlugs.includes(p.slug));
+  }
+  if (cleanSlug === 'trai-cay') {
+    return ALL_PRODUCTS.filter(p => p.categorySlug === 'trai-cay' || ['cam-sanh', 'chuoi-laba'].includes(p.slug));
+  }
+  return ALL_PRODUCTS.filter(p => p.categorySlug === cleanSlug);
 }
 
 export function getProductBySlug(slug: string): ProductItem | undefined {
-  return ALL_PRODUCTS.find(p => p.slug === slug);
+  if (!slug) return undefined;
+  const cleanSlug = slug.replace(/_/g, '-');
+  return ALL_PRODUCTS.find(p => p.slug === cleanSlug || p.slug === slug);
 }
 
 export function getCategoryBySlug(slug: string): CategoryInfo | undefined {
-  return CATEGORIES.find(c => c.slug === slug);
+  if (!slug) return undefined;
+  const cleanSlug = slug.replace(/_/g, '-');
+  return CATEGORIES.find(c => c.slug === cleanSlug);
 }
+

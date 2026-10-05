@@ -223,11 +223,11 @@ export default function Navbar() {
               {isCategoryOpen && (
                 <div className="absolute top-full left-0 w-64 bg-white shadow-xl border border-gray-100 py-2 z-50 rounded-b-lg">
                   {[
-                    { name: 'Đi chợ online', href: '/category/di-cho-online' },
-                    { name: 'Trái cây tươi ngon', href: '/category/trai-cay' },
-                    { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe' },
-                    { name: 'Đặc sản vùng miền', href: '/category/dac-san' },
-                    { name: 'Nông hộ & Nhà vườn', href: '/farmers' }
+                    { name: 'Đi chợ online', href: '/category/di-cho-online/' },
+                    { name: 'Trái cây tươi ngon', href: '/category/trai-cay/' },
+                    { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/' },
+                    { name: 'Đặc sản vùng miền', href: '/category/dac-san/' },
+                    { name: 'Nông hộ & Nhà vườn', href: '/farmers/' }
                   ].map((cat) => (
                     <Link key={cat.name} href={cat.href} className="block px-5 py-3 hover:bg-emerald-50 hover:text-emerald-600 text-gray-700 text-sm font-medium transition-colors">
                       {cat.name}
@@ -239,26 +239,26 @@ export default function Navbar() {
 
             {/* Horizontal Links */}
             <nav className="flex items-center gap-6 ml-8">
-              <Link href="/category/di-cho-online" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
+              <Link href="/category/di-cho-online/" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
                 ĐI CHỢ ONLINE
               </Link>
-              <Link href="/category/trai-cay" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
+              <Link href="/category/trai-cay/" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
                 TRÁI CÂY
               </Link>
-              <Link href="/category/tra-ca-phe" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
+              <Link href="/category/tra-ca-phe/" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
                 TRÀ - CÀ PHÊ
               </Link>
-              <Link href="/category/dac-san" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
+              <Link href="/category/dac-san/" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
                 ĐẶC SẢN
               </Link>
-              <Link href="/map" className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
+              <Link href="/map/" className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
                 <Map size={15} /> BẢN ĐỒ NHÀ VƯỜN
               </Link>
-              <Link href="/tracking" className="flex items-center gap-1.5 text-amber-700 hover:text-amber-600 font-bold text-sm uppercase transition-colors">
+              <Link href="/tracking/" className="flex items-center gap-1.5 text-amber-700 hover:text-amber-600 font-bold text-sm uppercase transition-colors">
                 <Package size={15} /> THEO DÕI ĐƠN
               </Link>
               {mounted && isAuthenticated && user && (
-                <Link href="/profile" className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 font-bold text-sm uppercase transition-colors bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                <Link href="/profile/" className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 font-bold text-sm uppercase transition-colors bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
                   <User size={15} /> HỒ SƠ CỦA TÔI
                 </Link>
               )}
@@ -349,13 +349,13 @@ export default function Navbar() {
             <div className="space-y-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 px-3">Danh mục chính</span>
               {[
-                { name: 'Đi chợ online', href: '/category/di-cho-online' },
-                { name: 'Trái cây tươi ngon', href: '/category/trai-cay' },
-                { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe' },
-                { name: 'Đặc sản vùng miền', href: '/category/dac-san' },
-                { name: 'Bản đồ nhà vườn', href: '/map' },
-                { name: 'Theo dõi đơn hàng', href: '/tracking' },
-                { name: 'Hồ sơ cá nhân & VIP', href: '/profile' },
+                { name: 'Đi chợ online', href: '/category/di-cho-online/' },
+                { name: 'Trái cây tươi ngon', href: '/category/trai-cay/' },
+                { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/' },
+                { name: 'Đặc sản vùng miền', href: '/category/dac-san/' },
+                { name: 'Bản đồ nhà vườn', href: '/map/' },
+                { name: 'Theo dõi đơn hàng', href: '/tracking/' },
+                { name: 'Hồ sơ cá nhân & VIP', href: '/profile/' },
               ].map((link) => (
                 <Link
                   key={link.name}

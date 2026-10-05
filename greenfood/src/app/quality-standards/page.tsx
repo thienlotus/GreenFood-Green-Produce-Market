@@ -87,7 +87,7 @@ export default function QualityStandardsPage() {
               <Link href="/farmers" className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-lg shadow-md transition-all inline-flex items-center gap-2">
                 Xem nông trại đối tác <ChevronRight size={16} />
               </Link>
-              <Link href="/category/di-cho-online" className="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-3 rounded-lg border border-white/20 transition-all">
+              <Link href="/category/di-cho-online/" className="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-3 rounded-lg border border-white/20 transition-all">
                 Khám phá nông sản chuẩn
               </Link>
             </div>

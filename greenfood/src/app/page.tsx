@@ -23,7 +23,7 @@ const BANNERS = [
     title: 'Nông sản sạch\ntừ vườn đến bếp',
     desc: 'Thu hoạch trong ngày, giao nhanh 2H nội thành. Giảm đến 30% cho đơn đầu tiên.',
     cta: 'Mua sắm ngay',
-    href: '/category/di-cho-online',
+    href: '/category/di-cho-online/',
   },
   {
     id: 2,
@@ -32,7 +32,7 @@ const BANNERS = [
     title: 'Đặc sản trứ danh\nquà biếu sang trọng',
     desc: 'Sầu riêng Ri6, bưởi da xanh, mật ong rừng tràm — đóng hộp quà tinh tế.',
     cta: 'Khám phá đặc sản',
-    href: '/category/dac-san',
+    href: '/category/dac-san/',
   },
   {
     id: 3,
@@ -41,32 +41,32 @@ const BANNERS = [
     title: 'Rau củ hữu cơ\ntươi mới mỗi ngày',
     desc: 'Truy xuất nguồn gốc từng nông hộ, minh bạch trên bản đồ vùng trồng.',
     cta: 'Xem vùng trồng',
-    href: '/map',
+    href: '/map/',
   },
 ];
 
 const SIDEBAR_CATEGORIES = [
-  { name: 'Đi chợ online', href: '/category/di-cho-online', icon: '🛒' },
-  { name: 'Trái cây tươi ngon', href: '/category/trai-cay', icon: '🍉' },
-  { name: 'Đặc sản vùng miền', href: '/category/dac-san', icon: '🎁' },
-  { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe', icon: '☕' },
-  { name: 'Agrishow Triển lãm', href: '/category/agrishow', icon: '🌾' },
-  { name: 'Bản đồ vùng trồng', href: '/map', icon: '📍' },
-  { name: 'Nông hộ đối tác', href: '/farmers', icon: '👨‍🌾' },
-  { name: 'Theo dõi đơn hàng', href: '/tracking', icon: '📦' },
+  { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: '🛒' },
+  { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: '🍉' },
+  { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: '🎁' },
+  { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: '☕' },
+  { name: 'Agrishow Triển lãm', href: '/category/agrishow/', icon: '🌾' },
+  { name: 'Bản đồ vùng trồng', href: '/map/', icon: '📍' },
+  { name: 'Nông hộ đối tác', href: '/farmers/', icon: '👨‍🌾' },
+  { name: 'Theo dõi đơn hàng', href: '/tracking/', icon: '📦' },
 ];
 
 const QUICK_LINKS = [
-  { name: 'Đi chợ online', href: '/category/di-cho-online', icon: '🛒', bg: 'bg-emerald-50/80 border-emerald-100 text-emerald-800' },
-  { name: 'Trái cây Việt', href: '/category/trai-cay', icon: '🍉', bg: 'bg-orange-50/80 border-orange-100 text-orange-800' },
-  { name: 'Trà - Cà phê', href: '/category/tra-ca-phe', icon: '☕', bg: 'bg-teal-50/80 border-teal-100 text-teal-800' },
-  { name: 'Đặc sản', href: '/category/dac-san', icon: '🎁', bg: 'bg-amber-50/80 border-amber-100 text-amber-800' },
-  { name: 'Agrishow', href: '/category/agrishow', icon: '🌾', bg: 'bg-purple-50/80 border-purple-100 text-purple-800' },
+  { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: '🛒', bg: 'bg-emerald-50/80 border-emerald-100 text-emerald-800' },
+  { name: 'Trái cây Việt', href: '/category/trai-cay/', icon: '🍉', bg: 'bg-orange-50/80 border-orange-100 text-orange-800' },
+  { name: 'Trà - Cà phê', href: '/category/tra-ca-phe/', icon: '☕', bg: 'bg-teal-50/80 border-teal-100 text-teal-800' },
+  { name: 'Đặc sản', href: '/category/dac-san/', icon: '🎁', bg: 'bg-amber-50/80 border-amber-100 text-amber-800' },
+  { name: 'Agrishow', href: '/category/agrishow/', icon: '🌾', bg: 'bg-purple-50/80 border-purple-100 text-purple-800' },
   { name: 'Deal sốc', href: '#flash-sale', icon: '🔥', bg: 'bg-rose-50/80 border-rose-100 text-rose-800' },
   { name: 'Mã giảm giá', href: '#vouchers', icon: '🎟️', bg: 'bg-pink-50/80 border-pink-100 text-pink-800' },
-  { name: 'Bản đồ vườn', href: '/map', icon: '📍', bg: 'bg-sky-50/80 border-sky-100 text-sky-800' },
-  { name: 'Theo dõi đơn', href: '/tracking', icon: '📦', bg: 'bg-indigo-50/80 border-indigo-100 text-indigo-800' },
-  { name: 'Nông hộ sạch', href: '/farmers', icon: '👨‍🌾', bg: 'bg-lime-50/80 border-lime-100 text-lime-800' },
+  { name: 'Bản đồ vườn', href: '/map/', icon: '📍', bg: 'bg-sky-50/80 border-sky-100 text-sky-800' },
+  { name: 'Theo dõi đơn', href: '/tracking/', icon: '📦', bg: 'bg-indigo-50/80 border-indigo-100 text-indigo-800' },
+  { name: 'Nông hộ sạch', href: '/farmers/', icon: '👨‍🌾', bg: 'bg-lime-50/80 border-lime-100 text-lime-800' },
 ];
 
 const USPS = [
@@ -381,7 +381,7 @@ export default function Home() {
 
           {/* 2 Banner phụ (Desktop) */}
           <div className="hidden lg:grid lg:col-span-4 xl:col-span-3 grid-rows-2 gap-4 h-[410px]">
-            <Link href="/category/trai-cay" className="relative rounded-3xl overflow-hidden group shadow-elevated-card border border-emerald-950/10">
+            <Link href="/category/trai-cay/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card border border-emerald-950/10">
               <img
                 src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop"
                 alt="Trái cây tươi"
@@ -395,7 +395,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <Link href="/category/tra-ca-phe" className="relative rounded-3xl overflow-hidden group shadow-elevated-card border border-emerald-950/10">
+            <Link href="/category/tra-ca-phe/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card border border-emerald-950/10">
               <img
                 src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=800&auto=format&fit=crop"
                 alt="Trà và cà phê"
@@ -478,7 +478,7 @@ export default function Home() {
               </div>
             </div>
             <Link 
-              href="/category/di-cho-online" 
+              href="/category/di-cho-online/" 
               className="self-start sm:self-auto inline-flex items-center gap-1.5 text-xs md:text-sm font-bold text-rose-950 bg-white hover:bg-amber-100 px-4 py-2 rounded-full transition-all shadow-sm"
             >
               Xem tất cả deal <ChevronRight size={16} />
@@ -544,7 +544,7 @@ export default function Home() {
         <SectionHeader 
           title="Gợi ý hôm nay" 
           subtitle="Sản phẩm tươi thu hoạch trực tiếp từ các nhà vườn chuẩn VietGAP"
-          href="/category/di-cho-online"
+          href="/category/di-cho-online/"
         >
           <div className="flex bg-white/90 backdrop-blur border border-emerald-200/60 rounded-full p-1 shadow-xs">
             {TABS.map(({ key, label, icon: Icon }) => (
@@ -578,7 +578,7 @@ export default function Home() {
           title: 'Trái cây Việt Nam',
           subtitle: 'Đặc sản nhiệt đới chín cây tự nhiên, mọng nước ngọt thanh',
           accent: 'bg-orange-500',
-          href: '/category/trai-cay',
+          href: '/category/trai-cay/',
           items: fruits,
           banner: {
             image: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?q=80&w=800&auto=format&fit=crop',
@@ -592,7 +592,7 @@ export default function Home() {
           title: 'Đặc sản quà tặng 3 miền',
           subtitle: 'Hương vị truyền thống trứ danh từ các hợp tác xã làng nghề',
           accent: 'bg-amber-500',
-          href: '/category/dac-san',
+          href: '/category/dac-san/',
           items: specialties,
           banner: {
             image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800&auto=format&fit=crop',

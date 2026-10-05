@@ -306,7 +306,7 @@ export default function MapPage() {
 
               <div className="mt-6 flex gap-3">
                 <Link
-                  href="/category/trai-cay"
+                  href="/category/trai-cay/"
                   className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-md"
                 >
                   Xem nông sản nhà vườn <ChevronRight size={16} />

@@ -15,10 +15,24 @@ class ProductRepository
         $query = Product::with(['category', 'farmer.region', 'variants']);
 
         if (!empty($filters['category']) && $filters['category'] !== 'di-cho-online') {
-            $categorySlug = $filters['category'];
-            $query->whereHas('category', function ($q) use ($categorySlug) {
-                $q->where('slug', $categorySlug);
-            });
+            $categorySlug = str_replace('_', '-', $filters['category']);
+            if ($categorySlug === 'dac-san') {
+                $query->where(function ($q) {
+                    $q->whereHas('category', function ($cq) {
+                        $cq->where('slug', 'dac-san');
+                    })->orWhereIn('slug', ['sau-rieng-ri6', 'buoi-da-xanh', 'che-thai-nguyen', 'ca-phe-robusta', 'mat-ong-rung-tram']);
+                });
+            } elseif ($categorySlug === 'agrishow') {
+                $query->where(function ($q) {
+                    $q->whereHas('category', function ($cq) {
+                        $cq->where('slug', 'agrishow');
+                    })->orWhereIn('slug', ['rau-huu-co-tong-hop', 'dua-luoi-mat', 'nho-mau-don', 'dau-tay']);
+                });
+            } else {
+                $query->whereHas('category', function ($q) use ($categorySlug) {
+                    $q->where('slug', $categorySlug);
+                });
+            }
         }
 
         if (!empty($filters['search'])) {

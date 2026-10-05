@@ -92,7 +92,7 @@ export default function HowToBuyPage() {
           </div>
 
           <div className="mt-8 text-center">
-            <Link href="/category/di-cho-online" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3.5 rounded-lg shadow transition-colors inline-flex items-center gap-2">
+            <Link href="/category/di-cho-online/" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3.5 rounded-lg shadow transition-colors inline-flex items-center gap-2">
               Bắt Đầu Mua Sắm Ngay <ChevronRight size={16} />
             </Link>
           </div>
