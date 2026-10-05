@@ -4,6 +4,7 @@ import { Plus, Search, Edit2, Trash2, Image as ImageIcon, RefreshCw, AlertTriang
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { getProducts, createProduct, updateProduct, deleteProduct, ProductItem } from '@/lib/api';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 
 const CATEGORY_OPTIONS = [
   { id: 1, name: 'Trái cây tươi', slug: 'trai-cay' },
@@ -327,24 +328,24 @@ export default function AdminProducts() {
                         <div className="flex items-center gap-3">
                           <div className="w-11 h-11 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center text-gray-400 shrink-0 border border-gray-200">
                             {product.image_url ? (
-                              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                              <img src={product.image_url} alt={cleanVietnameseMojibake(product.name)} className="w-full h-full object-cover" />
                             ) : (
                               <ImageIcon size={20} />
                             )}
                           </div>
                           <div>
-                            <span className="font-semibold text-gray-800 block">{product.name}</span>
+                            <span className="font-semibold text-gray-800 block">{cleanVietnameseMojibake(product.name)}</span>
                             <span className="text-xs text-gray-400 font-mono">ID: {String(product.id).slice(0, 8)}...</span>
                           </div>
                         </div>
                       </td>
                       <td className="p-4 text-sm text-gray-600 font-medium">
                         <span className="px-2.5 py-1 bg-gray-100 rounded-md text-xs text-gray-700">
-                          {product.category}
+                          {cleanVietnameseMojibake(product.category)}
                         </span>
                       </td>
                       <td className="p-4 text-sm text-gray-600 font-medium">
-                        {product.unit}
+                        {cleanVietnameseMojibake(product.unit)}
                       </td>
                       <td className="p-4 text-sm font-bold text-emerald-700">
                         {product.price}

@@ -4,6 +4,7 @@ import { Search, Eye, CheckCircle2, XCircle, Clock, X, Save, Package, RefreshCw,
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { getAdminOrders, updateOrderStatus, pushOrderToGhn, AdminOrder } from '@/lib/api';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 
 export default function AdminOrders() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -232,7 +233,7 @@ export default function AdminOrders() {
                   <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                     <td className="p-4 font-semibold text-emerald-700 font-mono">{order.id}</td>
                     <td className="p-4">
-                      <div className="font-medium text-gray-800">{order.customer}</div>
+                      <div className="font-medium text-gray-800">{cleanVietnameseMojibake(order.customer)}</div>
                       <div className="text-xs text-gray-500">{order.phone}</div>
                     </td>
                     <td className="p-4 text-sm text-gray-600">{order.date}</td>
@@ -288,7 +289,7 @@ export default function AdminOrders() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                   <div className="flex items-start gap-2">
                     <span className="text-gray-500 font-medium min-w-[90px]">Khách hàng:</span>
-                    <span className="font-semibold text-gray-800">{selectedOrder.customer}</span>
+                    <span className="font-semibold text-gray-800">{cleanVietnameseMojibake(selectedOrder.customer)}</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Phone size={16} className="text-gray-400 mt-0.5" />
@@ -306,7 +307,7 @@ export default function AdminOrders() {
                   </div>
                   <div className="flex items-start gap-2 md:col-span-2">
                     <MapPin size={16} className="text-emerald-600 mt-0.5 shrink-0" />
-                    <span className="text-gray-700">{selectedOrder.address}</span>
+                    <span className="text-gray-700">{cleanVietnameseMojibake(selectedOrder.address)}</span>
                   </div>
                   {selectedOrder.note && (
                     <div className="md:col-span-2 text-xs text-amber-700 bg-amber-50 p-2 rounded border border-amber-200">
@@ -366,14 +367,14 @@ export default function AdminOrders() {
                               <div className="flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                                 <div>
-                                  <p className="font-semibold text-gray-900">{item.product_name}</p>
+                                  <p className="font-semibold text-gray-900">{cleanVietnameseMojibake(item.product_name)}</p>
                                   {item.product_id && (
                                     <p className="text-[11px] text-gray-400 font-mono">Mã SP: {item.product_id}</p>
                                   )}
                                 </div>
                               </div>
                             </td>
-                            <td className="p-3 text-gray-600">{item.unit}</td>
+                            <td className="p-3 text-gray-600">{cleanVietnameseMojibake(item.unit)}</td>
                             <td className="p-3 text-right text-gray-700">{item.price.toLocaleString('vi-VN')}đ</td>
                             <td className="p-3 text-center font-bold text-gray-800">x{item.quantity}</td>
                             <td className="p-3 text-right font-bold text-emerald-700">

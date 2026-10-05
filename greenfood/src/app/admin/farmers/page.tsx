@@ -3,6 +3,7 @@
 import { Search, Edit2, Trash2, Tractor, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 
 const mockFarmers = [
   { id: 'NH001', name: 'Nông trại Bác Tư', region: 'Bến Tre', products: 5, rating: 4.8, status: 'Đã xác minh' },
@@ -159,10 +160,10 @@ export default function AdminFarmers() {
                       <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
                         <Tractor size={20} />
                       </div>
-                      <span className="font-medium text-gray-800">{farmer.name}</span>
+                      <span className="font-medium text-gray-800">{cleanVietnameseMojibake(farmer.name)}</span>
                     </div>
                   </td>
-                  <td className="p-4 text-sm text-gray-600">{farmer.region}</td>
+                  <td className="p-4 text-sm text-gray-600">{cleanVietnameseMojibake(farmer.region)}</td>
                   <td className="p-4 text-sm font-medium text-gray-800">{farmer.products}</td>
                   <td className="p-4 text-sm font-bold text-amber-500">⭐ {farmer.rating}</td>
                   <td className="p-4">

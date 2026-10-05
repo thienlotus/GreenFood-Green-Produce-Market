@@ -44,8 +44,6 @@ greenfood/generate_*.js
 greenfood/*.xlsx
 greenfood/scripts/
 driver_extracted/
-Katalon_BusinessUnit_Project/bin/
-Katalon_BusinessUnit_Project/Libs/
-Katalon_BusinessUnit_Project/Reports/
-Smart_Thermometer_MLX90614/.pio/
-
+Katalon_BusinessUnit_Project/
+May_Do_Than_Nhiet_MLX90614/
+Smart_Thermometer_MLX90614/

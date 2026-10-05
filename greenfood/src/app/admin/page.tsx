@@ -20,6 +20,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
 import { getDashboardStats, getAdminOrders, DashboardStats, AdminOrder } from '@/lib/api';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
@@ -359,7 +360,7 @@ export default function AdminDashboard() {
                       #{index + 1}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-800 truncate">{product.name}</p>
+                      <p className="text-xs font-bold text-slate-800 truncate">{cleanVietnameseMojibake(product.name)}</p>
                       <p className="text-[11px] text-slate-500 mt-0.5">{product.sales} lượt mua</p>
                     </div>
                   </div>
@@ -424,7 +425,7 @@ export default function AdminDashboard() {
                       {order.id}
                     </td>
                     <td className="py-3.5 px-4">
-                      <p className="font-semibold text-slate-800 text-xs">{order.customer}</p>
+                      <p className="font-semibold text-slate-800 text-xs">{cleanVietnameseMojibake(order.customer)}</p>
                     </td>
                     <td className="py-3.5 px-4 text-right font-bold text-slate-900 text-xs">
                       {order.total}

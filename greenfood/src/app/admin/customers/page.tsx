@@ -4,6 +4,7 @@ import { Search, Edit2, Trash2, User as UserIcon, Shield, Tractor, ShoppingBag, 
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuthStore, Role, RegisteredAccount } from '@/store/useAuthStore';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 
 export default function AdminUsersManagement() {
   const { registeredAccounts, updateUserRole, toggleUserLock, deleteUserAccount, syncUsersFromDb, user: currentAdmin } = useAuthStore();
@@ -162,15 +163,15 @@ export default function AdminUsersManagement() {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         {acc.avatar ? (
-                          <img src={acc.avatar} alt={acc.name} className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm" />
+                          <img src={acc.avatar} alt={cleanVietnameseMojibake(acc.name)} className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm" />
                         ) : (
                           <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold text-sm">
-                            {acc.name.charAt(0)}
+                            {cleanVietnameseMojibake(acc.name).charAt(0)}
                           </div>
                         )}
                         <div>
                           <div className="font-bold text-gray-900 flex items-center gap-1.5">
-                            {acc.name}
+                            {cleanVietnameseMojibake(acc.name)}
                             {acc.id === currentAdmin?.id && (
                               <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">Bạn</span>
                             )}
@@ -195,9 +196,9 @@ export default function AdminUsersManagement() {
                     {/* Farm Name or Address */}
                     <td className="p-4 text-xs text-gray-600 max-w-[200px] truncate">
                       {acc.role === 'vendor' ? (
-                        <span className="font-semibold text-amber-800">{acc.farmName || 'Nhà vườn'}</span>
+                        <span className="font-semibold text-amber-800">{cleanVietnameseMojibake(acc.farmName) || 'Nhà vườn'}</span>
                       ) : (
-                        acc.address || 'Chưa có địa chỉ'
+                        cleanVietnameseMojibake(acc.address) || 'Chưa có địa chỉ'
                       )}
                     </td>
 

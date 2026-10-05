@@ -13,6 +13,7 @@ import {
   ChatConversation,
   ChatMessageItem,
 } from '@/lib/chatApi';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 
 export default function AdminChatPage() {
   const { user } = useAuthStore();
@@ -153,11 +154,11 @@ export default function AdminChatPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
-                      {conv.customer.name.charAt(0).toUpperCase()}
+                      {cleanVietnameseMojibake(conv.customer.name).charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 truncate">{conv.customer.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{conv.last_message?.message || conv.subject}</p>
+                      <p className="text-sm font-semibold text-gray-800 truncate">{cleanVietnameseMojibake(conv.customer.name)}</p>
+                      <p className="text-xs text-gray-500 truncate">{cleanVietnameseMojibake(conv.last_message?.message || conv.subject)}</p>
                     </div>
                   </div>
                   {conv.unread_count > 0 && (
@@ -192,10 +193,10 @@ export default function AdminChatPage() {
             <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                  {selectedConvData?.customer.name.charAt(0).toUpperCase() || 'K'}
+                  {cleanVietnameseMojibake(selectedConvData?.customer.name).charAt(0).toUpperCase() || 'K'}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800">{selectedConvData?.customer.name}</p>
+                  <p className="font-semibold text-gray-800">{cleanVietnameseMojibake(selectedConvData?.customer.name)}</p>
                   <p className="text-xs text-gray-500">
                     {selectedConvData?.customer.email || selectedConvData?.customer.phone || ''}
                   </p>
@@ -246,7 +247,7 @@ export default function AdminChatPage() {
                           <span>🤖 Trợ lý AI (Gemini Flash)</span>
                         </div>
                       )}
-                      <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                      <p className="text-sm whitespace-pre-wrap">{cleanVietnameseMojibake(msg.message)}</p>
                       <p className={`text-[10px] mt-1 ${
                         isAdmin ? 'text-emerald-200' : 'text-gray-400'
                       }`}>

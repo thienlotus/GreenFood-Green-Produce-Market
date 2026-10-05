@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getApiBaseUrl } from '@/lib/api';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 
 export type Role = 'guest' | 'customer' | 'vendor' | 'admin';
 export type Tier = 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND';
@@ -359,7 +360,7 @@ export const useAuthStore = create<AuthState>()(
 
             const safeUser: User = {
               id: dbUser.id,
-              name: dbUser.name || dbUser.full_name || 'Quản trị viên',
+              name: cleanVietnameseMojibake(dbUser.name || dbUser.full_name) || 'Quản trị viên',
               email: dbUser.email || '',
               phone: dbUser.phone || '',
               avatar: dbUser.avatar || dbUser.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(dbUser.name || 'Admin')}`,
@@ -1035,7 +1036,7 @@ export const useAuthStore = create<AuthState>()(
           if (res.ok && json && json.success && Array.isArray(json.data)) {
             const dbAccounts: RegisteredAccount[] = json.data.map((u: any) => ({
               id: u.id,
-              name: u.name,
+              name: cleanVietnameseMojibake(u.name || u.full_name),
               email: u.email || '',
               phone: u.phone || '',
               avatar: u.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(u.name)}`,
@@ -1211,6 +1212,14 @@ export const useAuthStore = create<AuthState>()(
         userAddressBook: state.userAddressBook,
         userVouchers: state.userVouchers,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.user) {
+          state.user.name = cleanVietnameseMojibake(state.user.name);
+          if (state.user.address) {
+            state.user.address = cleanVietnameseMojibake(state.user.address);
+          }
+        }
+      },
     }
   )
 );

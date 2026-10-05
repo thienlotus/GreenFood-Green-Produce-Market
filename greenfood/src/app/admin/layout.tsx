@@ -4,6 +4,9 @@ import AdminGuard from '@/components/AdminGuard';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import BrandLogo from '@/components/BrandLogo';
+import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 import { 
   LayoutDashboard, 
   ShoppingBag, 
@@ -16,7 +19,6 @@ import {
   LogOut, 
   ExternalLink,
   Search,
-  Bell,
   Sparkles,
   ShieldCheck,
   Menu,
@@ -110,21 +112,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}>
           {/* Brand Header */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/40">
-            <Link href="/admin" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-                <ShieldCheck size={20} className="stroke-[2.5]" />
-              </div>
-              <div>
-                <span className="text-lg font-bold text-white tracking-tight flex items-center gap-1.5">
-                  GreenFood
-                  <span className="text-[10px] font-semibold tracking-wider bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30">
-                    ADMIN
-                  </span>
-                </span>
-                <p className="text-[10px] text-slate-400 font-medium">Bản quyền Doanh Nghiệp v2.4</p>
-              </div>
-            </Link>
+          <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800/80 bg-slate-950/40">
+            <div className="flex items-center gap-1.5 overflow-hidden">
+              <BrandLogo variant="dark" size="sm" href="/admin" showTagline={true} />
+              <span className="text-[9px] font-extrabold tracking-wider bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30 uppercase shrink-0">
+                ADMIN
+              </span>
+            </div>
 
             <button 
               onClick={() => setMobileMenuOpen(false)}
@@ -188,10 +182,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="p-3.5 border-t border-slate-800/80 bg-slate-950/40 space-y-2">
             <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-slate-800/40 border border-slate-800/60">
               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-bold text-sm shadow">
-                {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                {cleanVietnameseMojibake(user?.name) ? cleanVietnameseMojibake(user?.name).charAt(0).toUpperCase() : 'A'}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-white truncate">{user?.name || 'Lê Vũ Thiên'}</p>
+                <p className="text-xs font-semibold text-white truncate">{cleanVietnameseMojibake(user?.name) || 'Lê Vũ Thiên'}</p>
                 <p className="text-[11px] text-emerald-400 truncate">Quản trị viên trưởng</p>
               </div>
             </div>
@@ -246,18 +240,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span>Hệ thống: Sẵn sàng</span>
               </div>
 
-              {/* Notification icon */}
-              <button 
-                className="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
-                title="Thông báo mới"
-              >
-                <Bell size={18} />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full"></span>
-              </button>
+              {/* Notification icon & interactive center */}
+              <AdminNotificationCenter />
 
               {/* Quick Store link */}
               <Link
                 href="/"
+                target="_blank"
                 className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
               >
                 <ExternalLink size={14} />
@@ -266,7 +255,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
               {/* Profile Avatar */}
               <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                {cleanVietnameseMojibake(user?.name) ? cleanVietnameseMojibake(user?.name).charAt(0).toUpperCase() : 'A'}
               </div>
             </div>
           </header>
