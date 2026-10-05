@@ -223,21 +223,21 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 3. MENU BAR (Desktop Only) - Modern Pill Tabs Navigation */}
-      <div className="hidden lg:block border-t border-slate-200/70 bg-white/90 backdrop-blur-md">
+      {/* 3. MENU BAR (Desktop Only) - Modern Balanced Tabs Navigation */}
+      <div className="hidden lg:block border-t border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex items-center justify-between h-13 py-1.5">
+          <div className="flex items-center gap-4 xl:gap-7 h-14 py-2">
             
             {/* Mega Menu Toggle */}
             <div 
-              className="relative flex items-center"
+              className="relative flex items-center shrink-0"
               onMouseEnter={() => setIsCategoryOpen(true)}
               onMouseLeave={() => setIsCategoryOpen(false)}
             >
-              <button className="flex items-center gap-2 bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-800 hover:from-emerald-800 hover:to-teal-900 text-white px-4.5 py-2 rounded-full font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow-md hover:shadow-emerald-950/20 active:scale-95 transition-all duration-300 cursor-pointer">
-                <List size={15} />
+              <button className="flex items-center gap-2.5 bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-800 hover:from-emerald-800 hover:to-teal-900 text-white px-5 py-2.5 rounded-full font-extrabold text-[13px] uppercase tracking-wider shadow-sm hover:shadow-md hover:shadow-emerald-950/20 active:scale-95 transition-all duration-300 cursor-pointer">
+                <List size={16} />
                 <span>Danh mục nông sản</span>
-                <ChevronDown size={13} className={`transition-transform duration-300 ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${isCategoryOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Dropdown Content */}
@@ -269,56 +269,56 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Horizontal Links */}
-            <nav className="flex items-center gap-1.5">
+            {/* Horizontal Links - Cân bằng, đều đặn, to rõ ràng không bị lệch phải */}
+            <nav className="flex items-center justify-between flex-1 gap-1.5 xl:gap-3">
               <Link 
                 href="/category/di-cho-online/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-900 hover:bg-emerald-50/90 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide group"
+                className="px-3.5 xl:px-4 py-2 rounded-full text-[13px] xl:text-sm font-extrabold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-2 uppercase tracking-wide group"
               >
-                <ShoppingBag size={14} className="text-emerald-600 group-hover:scale-110 transition-transform" />
+                <ShoppingBag size={16} className="text-emerald-600 group-hover:scale-110 transition-transform" />
                 <span>Đi chợ online</span>
               </Link>
               <Link 
                 href="/category/trai-cay/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-900 hover:bg-rose-50/90 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide group"
+                className="px-3.5 xl:px-4 py-2 rounded-full text-[13px] xl:text-sm font-extrabold text-slate-800 hover:text-emerald-900 hover:bg-rose-50 transition-all duration-200 flex items-center gap-2 uppercase tracking-wide group"
               >
-                <Apple size={14} className="text-rose-500 group-hover:scale-110 transition-transform" />
+                <Apple size={16} className="text-rose-500 group-hover:scale-110 transition-transform" />
                 <span>Trái cây</span>
               </Link>
               <Link 
                 href="/category/tra-ca-phe/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-900 hover:bg-amber-50/90 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide group"
+                className="px-3.5 xl:px-4 py-2 rounded-full text-[13px] xl:text-sm font-extrabold text-slate-800 hover:text-emerald-900 hover:bg-amber-50 transition-all duration-200 flex items-center gap-2 uppercase tracking-wide group"
               >
-                <Coffee size={14} className="text-amber-700 group-hover:scale-110 transition-transform" />
+                <Coffee size={16} className="text-amber-700 group-hover:scale-110 transition-transform" />
                 <span>Trà - Cà phê</span>
               </Link>
               <Link 
                 href="/category/dac-san/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-900 hover:bg-purple-50/90 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide group"
+                className="px-3.5 xl:px-4 py-2 rounded-full text-[13px] xl:text-sm font-extrabold text-slate-800 hover:text-emerald-900 hover:bg-purple-50 transition-all duration-200 flex items-center gap-2 uppercase tracking-wide group"
               >
-                <Gift size={14} className="text-purple-600 group-hover:scale-110 transition-transform" />
+                <Gift size={16} className="text-purple-600 group-hover:scale-110 transition-transform" />
                 <span>Đặc sản</span>
               </Link>
               <Link 
                 href="/map/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-200/60 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide shadow-xs group"
+                className="px-3.5 xl:px-4 py-2 rounded-full text-[13px] xl:text-sm font-extrabold text-emerald-800 hover:text-emerald-950 bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-300/80 transition-all duration-200 flex items-center gap-2 uppercase tracking-wide shadow-xs group"
               >
-                <Map size={14} className="text-emerald-600 group-hover:scale-110 transition-transform" />
+                <Map size={16} className="text-emerald-600 group-hover:scale-110 transition-transform" />
                 <span>Bản đồ nhà vườn</span>
               </Link>
               <Link 
                 href="/tracking/" 
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-800 hover:text-amber-950 bg-amber-50/80 hover:bg-amber-100 border border-amber-200/60 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide shadow-xs group"
+                className="px-3.5 xl:px-4 py-2 rounded-full text-[13px] xl:text-sm font-extrabold text-amber-900 hover:text-amber-950 bg-amber-50/90 hover:bg-amber-100 border border-amber-300/80 transition-all duration-200 flex items-center gap-2 uppercase tracking-wide shadow-xs group"
               >
-                <Package size={14} className="text-amber-600 group-hover:scale-110 transition-transform" />
+                <Package size={16} className="text-amber-600 group-hover:scale-110 transition-transform" />
                 <span>Theo dõi đơn</span>
               </Link>
               {mounted && isAuthenticated && user && (
                 <Link 
                   href="/profile/" 
-                  className="px-3.5 py-1.5 rounded-full text-xs font-bold text-teal-800 hover:text-teal-950 bg-teal-50/80 hover:bg-teal-100/90 border border-teal-200/60 transition-all duration-200 flex items-center gap-1.5 uppercase tracking-wide shadow-xs group"
+                  className="px-3.5 xl:px-4 py-2 rounded-full text-[13px] xl:text-sm font-extrabold text-teal-900 hover:text-teal-950 bg-teal-50/90 hover:bg-teal-100 border border-teal-300/80 transition-all duration-200 flex items-center gap-2 uppercase tracking-wide shadow-xs group"
                 >
-                  <User size={14} className="text-teal-600 group-hover:scale-110 transition-transform" />
+                  <User size={16} className="text-teal-600 group-hover:scale-110 transition-transform" />
                   <span>Hồ sơ của tôi</span>
                 </Link>
               )}

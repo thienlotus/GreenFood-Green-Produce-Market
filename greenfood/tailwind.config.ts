@@ -10,6 +10,8 @@ const config: Config = {
     extend: {
       fontFamily: {
         pacifico: ['Pacifico', 'cursive', 'sans-serif'],
+        handwriting: ['"Dancing Script"', '"Caveat"', '"Playwrite VN"', '"Alex Brush"', 'cursive', 'sans-serif'],
+        calligraphy: ['"Dancing Script"', '"Alex Brush"', 'cursive'],
         sans: ['var(--font-sans)', 'Be Vietnam Pro', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
       },
       colors: {

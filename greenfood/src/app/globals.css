@@ -26,11 +26,49 @@ body {
 }
 
 .font-handwriting {
-  font-family: var(--font-dancing), 'Dancing Script', 'Caveat', 'Pacifico', cursive, sans-serif !important;
+  font-family: 'Dancing Script', 'Caveat', 'Playwrite VN', 'Alex Brush', cursive, sans-serif !important;
+  font-style: italic;
+  letter-spacing: 0.015em;
+}
+
+.font-calligraphy {
+  font-family: 'Dancing Script', 'Alex Brush', 'Playwrite VN', cursive, sans-serif !important;
+  font-style: italic;
+  font-weight: 700;
 }
 
 .font-caveat {
   font-family: 'Caveat', 'Dancing Script', cursive, sans-serif !important;
+  font-style: italic;
+}
+
+/* =========================================================================
+   HIỆU ỨNG CUỘN LĂN CHUỘT MƯỢT MÀ (SMOOTH SCROLL REVEAL & DIRECTION REACTIVITY)
+   Lăn xuống thì các mục lướt nổi lên, lăn lên thì phản hồi mượt mà
+   ========================================================================= */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.reveal-on-scroll.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reactive-item {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.scroll-direction-down .scroll-reactive-item {
+  transform: translateY(-2px);
+}
+
+.scroll-direction-up .scroll-reactive-item {
+  transform: translateY(1.5px);
 }
 
 /* ==========================================================================

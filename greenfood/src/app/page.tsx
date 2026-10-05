@@ -238,31 +238,83 @@ export default function Home() {
   }, []);
 
   const [showWelcomeLetter, setShowWelcomeLetter] = useState(false);
+  const [scrollDir, setScrollDir] = useState<'down' | 'up'>('down');
   const flashSaleScrollerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const checkScrollPosition = () => {
+  const checkScrollPosition = useCallback(() => {
     const el = flashSaleScrollerRef.current;
     if (!el) return;
     setCanScrollLeft(el.scrollLeft > 10);
     setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
-  };
+  }, []);
 
   const scrollFlashSale = (direction: 'left' | 'right') => {
     const el = flashSaleScrollerRef.current;
     if (!el) return;
-    const scrollAmount = Math.max(280, el.clientWidth * 0.7);
+    const scrollStep = 320;
     el.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      left: direction === 'left' ? -scrollStep : scrollStep,
       behavior: 'smooth',
     });
-    setTimeout(checkScrollPosition, 350);
+    setTimeout(checkScrollPosition, 320);
   };
+
+  // Cuộn ngang êm ái khi dùng con lăn chuột trên dải Flash Sale
+  useEffect(() => {
+    const el = flashSaleScrollerRef.current;
+    if (!el) return;
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        el.scrollBy({ left: e.deltaY * 1.3, behavior: 'smooth' });
+        checkScrollPosition();
+      }
+    };
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [checkScrollPosition]);
+
+  // Hiệu ứng cuộn chuột: theo dõi hướng cuộn và reveal các mục sản phẩm / icon mượt mà
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (Math.abs(currentScrollY - lastScrollY) > 6) {
+        setScrollDir(currentScrollY > lastScrollY ? 'down' : 'up');
+        lastScrollY = currentScrollY;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
+    );
+
+    const elements = document.querySelectorAll('.reveal-on-scroll');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
+  }, [products]);
 
   const flashSale = useMemo(() => {
     const discounted = products.filter((p) => discountOf(p) > 0).sort((a, b) => discountOf(b) - discountOf(a));
-    return (discounted.length >= 8 ? discounted : [...discounted, ...products.filter((p) => discountOf(p) === 0)]).slice(0, 10);
+    const nonDiscounted = products.filter((p) => discountOf(p) === 0);
+    const combined = [...discounted, ...nonDiscounted];
+    // Đảm bảo tối thiểu 16 sản phẩm để hàng cuộn luôn dài tràn màn hình và lướt mượt mà không bao giờ đứng yên
+    return (combined.length >= 16 ? combined : [...combined, ...combined, ...combined]).slice(0, 18);
   }, [products]);
 
   const tabProducts = useMemo(() => {
@@ -300,7 +352,7 @@ export default function Home() {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className="min-h-screen bg-tech-grid pb-20 relative overflow-hidden">
+    <div className={`min-h-screen bg-tech-grid pb-20 relative overflow-hidden scroll-direction-${scrollDir}`}>
       <h1 className="sr-only">GreenFood - Chợ Nông Sản Sạch Việt Nam</h1>
 
       {/* Vùng hào quang quang hợp & công nghệ chìm tinh tế phong cách SaaS */}
@@ -511,7 +563,7 @@ export default function Home() {
       </section>
 
       {/* ============================ USPS (LỢI ÍCH DỊCH VỤ) ============================ */}
-      <section className="container mx-auto px-4 lg:px-8 mt-7 relative z-10">
+      <section className="container mx-auto px-4 lg:px-8 mt-7 relative z-10 reveal-on-scroll scroll-reactive-item">
         <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-sm border border-slate-200/80 p-3.5 md:p-5 grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
           {USPS.map(({ icon: Icon, title, desc, color }, i) => (
             <div key={title} className={`flex items-center gap-3.5 p-3 lg:px-6 group hover:-translate-y-0.5 transition-transform ${i % 2 === 1 ? 'border-l lg:border-l-0 border-slate-100' : ''}`}>
@@ -528,7 +580,7 @@ export default function Home() {
       </section>
 
       {/* ========================= QUICK LINKS (DANH MỤC TRUY CẬP NHANH) ========================= */}
-      <section className="container mx-auto px-4 lg:px-8 mt-7 relative z-10">
+      <section className="container mx-auto px-4 lg:px-8 mt-7 relative z-10 reveal-on-scroll scroll-reactive-item">
         <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/80 p-5 md:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -540,7 +592,7 @@ export default function Home() {
             {QUICK_LINKS.map((c) => {
               const Icon = c.icon;
               return (
-                <Link key={c.name} href={c.href} className="flex flex-col items-center gap-2 group p-2 rounded-2xl hover:bg-slate-50 transition-colors">
+                <Link key={c.name} href={c.href} className="flex flex-col items-center gap-2 group p-2 rounded-2xl hover:bg-slate-50 transition-colors scroll-reactive-item">
                   <div className={`w-13 h-13 md:w-14 md:h-14 rounded-2xl ${c.color} flex items-center justify-center border shadow-xs group-hover:-translate-y-1.5 group-hover:shadow-md transition-all duration-300`}>
                     <Icon size={22} />
                   </div>
@@ -555,7 +607,7 @@ export default function Home() {
       </section>
 
       {/* ========================== FLASH SALE ========================== */}
-      <section id="flash-sale" className="container mx-auto px-4 lg:px-8 mt-10 scroll-mt-28 relative z-10">
+      <section id="flash-sale" className="container mx-auto px-4 lg:px-8 mt-10 scroll-mt-28 relative z-10 reveal-on-scroll scroll-reactive-item">
         <div className="rounded-3xl overflow-hidden border border-rose-200/80 bg-white/95 backdrop-blur-md shadow-elevated-card">
           <div className="bg-gradient-to-r from-rose-600 via-red-500 to-amber-500 px-5 md:px-8 py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
             <div className="flex flex-wrap items-center gap-3 md:gap-6">
@@ -627,12 +679,12 @@ export default function Home() {
 
           {/* Vùng sản phẩm cuộn ngang nhẹ nhàng & siêu mượt */}
           <div className="relative group/flash-scroller">
-            {/* Nút cuộn trái nổi trên desktop */}
+            {/* Nút cuộn trái nổi hai bên mép container (không đè lên quả) */}
             <button
               type="button"
               onClick={() => scrollFlashSale('left')}
               aria-label="Cuộn nông sản sang trái"
-              className={`hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 hover:bg-white text-rose-950 shadow-xl border border-rose-200/80 items-center justify-center transition-all hover:scale-110 active:scale-95 ${
+              className={`hidden md:flex absolute -left-2 sm:-left-3 lg:-left-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/95 hover:bg-white text-rose-950 shadow-2xl border-2 border-rose-200 items-center justify-center transition-all hover:scale-110 active:scale-95 ${
                 canScrollLeft ? 'opacity-90 hover:opacity-100 cursor-pointer' : 'opacity-0 pointer-events-none'
               }`}
             >
@@ -648,10 +700,10 @@ export default function Home() {
               {loading ? (
                 <ProductGridSkeleton count={5} />
               ) : (
-                flashSale.map((p) => (
+                flashSale.map((p, idx) => (
                   <div 
-                    key={`flash-${p.id}`} 
-                    className="shrink-0 w-[230px] sm:w-[250px] md:w-[270px] snap-start transition-transform hover:-translate-y-1"
+                    key={`flash-${p.id}-${idx}`} 
+                    className="shrink-0 w-[230px] sm:w-[250px] md:w-[270px] snap-start scroll-reactive-item transition-transform hover:-translate-y-1.5 duration-300"
                   >
                     <ProductCard {...toCardProps(p)} showSoldProgress />
                   </div>
@@ -659,12 +711,12 @@ export default function Home() {
               )}
             </div>
 
-            {/* Nút cuộn phải nổi trên desktop */}
+            {/* Nút cuộn phải nổi hai bên mép container (không đè lên quả) */}
             <button
               type="button"
               onClick={() => scrollFlashSale('right')}
               aria-label="Cuộn nông sản sang phải"
-              className={`hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 hover:bg-white text-rose-950 shadow-xl border border-rose-200/80 items-center justify-center transition-all hover:scale-110 active:scale-95 ${
+              className={`hidden md:flex absolute -right-2 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/95 hover:bg-white text-rose-950 shadow-2xl border-2 border-rose-200 items-center justify-center transition-all hover:scale-110 active:scale-95 ${
                 canScrollRight ? 'opacity-90 hover:opacity-100 cursor-pointer' : 'opacity-0 pointer-events-none'
               }`}
             >
@@ -686,7 +738,7 @@ export default function Home() {
       </section>
 
       {/* =========================== VOUCHERS =========================== */}
-      <section id="vouchers" className="container mx-auto px-4 lg:px-8 mt-10 scroll-mt-28 relative z-10">
+      <section id="vouchers" className="container mx-auto px-4 lg:px-8 mt-10 scroll-mt-28 relative z-10 reveal-on-scroll scroll-reactive-item">
         <SectionHeader 
           title="Mã giảm giá hôm nay" 
           subtitle="Áp dụng ngay khi thanh toán đơn hàng nông sản"
@@ -696,7 +748,7 @@ export default function Home() {
           {VOUCHERS.map((v) => (
             <div 
               key={v.code} 
-              className="relative flex bg-white/95 backdrop-blur-md rounded-2xl border border-emerald-900/10 overflow-hidden shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300"
+              className="relative flex bg-white/95 backdrop-blur-md rounded-2xl border border-emerald-900/10 overflow-hidden shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 scroll-reactive-item"
             >
               <div className={`w-24 shrink-0 bg-gradient-to-br ${v.color} text-white flex flex-col items-center justify-center p-3 shadow-inner`}>
                 <Tag size={24} className="text-white/90" />
@@ -733,7 +785,7 @@ export default function Home() {
       </section>
 
       {/* ======================= GỢI Ý HÔM NAY (TABS) ======================= */}
-      <section className="container mx-auto px-4 lg:px-8 mt-12 relative z-10">
+      <section className="container mx-auto px-4 lg:px-8 mt-12 relative z-10 reveal-on-scroll scroll-reactive-item">
         <SectionHeader 
           title="Gợi ý hôm nay" 
           subtitle="Sản phẩm tươi thu hoạch trực tiếp từ các nhà vườn chuẩn VietGAP"
@@ -759,7 +811,9 @@ export default function Home() {
         </SectionHeader>
         <div className={GRID}>
           {loading ? <ProductGridSkeleton count={10} /> : tabProducts.map((p) => (
-            <ProductCard key={`tab-${activeTab}-${p.id}`} {...toCardProps(p)} />
+            <div key={`tab-${activeTab}-${p.id}`} className="scroll-reactive-item">
+              <ProductCard {...toCardProps(p)} />
+            </div>
           ))}
         </div>
       </section>
@@ -796,7 +850,7 @@ export default function Home() {
         },
       ].map((section) =>
         !loading && section.items.length === 0 ? null : (
-          <section key={section.key} className="container mx-auto px-4 lg:px-8 mt-12 relative z-10">
+          <section key={section.key} className="container mx-auto px-4 lg:px-8 mt-12 relative z-10 reveal-on-scroll scroll-reactive-item">
             <SectionHeader 
               title={section.title} 
               subtitle={section.subtitle}
@@ -913,21 +967,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ==================== NÚT NỔI MỞ LẠI THƯ ƯU ĐÃI ==================== */}
+      {/* ==================== NÚT NỔI MỞ LẠI THƯ ƯU ĐÃI (NHỎ NHẮN & SANG TRỌNG) ==================== */}
       <button
         type="button"
         onClick={() => setShowWelcomeLetter(true)}
-        aria-label="Mở Tâm Thư & Ưu Đãi Hôm Nay"
-        className="fixed bottom-5 left-5 z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#fbf7ee]/95 hover:bg-[#f5edd9] text-[#4a3520] border-2 border-[#d9c7a7] shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all group backdrop-blur-sm"
+        aria-label="Mở Thư Ưu Đãi Hôm Nay"
+        className="fixed bottom-5 left-5 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-800 via-emerald-900 to-teal-950 text-amber-200 border-2 border-emerald-500/40 shadow-xl hover:shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center group cursor-pointer"
         title="Xem Thư Chào & Mã Giảm Giá Hôm Nay"
       >
-        <span className="relative flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-600"></span>
+        {/* Chấm đỏ thông báo nhỏ xinh */}
+        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-600 border-2 border-white flex items-center justify-center text-[8px] font-bold text-white shadow-xs">
+          1
         </span>
-        <Mail size={16} className="text-rose-700" />
-        <span className="font-handwriting text-lg font-bold text-emerald-950 leading-none">
-          Thư Ưu Đãi Hôm Nay
+        {/* Icon phong thư kim loại thanh lịch */}
+        <Mail size={19} className="text-amber-300 group-hover:scale-110 transition-transform" />
+
+        {/* Tooltip nhỏ gọn hiện khi hover chuột */}
+        <span className="absolute left-full ml-2.5 px-2.5 py-1 bg-slate-900/90 backdrop-blur-md text-white text-[11px] font-bold rounded-lg shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+          Thư ưu đãi
         </span>
       </button>
 
