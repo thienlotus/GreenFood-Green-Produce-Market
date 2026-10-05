@@ -143,7 +143,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Nông trại ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100%."
     },
     images: [
-      "https://images.unsplash.com/photo-1598468305048-fb2ce57bc6ff?q=80&w=800&auto=format&fit=crop"
+      "/products/dua-luoi-mat.jpg"
     ],
     variants: [
       { id: "v1", unit: "Trái 1.5kg", price: 99000, comparePrice: 120000 }
@@ -168,7 +168,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Truyền thống 3 đời canh tác giống xoài quý trên đất phù sa sông Tiền."
     },
     images: [
-      "https://images.unsplash.com/photo-1553279768-865429fa0078?q=80&w=800&auto=format&fit=crop"
+      "/products/xoai-cat-hoa-loc.jpg"
     ],
     variants: [
       { id: "v1", unit: "1kg (2-3 trái)", price: 120000, comparePrice: 150000 }
@@ -193,7 +193,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Canh tác giá thể xơ dừa treo cao, không tiếp xúc đất, sạch tuyệt đối."
     },
     images: [
-      "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=800&auto=format&fit=crop"
+      "/products/dau-tay.jpg"
     ],
     variants: [
       { id: "v1", unit: "Hộp 500g", price: 120000, comparePrice: 140000 },
@@ -217,7 +217,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Kiểm nghiệm chất lượng nghiêm ngặt từng chùm trước khi đóng gói."
     },
     images: [
-      "https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=800&auto=format&fit=crop"
+      "/products/nho-mau-don.jpg"
     ],
     variants: [
       { id: "v1", unit: "Chùm 600g", price: 450000, comparePrice: 500000 }
@@ -240,7 +240,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Vườn cam phù sa bồi đắp quanh năm cho trái mọng nước tự nhiên."
     },
     images: [
-      "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=800&auto=format&fit=crop"
+      "/products/cam-sanh.jpg"
     ],
     variants: [
       { id: "v1", unit: "1kg (3-4 trái)", price: 35000, comparePrice: 45000 }
@@ -262,7 +262,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Giống chuối cổ truyền thống vùng đất đỏ bazan Lâm Đồng."
     },
     images: [
-      "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?q=80&w=800&auto=format&fit=crop"
+      "/products/chuoi-laba.jpg"
     ],
     variants: [
       { id: "v1", unit: "Nải (1.2-1.5kg)", price: 45000, comparePrice: 55000 }
@@ -284,7 +284,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Cà phê trồng ở độ cao trên 1000m cho hương thơm tinh khiết."
     },
     images: [
-      "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?q=80&w=800&auto=format&fit=crop"
+      "/products/ca-phe-robusta.jpg"
     ],
     variants: [
       { id: "v1", unit: "Gói 500g (Hạt)", price: 100000, comparePrice: 120000 },
@@ -308,7 +308,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Búp chè hái tay 1 tôm 2 lá lúc sáng sớm giữ trọn hương sương mai."
     },
     images: [
-      "https://images.unsplash.com/photo-1556881286-fc6915169721?q=80&w=800&auto=format&fit=crop"
+      "/products/che-thai-nguyen.jpg"
     ],
     variants: [
       { id: "v1", unit: "Gói 200g", price: 95000, comparePrice: 110000 }
@@ -331,7 +331,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Người gác kèo ong rừng U Minh kinh nghiệm trên 30 năm khai thác bền vững."
     },
     images: [
-      "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=800&auto=format&fit=crop"
+      "/products/mat-ong-rung-tram.jpg"
     ],
     variants: [
       { id: "v1", unit: "Chai 500ml", price: 180000, comparePrice: 210000 },
@@ -355,7 +355,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Canh tác hữu cơ chuẩn quốc tế được trưng bày tại hội chợ Agrishow 2026."
     },
     images: [
-      "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800&auto=format&fit=crop"
+      "/products/rau-huu-co-tong-hop.jpg"
     ],
     variants: [
       { id: "v1", unit: "Combo 2kg (5 loại rau)", price: 85000, comparePrice: 100000 }

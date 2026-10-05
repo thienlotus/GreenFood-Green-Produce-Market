@@ -196,7 +196,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 'p3', 'farmer' => 'Nông Trại Xanh Đà Lạt', 'category' => 'trai-cay',
                 'name' => 'Dưa Lưới Mật Hữu Cơ', 'slug' => 'dua-luoi-mat',
-                'image' => 'https://images.unsplash.com/photo-1598468305048-fb2ce57bc6ff?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/dua-luoi-mat.jpg',
                 'badge' => 'Hữu cơ', 'sold_count' => 89, 'rating' => 4.9, 'is_seasonal' => true,
                 'description' => 'Dưa lưới mật trồng trong nhà màng công nghệ cao tại Đà Lạt. Ruột màu cam đậm, vị ngọt lịm như mật, giòn thơm nức mũi.',
                 'variants' => [
@@ -206,7 +206,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 'p4', 'farmer' => 'Vườn Xoài Ông Năm', 'category' => 'trai-cay',
                 'name' => 'Xoài Cát Hòa Lộc', 'slug' => 'xoai-cat-hoa-loc',
-                'image' => 'https://images.unsplash.com/photo-1553279768-865429fa0078?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/xoai-cat-hoa-loc.jpg',
                 'badge' => 'Mới về', 'sold_count' => 20, 'rating' => 4.7, 'is_seasonal' => true,
                 'description' => 'Xoài cát Hòa Lộc Đồng Tháp loại 1 quả thon dài, vỏ vàng tươi khi chín, thịt quả dẻo mịn không xơ, hương thơm ngào ngạt.',
                 'variants' => [
@@ -216,7 +216,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 'f1', 'farmer' => 'Nông Trại Xanh Đà Lạt', 'category' => 'trai-cay',
                 'name' => 'Dâu Tây Đà Lạt Cấp Đông', 'slug' => 'dau-tay',
-                'image' => 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/dau-tay.jpg',
                 'badge' => 'VietGAP', 'sold_count' => 200, 'rating' => 4.9, 'is_seasonal' => true,
                 'description' => 'Dâu tây giống New Zealand quả đỏ tươi, vị chua ngọt hài hòa tự nhiên. Thu hoạch sáng sớm và cấp đông nhanh chuẩn IQF giữ trọn dinh dưỡng.',
                 'variants' => [
@@ -227,7 +227,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 'f2', 'farmer' => 'Vườn Trái Cây Chú Ba', 'category' => 'trai-cay',
                 'name' => 'Nho Mẫu Đơn Shine Muscat', 'slug' => 'nho-mau-don',
-                'image' => 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/nho-mau-don.jpg',
                 'badge' => 'Cao cấp', 'sold_count' => 15, 'rating' => 4.9, 'is_seasonal' => false,
                 'description' => 'Nho mẫu đơn quả to tròn, vỏ mỏng không hạt, vị ngọt đậm thơm mùi xoài sữa quý tộc.',
                 'variants' => [
@@ -237,7 +237,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 'f3', 'farmer' => 'HTX Bưởi Da Xanh', 'category' => 'di-cho-online',
                 'name' => 'Cam Sành Mọng Nước', 'slug' => 'cam-sanh',
-                'image' => 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/cam-sanh.jpg',
                 'badge' => 'Mọng nước', 'sold_count' => 450, 'rating' => 4.5, 'is_seasonal' => true,
                 'description' => 'Cam sành Vĩnh Long vỏ sần mọng nước, tép vàng ươm, vắt nước uống giải nhiệt và tăng sức đề kháng mỗi ngày.',
                 'variants' => [
@@ -247,7 +247,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 'f4', 'farmer' => 'Nông Trại Xanh Đà Lạt', 'category' => 'di-cho-online',
                 'name' => 'Chuối Laba Trứ Danh', 'slug' => 'chuoi-laba',
-                'image' => 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/chuoi-laba.jpg',
                 'badge' => 'Tiến vua', 'sold_count' => 120, 'rating' => 4.8, 'is_seasonal' => false,
                 'description' => 'Chuối Laba Đà Lạt dẻo thơm, ruột vàng ánh kim, vị ngọt đậm đà đặc trưng từng dâng vua ngày xưa.',
                 'variants' => [
@@ -257,7 +257,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 't1', 'farmer' => 'Trang Trại Mộc Châu', 'category' => 'tra-ca-phe',
                 'name' => 'Cà Phê Robusta Mộc Châu', 'slug' => 'ca-phe-robusta',
-                'image' => 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/ca-phe-robusta.jpg',
                 'badge' => 'Rang mộc', 'sold_count' => 85, 'rating' => 4.7, 'is_seasonal' => false,
                 'description' => 'Cà phê nguyên chất rang mộc hương vị đậm đà, vị đắng thanh quyến rũ, thu hoạch từ cao nguyên Mộc Châu.',
                 'variants' => [
@@ -268,7 +268,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 't2', 'farmer' => 'HTX Chè Thái Nguyên', 'category' => 'tra-ca-phe',
                 'name' => 'Chè Thái Nguyên Tân Cương', 'slug' => 'che-thai-nguyen',
-                'image' => 'https://images.unsplash.com/photo-1556881286-fc6915169721?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/che-thai-nguyen.jpg',
                 'badge' => 'Thượng hạng', 'sold_count' => 95, 'rating' => 4.6, 'is_seasonal' => false,
                 'description' => 'Trà nõn tôm Tân Cương cánh xoăn hương cốm nồng nàn, nước xanh ánh vàng, hậu ngọt sâu lắng chuẩn vị.',
                 'variants' => [
@@ -278,7 +278,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 'd1', 'farmer' => 'Vườn Trái Cây Chú Ba', 'category' => 'dac-san',
                 'name' => 'Mật Ong Rừng Tràm U Minh', 'slug' => 'mat-ong-rung-tram',
-                'image' => 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/mat-ong-rung-tram.jpg',
                 'badge' => 'Rừng 100%', 'sold_count' => 160, 'rating' => 4.9, 'is_seasonal' => false,
                 'description' => 'Mật ong hoa tràm nguyên chất 100% thu hoạch tự nhiên từ rừng tràm U Minh Cà Mau, màu vàng óng, thơm nồng dịu.',
                 'variants' => [
@@ -289,7 +289,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 'a1', 'farmer' => 'Nông Trại Xanh Đà Lạt', 'category' => 'agrishow',
                 'name' => 'Rau Hữu Cơ Tổng Hợp Đà Lạt', 'slug' => 'rau-huu-co-tong-hop',
-                'image' => 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/rau-huu-co-tong-hop.jpg',
                 'badge' => 'Organic', 'sold_count' => 65, 'rating' => 4.9, 'is_seasonal' => true,
                 'description' => 'Combo 5 loại rau củ hữu cơ Đà Lạt: Xà lách lolo, cải kale, cà chua bi cherry, cà rốt baby, ớt chuông ngọt.',
                 'variants' => [
