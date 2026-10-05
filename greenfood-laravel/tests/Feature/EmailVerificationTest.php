@@ -158,4 +158,27 @@ class EmailVerificationTest extends TestCase
         $res3->assertStatus(429)
             ->assertJsonPath('success', false);
     }
+
+    public function test_unverified_user_cannot_login(): void
+    {
+        Mail::fake();
+
+        $this->postJson('/api/register', [
+            'name' => 'Khách Chưa Kích Hoạt',
+            'email' => 'unverified@greenfood.vn',
+            'phone' => '0911223344',
+            'password' => 'password123',
+        ]);
+
+        // Đăng nhập khi chưa xác thực OTP
+        $response = $this->postJson('/api/login', [
+            'account' => 'unverified@greenfood.vn',
+            'password' => 'password123',
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('require_otp', true)
+            ->assertJsonPath('email', 'unverified@greenfood.vn');
+    }
 }

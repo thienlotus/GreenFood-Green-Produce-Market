@@ -40,6 +40,7 @@ import { useCartStore } from '@/store/useCartStore';
 import VietnamAddressSelect from '@/components/VietnamAddressSelect';
 import { parseVietnamAddress } from '@/data/vietnamLocations';
 import { getApiBaseUrl } from '@/lib/api';
+import EmailOtpModal from '@/components/EmailOtpModal';
 
 type ProfileTab = 'overview' | 'orders' | 'addresses' | 'vouchers' | 'security';
 
@@ -89,12 +90,15 @@ export default function ProfilePage() {
     setDefaultAddress,
     userVouchers,
     redeemVoucher,
+    verifyEmailApi,
+    resendOtpApi,
     logout,
   } = useAuthStore();
   const { addItem, setIsOpen: openCartDrawer } = useCartStore();
 
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<ProfileTab>('overview');
+  const [showOtpModal, setShowOtpModal] = useState(false);
 
   // Edit Profile Form State
   const [name, setName] = useState('');
@@ -711,7 +715,26 @@ export default function ProfilePage() {
                       </label>
                       <div className="text-sm font-semibold text-gray-700 px-4 py-2.5 bg-gray-100/70 rounded-xl flex items-center justify-between">
                         <span>{user.email}</span>
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Đã xác minh</span>
+                        {user.email_verified ? (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded flex items-center gap-1">
+                            <CheckCircle2 size={11} /> Đã xác minh
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await resendOtpApi(user.email);
+                                toast.success('Đã gửi mã OTP xác thực mới về email của bạn!');
+                              } catch (e) {}
+                              setShowOtpModal(true);
+                            }}
+                            className="text-[10px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded flex items-center gap-1 transition-colors cursor-pointer"
+                            title="Bấm để nhận mã OTP xác minh email"
+                          >
+                            <AlertCircle size={11} /> Chưa xác minh (Bấm xác thực)
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -1533,6 +1556,25 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
+
+        {/* Modal xác thực OTP cho email chưa kích hoạt */}
+        <EmailOtpModal
+          isOpen={showOtpModal}
+          email={user.email}
+          onVerify={async (otpCode) => {
+            const res = await verifyEmailApi(user.email, otpCode);
+            if (res.success) {
+              toast.success(res.message || 'Xác thực email thành công! Tài khoản đã được kích hoạt.');
+              setShowOtpModal(false);
+              return { success: true, message: res.message };
+            }
+            return { success: false, message: res.message || 'Mã xác thực không hợp lệ!' };
+          }}
+          onResend={async () => {
+            return await resendOtpApi(user.email);
+          }}
+          onClose={() => setShowOtpModal(false)}
+        />
 
       </div>
     </div>

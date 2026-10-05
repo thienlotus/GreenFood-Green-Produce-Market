@@ -103,6 +103,15 @@ export default function LoginPage() {
         return;
       }
 
+      if (res.requireOtp) {
+        setPendingEmail(res.email || username);
+        setPendingDebugOtp(res.debugOtp);
+        setShowOtpModal(true);
+        setError(res.message || 'Tài khoản chưa được kích hoạt email! Vui lòng nhập mã OTP để tiếp tục.');
+        toast.error(res.message || 'Tài khoản chưa kích hoạt email! Vui lòng xác thực OTP.');
+        return;
+      }
+
       setError(res.message || 'Tên đăng nhập hoặc mật khẩu không chính xác!');
       toast.error(res.message || 'Đăng nhập thất bại!');
     } catch (err: any) {

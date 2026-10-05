@@ -185,7 +185,17 @@ interface AuthState {
   userVouchers: VoucherItem[];
   login: (userData: User) => void;
   logout: () => void;
-  authenticate: (identifier: string, password: string) => Promise<{ success: boolean; message: string; user?: User }>;
+  authenticate: (
+    identifier: string,
+    password: string
+  ) => Promise<{
+    success: boolean;
+    message: string;
+    user?: User;
+    requireOtp?: boolean;
+    debugOtp?: string;
+    email?: string;
+  }>;
   register: (data: {
     name: string;
     email: string;
@@ -324,6 +334,17 @@ export const useAuthStore = create<AuthState>()(
 
           const json = await res.json().catch(() => null);
 
+          // Nếu tài khoản chưa xác thực email, Backend trả về require_otp: true
+          if (json && json.require_otp) {
+            return {
+              success: false,
+              requireOtp: true,
+              email: json.email || cleanIdent,
+              debugOtp: json.debug_otp,
+              message: json.message || 'Tài khoản chưa được kích hoạt email! Vui lòng nhập mã OTP để tiếp tục.',
+            };
+          }
+
           if (res.ok && json && json.success && json.data) {
             const dbUser = json.data;
 
@@ -347,6 +368,7 @@ export const useAuthStore = create<AuthState>()(
               tier: dbUser.tier || (dbUser.role === 'admin' ? 'DIAMOND' : 'BRONZE'),
               loyaltyPoints: dbUser.loyaltyPoints || (dbUser.role === 'admin' ? 8500 : 50),
               address: dbUser.address || '',
+              email_verified: Boolean(dbUser.email_verified),
               status: dbUser.status || 'Hoạt động',
               createdAt: dbUser.createdAt || new Date().toISOString().split('T')[0],
             };
@@ -416,6 +438,15 @@ export const useAuthStore = create<AuthState>()(
 
         if (!isPasswordMatch) {
           return { success: false, message: 'Mật khẩu không chính xác! Vui lòng thử lại.' };
+        }
+
+        if (!found.email_verified && found.role !== 'admin') {
+          return {
+            success: false,
+            requireOtp: true,
+            email: found.email,
+            message: 'Tài khoản chưa được xác thực email! Vui lòng nhập mã OTP để kích hoạt tài khoản.',
+          };
         }
 
         const { passwordHash: _, ...safeUser } = found;
@@ -624,9 +655,16 @@ export const useAuthStore = create<AuthState>()(
             const userAddrs = getScopedUserAddresses(verifiedUser.id, book, verifiedUser);
             book[verifiedUser.id] = userAddrs;
 
+            const accounts = (get().registeredAccounts || []).map((a) =>
+              a.id === verifiedUser.id || a.email.toLowerCase() === verifiedUser.email.toLowerCase()
+                ? { ...a, email_verified: true }
+                : a
+            );
+
             set({
               user: verifiedUser,
               isAuthenticated: true,
+              registeredAccounts: accounts,
               savedAddresses: userAddrs,
               userAddressBook: book,
             });

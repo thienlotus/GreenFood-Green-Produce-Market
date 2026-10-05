@@ -265,6 +265,41 @@ class UserService
             ];
         }
 
+        // Bắt buộc xác thực email trước khi được phép đăng nhập (Ngoại trừ Admin)
+        if (!$user->email_verified && strtoupper($user->role) !== 'ADMIN') {
+            $pending = $this->emailVerificationRepository->findLatestPending($user->email);
+            $otpCode = null;
+            $mailSent = false;
+
+            if ($pending && !$pending->isExpired()) {
+                $otpCode = $pending->otp_code;
+            } else {
+                $this->emailVerificationRepository->invalidatePreviousPending($user->email);
+                $otpCode = sprintf('%06d', mt_rand(0, 999999));
+                $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
+                try {
+                    Mail::to($user->email)->send(new VerificationCodeMail($otpCode, $user->full_name, 10));
+                    $mailSent = true;
+                } catch (\Throwable $e) {
+                    Log::error('Lỗi gửi email xác thực OTP khi đăng nhập: ' . $e->getMessage(), [
+                        'user_id' => $user->id,
+                        'email' => $user->email,
+                    ]);
+                }
+            }
+
+            Log::info("GreenFood Login Blocked: Email not verified for [{$user->email}]");
+
+            return [
+                'success' => false,
+                'status' => 403,
+                'require_otp' => true,
+                'email' => $user->email,
+                'message' => 'Tài khoản chưa được kích hoạt email! Vui lòng nhập mã OTP đã gửi đến hòm thư Gmail của bạn để tiếp tục.',
+                'debug_otp' => $mailSent ? null : $otpCode,
+            ];
+        }
+
         return [
             'success' => true,
             'status' => 200,
@@ -275,6 +310,7 @@ class UserService
                 'full_name' => $user->full_name,
                 'email' => $user->email,
                 'phone' => $user->phone,
+                'email_verified' => (bool) $user->email_verified,
                 'avatar' => $user->avatar_url,
                 'address' => $user->address ?? '',
                 'role' => strtolower($user->role),
@@ -313,6 +349,7 @@ class UserService
             'full_name' => $updated->full_name,
             'email' => $updated->email,
             'phone' => $updated->phone,
+            'email_verified' => (bool) $updated->email_verified,
             'address' => $updated->address ?? '',
             'role' => strtolower($updated->role)
         ];
