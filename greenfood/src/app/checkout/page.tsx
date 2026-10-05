@@ -21,6 +21,9 @@ export default function CheckoutPage() {
   const [provinces, setProvinces] = useState<any[]>([]);
   const [districts, setDistricts] = useState<any[]>([]);
   const [wards, setWards] = useState<any[]>([]);
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [loadingWards, setLoadingWards] = useState(false);
   
   const [selectedProvinceId, setSelectedProvinceId] = useState<number | ''>('');
   const [selectedDistrictId, setSelectedDistrictId] = useState<number | ''>('');
@@ -41,14 +44,21 @@ export default function CheckoutPage() {
   const [isGeneratingMomo, setIsGeneratingMomo] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     async function loadProvinces() {
+      setLoadingProvinces(true);
       const data = await getGhnProvinces();
-      setProvinces(data);
+      if (isMounted) {
+        setProvinces(data || []);
+        setLoadingProvinces(false);
+      }
     }
     loadProvinces();
+    return () => { isMounted = false; };
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     async function loadDistricts() {
       if (selectedProvinceId) {
         setDistricts([]);
@@ -56,24 +66,45 @@ export default function CheckoutPage() {
         setSelectedDistrictId('');
         setSelectedWardCode('');
         setGhnShippingFee(null);
+        setLoadingDistricts(true);
         const data = await getGhnDistricts(selectedProvinceId as number);
-        setDistricts(data);
+        if (isMounted) {
+          setDistricts(data || []);
+          setLoadingDistricts(false);
+        }
+      } else {
+        setDistricts([]);
+        setWards([]);
+        setSelectedDistrictId('');
+        setSelectedWardCode('');
+        setGhnShippingFee(null);
       }
     }
     loadDistricts();
+    return () => { isMounted = false; };
   }, [selectedProvinceId]);
 
   useEffect(() => {
+    let isMounted = true;
     async function loadWards() {
       if (selectedDistrictId) {
         setWards([]);
         setSelectedWardCode('');
         setGhnShippingFee(null);
+        setLoadingWards(true);
         const data = await getGhnWards(selectedDistrictId as number);
-        setWards(data);
+        if (isMounted) {
+          setWards(data || []);
+          setLoadingWards(false);
+        }
+      } else {
+        setWards([]);
+        setSelectedWardCode('');
+        setGhnShippingFee(null);
       }
     }
     loadWards();
+    return () => { isMounted = false; };
   }, [selectedDistrictId]);
 
   useEffect(() => {
@@ -279,10 +310,13 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Tỉnh/Thành phố *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tỉnh/Thành phố * {loadingProvinces && <span className="text-emerald-600 text-xs font-normal animate-pulse">Đang tải...</span>}
+                    </label>
                     <select value={selectedProvinceId} onChange={(e) => setSelectedProvinceId(Number(e.target.value) || '')}
-                      className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all ${formErrors.province ? 'border-rose-400 bg-rose-50' : 'border-gray-300'}`}>
-                      <option value="">-- Chọn Tỉnh/Thành --</option>
+                      disabled={loadingProvinces}
+                      className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all ${formErrors.province ? 'border-rose-400 bg-rose-50' : 'border-gray-300'} disabled:bg-gray-100 disabled:text-gray-400`}>
+                      <option value="">{loadingProvinces ? '-- Đang tải Tỉnh/Thành... --' : '-- Chọn Tỉnh/Thành --'}</option>
                       {provinces.map(p => (
                         <option key={p.ProvinceID} value={p.ProvinceID}>{p.ProvinceName}</option>
                       ))}
@@ -290,11 +324,13 @@ export default function CheckoutPage() {
                     {formErrors.province && <p className="text-rose-500 text-xs mt-1">{formErrors.province}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Quận/Huyện *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Quận/Huyện * {loadingDistricts && <span className="text-emerald-600 text-xs font-normal animate-pulse">Đang tải...</span>}
+                    </label>
                     <select value={selectedDistrictId} onChange={(e) => setSelectedDistrictId(Number(e.target.value) || '')}
-                      disabled={!selectedProvinceId}
-                      className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all ${formErrors.district ? 'border-rose-400 bg-rose-50' : 'border-gray-300'} disabled:bg-gray-100`}>
-                      <option value="">-- Chọn Quận/Huyện --</option>
+                      disabled={!selectedProvinceId || loadingDistricts}
+                      className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all ${formErrors.district ? 'border-rose-400 bg-rose-50' : 'border-gray-300'} disabled:bg-gray-100 disabled:text-gray-400`}>
+                      <option value="">{loadingDistricts ? '-- Đang tải Quận/Huyện... --' : '-- Chọn Quận/Huyện --'}</option>
                       {districts.map(d => (
                         <option key={d.DistrictID} value={d.DistrictID}>{d.DistrictName}</option>
                       ))}
@@ -302,11 +338,13 @@ export default function CheckoutPage() {
                     {formErrors.district && <p className="text-rose-500 text-xs mt-1">{formErrors.district}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phường/Xã *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phường/Xã * {loadingWards && <span className="text-emerald-600 text-xs font-normal animate-pulse">Đang tải...</span>}
+                    </label>
                     <select value={selectedWardCode} onChange={(e) => setSelectedWardCode(e.target.value || '')}
-                      disabled={!selectedDistrictId}
-                      className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all ${formErrors.ward ? 'border-rose-400 bg-rose-50' : 'border-gray-300'} disabled:bg-gray-100`}>
-                      <option value="">-- Chọn Phường/Xã --</option>
+                      disabled={!selectedDistrictId || loadingWards}
+                      className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all ${formErrors.ward ? 'border-rose-400 bg-rose-50' : 'border-gray-300'} disabled:bg-gray-100 disabled:text-gray-400`}>
+                      <option value="">{loadingWards ? '-- Đang tải Phường/Xã... --' : '-- Chọn Phường/Xã --'}</option>
                       {wards.map(w => (
                         <option key={w.WardCode} value={w.WardCode}>{w.WardName}</option>
                       ))}

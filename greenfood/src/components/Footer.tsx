@@ -188,10 +188,6 @@ export default function Footer() {
 
         <div className="border-t border-emerald-800 pt-8 text-center text-xs text-emerald-400/80 flex flex-col md:flex-row justify-between items-center gap-4">
           <p>© 2026 Bản quyền thuộc về Công ty Cổ phần GreenFood - Nông Sản Chuẩn Sạch Cho Mọi Nhà.</p>
-          <div className="flex items-center gap-4">
-            <img src="https://images.dmca.com/Badges/dmca_protected_sml_120n.png?ID=7d863f69-d48e-4a64-af08-7a544bebb148" alt="DMCA" className="h-6" />
-            <img src="https://luatminhkhue.vn/nhan-dien-thuong-hieu/images/bocongthuong.png" alt="Bộ công thương" className="h-10 grayscale opacity-70" />
-          </div>
         </div>
       </div>
     </footer>
