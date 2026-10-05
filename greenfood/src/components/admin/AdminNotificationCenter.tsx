@@ -88,7 +88,7 @@ export default function AdminNotificationCenter() {
               description: `${customerName} vừa đặt đơn trị giá ${ord.total}`,
               timestamp: ord.date || 'Vừa xong',
               isRead: readIds.has(`ord-${ord.id}`),
-              link: '/admin/orders',
+              link: '/admin/orders/',
               badge: isPending ? 'Chờ duyệt' : ord.status,
             });
           });
@@ -112,7 +112,7 @@ export default function AdminNotificationCenter() {
               description: `${custName}: "${lastMsg.length > 50 ? lastMsg.slice(0, 50) + '...' : lastMsg}"`,
               timestamp: c.updated_at ? new Date(c.updated_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Vừa xong',
               isRead: !hasUnread || readIds.has(`chat-${c.id}`),
-              link: '/admin/chat',
+              link: '/admin/chat/',
               badge: c.status === 'open' ? 'Chưa nhận' : 'Live Chat',
             });
           });
@@ -129,7 +129,7 @@ export default function AdminNotificationCenter() {
         description: 'Tồn kho hiện tại chỉ còn 5 hộp (Dưới mức an toàn 10)',
         timestamp: 'Hôm nay',
         isRead: readIds.has('stock-dau-tay'),
-        link: '/admin/products',
+        link: '/admin/products/',
         badge: 'Tồn kho thấp',
       });
 

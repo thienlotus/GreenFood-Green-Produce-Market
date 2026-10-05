@@ -8,25 +8,22 @@ import { toast } from 'react-hot-toast';
 export default function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuthStore();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (mounted) {
+    if (hydrated) {
       const role = user?.role?.toLowerCase();
       if (!isAuthenticated || role !== 'admin') {
         toast.error('Truy cập bị từ chối! Bạn không có quyền quản trị.');
         router.push('/login');
       }
     }
-  }, [mounted, isAuthenticated, user, router]);
+  }, [hydrated, isAuthenticated, user, router]);
 
-  if (!mounted) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">Đang kiểm tra quyền truy cập...</div>;
-  }
-
+  // Tránh chớp trắng toàn màn hình khi chuyển tab quản lý
   return <>{children}</>;
 }

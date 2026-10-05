@@ -173,7 +173,7 @@ export default function AdminDashboard() {
           </button>
 
           <Link
-            href="/admin/orders"
+            href="/admin/orders/"
             className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm shadow-emerald-600/20 transition-all"
           >
             <ShoppingBag size={14} />
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
             </h3>
           </div>
           <Link 
-            href="/admin/orders" 
+            href="/admin/orders/" 
             className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 group"
           >
             <span>Tất cả đơn hàng</span>
@@ -235,7 +235,7 @@ export default function AdminDashboard() {
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <Link 
-            href="/admin/orders?status=pending"
+            href="/admin/orders/?status=pending"
             className="p-4 rounded-xl bg-amber-50/70 border border-amber-200/60 hover:bg-amber-100/70 transition-all text-center group"
           >
             <div className="flex items-center justify-center gap-1 text-amber-700 text-xs font-semibold">
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
           </Link>
 
           <Link 
-            href="/admin/orders?status=confirmed"
+            href="/admin/orders/?status=confirmed"
             className="p-4 rounded-xl bg-blue-50/70 border border-blue-200/60 hover:bg-blue-100/70 transition-all text-center group"
           >
             <div className="flex items-center justify-center gap-1 text-blue-700 text-xs font-semibold">
@@ -257,7 +257,7 @@ export default function AdminDashboard() {
           </Link>
 
           <Link 
-            href="/admin/orders?status=shipping"
+            href="/admin/orders/?status=shipping"
             className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-200/60 hover:bg-indigo-100/70 transition-all text-center group"
           >
             <div className="flex items-center justify-center gap-1 text-indigo-700 text-xs font-semibold">
@@ -268,7 +268,7 @@ export default function AdminDashboard() {
           </Link>
 
           <Link 
-            href="/admin/orders?status=delivered"
+            href="/admin/orders/?status=delivered"
             className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/60 hover:bg-emerald-100/70 transition-all text-center group"
           >
             <div className="flex items-center justify-center gap-1 text-emerald-700 text-xs font-semibold">
@@ -279,7 +279,7 @@ export default function AdminDashboard() {
           </Link>
 
           <Link 
-            href="/admin/orders?status=cancelled"
+            href="/admin/orders/?status=cancelled"
             className="p-4 rounded-xl bg-rose-50/70 border border-rose-200/60 hover:bg-rose-100/70 transition-all text-center group"
           >
             <div className="flex items-center justify-center gap-1 text-rose-700 text-xs font-semibold">
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
 
           <div className="mt-5 pt-4 border-t border-slate-100">
             <Link 
-              href="/admin/products"
+              href="/admin/products/"
               className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
             >
               <span>Quản lý kho sản phẩm</span>
@@ -392,7 +392,7 @@ export default function AdminDashboard() {
             <p className="text-xs text-slate-400 mt-0.5">Danh sách các đơn hàng mới nhất phát sinh trên sàn</p>
           </div>
           <Link 
-            href="/admin/orders" 
+            href="/admin/orders/" 
             className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
           >
             <span>Xem toàn bộ</span>

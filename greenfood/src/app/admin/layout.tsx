@@ -55,42 +55,45 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       title: 'TỔNG QUAN',
       items: [
-        { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+        { name: 'Dashboard', href: '/admin/', icon: LayoutDashboard },
       ],
     },
     {
       title: 'QUẢN LÝ KINH DOANH',
       items: [
-        { name: 'Đơn hàng', href: '/admin/orders', icon: ShoppingBag, badge: 'Mới' },
-        { name: 'Sản phẩm', href: '/admin/products', icon: Package },
-        { name: 'Nông hộ & Vườn', href: '/admin/farmers', icon: Tractor },
-        { name: 'Phí giao hàng GHN', href: '/admin/shipping', icon: Truck },
+        { name: 'Đơn hàng', href: '/admin/orders/', icon: ShoppingBag, badge: 'Mới' },
+        { name: 'Sản phẩm', href: '/admin/products/', icon: Package },
+        { name: 'Nông hộ & Vườn', href: '/admin/farmers/', icon: Tractor },
+        { name: 'Phí giao hàng GHN', href: '/admin/shipping/', icon: Truck },
       ],
     },
     {
       title: 'CHĂM SÓC & HỖ TRỢ',
       items: [
-        { name: 'Live Chat & AI Bot', href: '/admin/chat', icon: MessageCircle, badge: 'AI Flash', highlight: true },
-        { name: 'Khách hàng & User', href: '/admin/customers', icon: Users },
+        { name: 'Live Chat & AI Bot', href: '/admin/chat/', icon: MessageCircle, badge: 'AI Flash', highlight: true },
+        { name: 'Khách hàng & User', href: '/admin/customers/', icon: Users },
       ],
     },
     {
       title: 'CẤU HÌNH HỆ THỐNG',
       items: [
-        { name: 'Cài đặt chung', href: '/admin/settings', icon: Settings },
+        { name: 'Cài đặt chung', href: '/admin/settings/', icon: Settings },
       ],
     },
   ];
 
+  const normalizePath = (p: string) => p?.replace(/\/+$/, '') || '/';
+
   const getPageTitle = () => {
-    if (pathname === '/admin') return 'Bảng điều khiển Tổng quan';
-    if (pathname.startsWith('/admin/orders')) return 'Quản lý Đơn hàng';
-    if (pathname.startsWith('/admin/products')) return 'Quản lý Sản phẩm';
-    if (pathname.startsWith('/admin/chat')) return 'Live Chat & Trợ lý AI';
-    if (pathname.startsWith('/admin/customers')) return 'Người dùng & Phân quyền';
-    if (pathname.startsWith('/admin/farmers')) return 'Nông hộ & Vùng trồng';
-    if (pathname.startsWith('/admin/shipping')) return 'Cước phí vận chuyển GHN';
-    if (pathname.startsWith('/admin/settings')) return 'Cài đặt hệ thống';
+    const norm = normalizePath(pathname);
+    if (norm === '/admin') return 'Bảng điều khiển Tổng quan';
+    if (norm.startsWith('/admin/orders')) return 'Quản lý Đơn hàng';
+    if (norm.startsWith('/admin/products')) return 'Quản lý Sản phẩm';
+    if (norm.startsWith('/admin/chat')) return 'Live Chat & Trợ lý AI';
+    if (norm.startsWith('/admin/customers')) return 'Người dùng & Phân quyền';
+    if (norm.startsWith('/admin/farmers')) return 'Nông hộ & Vùng trồng';
+    if (norm.startsWith('/admin/shipping')) return 'Cước phí vận chuyển GHN';
+    if (norm.startsWith('/admin/settings')) return 'Cài đặt hệ thống';
     return 'Quản trị hệ thống';
   };
 
@@ -114,7 +117,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Brand Header */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800/80 bg-slate-950/40">
             <div className="flex items-center gap-1.5 overflow-hidden">
-              <BrandLogo variant="dark" size="sm" href="/admin" showTagline={true} />
+              <BrandLogo variant="dark" size="sm" href="/admin/" showTagline={true} />
               <span className="text-[9px] font-extrabold tracking-wider bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30 uppercase shrink-0">
                 ADMIN
               </span>
@@ -136,7 +139,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {group.title}
                 </p>
                 {group.items.map((item) => {
-                  const isActive = pathname === item.href;
+                  const isActive = normalizePath(pathname) === normalizePath(item.href);
                   const Icon = item.icon;
 
                   return (
@@ -182,10 +185,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="p-3.5 border-t border-slate-800/80 bg-slate-950/40 space-y-2">
             <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-slate-800/40 border border-slate-800/60">
               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-bold text-sm shadow">
-                {cleanVietnameseMojibake(user?.name) ? cleanVietnameseMojibake(user?.name).charAt(0).toUpperCase() : 'A'}
+                {(() => {
+                  const cleaned = cleanVietnameseMojibake(user?.name);
+                  return (cleaned ? cleaned.charAt(0).toUpperCase() : 'Q');
+                })()}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-white truncate">{cleanVietnameseMojibake(user?.name) || 'Lê Vũ Thiên'}</p>
+                <p className="text-xs font-semibold text-white truncate">
+                  {(() => {
+                    const cleaned = cleanVietnameseMojibake(user?.name);
+                    if (!cleaned || cleaned.toLowerCase().includes('quản trị') || cleaned.toLowerCase().includes('admin')) {
+                      return 'Quản trị viên GreenFood';
+                    }
+                    return cleaned;
+                  })()}
+                </p>
                 <p className="text-[11px] text-emerald-400 truncate">Quản trị viên trưởng</p>
               </div>
             </div>
@@ -255,7 +269,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
               {/* Profile Avatar */}
               <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                {cleanVietnameseMojibake(user?.name) ? cleanVietnameseMojibake(user?.name).charAt(0).toUpperCase() : 'A'}
+                {(() => {
+                  const cleaned = cleanVietnameseMojibake(user?.name);
+                  return (cleaned ? cleaned.charAt(0).toUpperCase() : 'Q');
+                })()}
               </div>
             </div>
           </header>
