@@ -22,6 +22,8 @@ class OrderController extends Controller
             'shipping_address' => 'required|string',
             'shipping_zone_id' => 'nullable|string',
             'shipping_fee' => 'nullable|numeric|min:0',
+            'to_district_id' => 'nullable|integer',
+            'to_ward_code' => 'nullable|string',
             'payment_method' => 'required|in:COD,BANK_TRANSFER,MOMO,VNPAY',
             'items' => 'required|array|min:1',
             'items.*.product_name' => 'required|string',

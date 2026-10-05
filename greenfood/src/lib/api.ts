@@ -439,6 +439,9 @@ export async function createOrder(payload: {
   toDistrictId?: number;
   toWardCode?: string;
   paymentMethod: string;
+  trackingNumber?: string;
+  paymentStatus?: string;
+  status?: string;
   note?: string;
   items: OrderItemPayload[];
 }): Promise<{ success: boolean; message: string; trackingNumber?: string; orderId?: string }> {
@@ -460,6 +463,9 @@ export async function createOrder(payload: {
         to_district_id: payload.toDistrictId,
         to_ward_code: payload.toWardCode,
         payment_method: payload.paymentMethod,
+        tracking_number: payload.trackingNumber,
+        payment_status: payload.paymentStatus,
+        status: payload.status,
         note: payload.note,
         items: payload.items.map(it => ({
           product_id: it.productId,
@@ -681,6 +687,64 @@ export async function checkMomoPaymentStatus(orderId: string): Promise<any> {
     return res?.data || null;
   } catch (error) {
     console.error('[API] checkMomoPaymentStatus error:', error);
+    return null;
+  }
+}
+
+export interface SepayPaymentResponse {
+  success: boolean;
+  orderId?: string;
+  amount?: number;
+  bank?: string;
+  accountNumber?: string;
+  accountName?: string;
+  description?: string;
+  qrCodeUrl?: string;
+  message?: string;
+}
+
+export interface SepayStatusResponse {
+  success: boolean;
+  isPaid: boolean;
+  status: 'pending' | 'paid' | 'failed';
+  orderId?: string;
+  amount?: number;
+  message?: string;
+}
+
+export async function createSepayPayment(
+  orderId: string,
+  amount: number,
+  orderInfo?: string
+): Promise<SepayPaymentResponse> {
+  try {
+    const cleanId = orderId.replace('#', '');
+    const res = await fetchApi<SepayPaymentResponse>('/payment/sepay/create', {
+      method: 'POST',
+      body: JSON.stringify({
+        order_id: cleanId,
+        amount: Math.round(amount),
+        order_info: orderInfo || `Thanh toán đơn hàng GreenFood #${cleanId}`
+      })
+    });
+
+    return res || { success: false, message: 'Không thể kết nối đến cổng SePay VietQR' };
+  } catch (error) {
+    console.error('[API] createSepayPayment error:', error);
+    return { success: false, message: 'Lỗi khi gọi API SePay' };
+  }
+}
+
+export async function checkSepayStatus(orderId: string): Promise<SepayStatusResponse | null> {
+  try {
+    const cleanId = orderId.replace('#', '');
+    const res = await fetchApi<SepayStatusResponse>('/payment/sepay/check-status', {
+      method: 'POST',
+      body: JSON.stringify({ order_id: cleanId })
+    });
+    return res || null;
+  } catch (error) {
+    console.error('[API] checkSepayStatus error:', error);
     return null;
   }
 }

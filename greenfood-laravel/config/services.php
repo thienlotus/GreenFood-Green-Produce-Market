@@ -63,4 +63,13 @@ return [
         'notify_url' => env('MOMO_NOTIFY_URL', 'http://localhost:8000/api/v1/payment/momo/callback'),
     ],
 
+    // Cổng thanh toán SePay VietQR (Chuyển khoản ngân hàng tự động)
+    'sepay' => [
+        'api_token' => env('SEPAY_API_TOKEN', '96Z1XOTILFILNUUKPR1EVMVABR2EPETBZAYACPLH3QNP5YIO4GGRTK5XHIW92DMQ'),
+        'webhook_api_key' => env('SEPAY_WEBHOOK_API_KEY', '96Z1XOTILFILNUUKPR1EVMVABR2EPETBZAYACPLH3QNP5YIO4GGRTK5XHIW92DMQ'),
+        'account_number' => env('SEPAY_ACCOUNT_NUMBER', '0987654321'),
+        'bank_name' => env('SEPAY_BANK_NAME', 'MBBank'),
+        'account_name' => env('SEPAY_ACCOUNT_NAME', 'CONG TY GREENFOOD'),
+    ],
+
 ];

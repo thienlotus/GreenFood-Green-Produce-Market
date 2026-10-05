@@ -12,6 +12,7 @@ class Order extends Model
 
     protected $fillable = [
         'tracking_number',
+        'ghn_order_code',
         'user_id',
         'customer_name',
         'customer_phone',

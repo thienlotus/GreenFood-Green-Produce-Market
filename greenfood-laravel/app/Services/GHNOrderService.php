@@ -23,35 +23,50 @@ class GHNOrderService
      */
     public function create(Order $order, string $toWardCode, int $toDistrictId, bool $isPaid = false): array
     {
+        if (!$order->relationLoaded('items')) {
+            $order->load('items');
+        }
+
         $items = [];
         $weight = 0;
 
         // 1. Duyệt qua từng sản phẩm trong đơn để định dạng mảng items và tính tổng khối lượng
         foreach ($order->items as $item) {
-            // Mặc định quy ước 200g
             $itemWeight = 200; 
-            $weight += $itemWeight * (int) $item->quantity;
+            $weight += $itemWeight * max(1, (int) $item->quantity);
             
             $items[] = [
-                // Load product relation to get name if possible
-                'name' => $item->product ? $item->product->name : 'Sản phẩm nông sản',
-                'quantity' => (int) $item->quantity,
-                'price' => (int) $item->price,
+                'name' => !empty($item->product_name) ? (string) $item->product_name : ($item->product?->name ?? 'Sản phẩm nông sản'),
+                'quantity' => max(1, (int) $item->quantity),
+                'price' => (int) ($item->price_at_time ?? $item->price ?? 0),
                 'weight' => $itemWeight,
             ];
         }
 
+        if (empty($items)) {
+            $items[] = [
+                'name' => 'Sản phẩm nông sản GreenFood',
+                'quantity' => 1,
+                'price' => (int) $order->total_amount,
+                'weight' => 200,
+            ];
+            $weight = 200;
+        }
+
+        $orderCode = $order->tracking_number ?? $order->id;
+        $note = !empty($order->note) ? "{$order->note} (Đơn #{$orderCode})" : "Đơn hàng #{$orderCode}";
+
         // 2. Gửi toàn bộ thông tin người nhận và bưu kiện sang GHNService
         return $this->ghn->createOrder([
             'payment_type_id' => 2,                // 1: Khách trả ship, 2: Cửa hàng trả ship cho GHN
-            'note' => 'Đơn hàng #' . $order->id, // Ghi chú in trên tem vận đơn
+            'note' => $note,                       // Ghi chú in trên tem vận đơn
             'required_note' => 'KHONGCHOXEMHANG',  // Quy định xem hàng: KHONGCHOXEMHANG / CHOXEMHANGKHONGTHU
             'to_name' => $order->customer_name,    // Họ tên người nhận hàng
             'to_phone' => $order->customer_phone,  // Số điện thoại người nhận
             'to_address' => $order->shipping_address, // Địa chỉ chi tiết (số nhà, ngõ ngách)
-            'to_ward_code' => $toWardCode, // From frontend
-            'to_district_id' => $toDistrictId, // From frontend
-            'cod_amount' => $isPaid ? 0 : (int) $order->total_amount, // Tiền thu hộ COD (bằng 0 nếu khách đã thanh toán online)
+            'to_ward_code' => (string) $toWardCode, // From frontend
+            'to_district_id' => (int) $toDistrictId, // From frontend
+            'cod_amount' => $isPaid ? 0 : (int) round($order->total_amount), // Tiền thu hộ COD (bằng 0 nếu khách đã thanh toán online)
             'weight' => $weight > 0 ? $weight : 200,           // Tổng khối lượng (gram)
             'length' => 15,                         // Chiều dài gói hàng (cm)
             'width' => 15,                          // Chiều rộng gói hàng (cm)

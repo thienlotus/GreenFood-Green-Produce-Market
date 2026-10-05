@@ -26,6 +26,7 @@ class OrderRepository
         $code = strtoupper(trim(str_replace(['#', '{', '}', ' '], '', $id)));
         return Order::where('id', $id)
             ->orWhere('tracking_number', $code)
+            ->orWhere('ghn_order_code', $code)
             ->with(['items', 'shippingZone'])
             ->first();
     }
@@ -50,6 +51,7 @@ class OrderRepository
             $search = trim($filters['search']);
             $query->where(function ($q) use ($search) {
                 $q->where('tracking_number', 'like', "%{$search}%")
+                  ->orWhere('ghn_order_code', 'like', "%{$search}%")
                   ->orWhere('customer_name', 'like', "%{$search}%")
                   ->orWhere('customer_phone', 'like', "%{$search}%");
             });

@@ -3,13 +3,16 @@
 namespace App\Modules\Order\Services;
 
 use App\Modules\Order\Repositories\OrderRepository;
+use App\Services\GHNOrderService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class OrderService
 {
     public function __construct(
-        protected OrderRepository $orderRepository
+        protected OrderRepository $orderRepository,
+        protected GHNOrderService $ghnOrderService
     ) {}
 
     public function placeOrder(array $data): array
@@ -30,7 +33,7 @@ class OrderService
                 $shippingFee = ($zone && $itemsTotal >= $zone->free_ship_minimum) ? 0 : ($zone ? (float)$zone->base_fee : 0);
             }
             $totalAmount = $itemsTotal + $shippingFee;
-            $trackingNumber = 'GF' . mt_rand(100000, 999999);
+            $trackingNumber = !empty($data['tracking_number']) ? $data['tracking_number'] : ('GF' . mt_rand(100000, 999999));
 
             $order = $this->orderRepository->createOrder([
                 'id' => (string) Str::uuid(),
@@ -42,8 +45,9 @@ class OrderService
                 'shipping_zone_id' => $zoneId,
                 'shipping_fee' => $shippingFee,
                 'total_amount' => $totalAmount,
-                'status' => 'PENDING',
+                'status' => !empty($data['status']) ? $data['status'] : 'PENDING',
                 'payment_method' => $data['payment_method'],
+                'payment_status' => $data['payment_status'] ?? 'unpaid',
                 'note' => $data['note'] ?? null,
                 'shipper_name' => 'Trần Minh Đức',
                 'shipper_phone' => '0912345678',
@@ -71,11 +75,44 @@ class OrderService
 
             DB::commit();
 
+            // Tự động đẩy đơn hàng sang Giao Hàng Nhanh (GHN) nếu có thông tin quận/huyện và phường/xã
+            $ghnOrderCode = null;
+            if (!empty($data['to_district_id']) && !empty($data['to_ward_code'])) {
+                try {
+                    $isPaid = ($order->payment_status === 'paid' || in_array($data['payment_method'], ['BANK_TRANSFER', 'MOMO', 'VNPAY']));
+                    $ghnRes = $this->ghnOrderService->create(
+                        $order,
+                        (string)$data['to_ward_code'],
+                        (int)$data['to_district_id'],
+                        $isPaid
+                    );
+
+                    if (($ghnRes['code'] ?? 0) === 200 && !empty($ghnRes['data']['order_code'])) {
+                        $ghnOrderCode = $ghnRes['data']['order_code'];
+                        $order->ghn_order_code = $ghnOrderCode;
+
+                        // Nếu khách không có mã tracking tùy chỉnh (như COD), lấy mã vận đơn GHN làm tracking_number
+                        if (empty($data['tracking_number'])) {
+                            $order->tracking_number = $ghnOrderCode;
+                            $trackingNumber = $ghnOrderCode;
+                        }
+                        $order->save();
+
+                        Log::info("GHN Push Success: Đơn #{$order->id} đã đẩy lên GHN với mã: {$ghnOrderCode}");
+                    } else {
+                        Log::warning("GHN Push Failed cho đơn #{$order->id}: " . json_encode($ghnRes, JSON_UNESCAPED_UNICODE));
+                    }
+                } catch (\Throwable $e) {
+                    Log::error("GHN Push Exception cho đơn #{$order->id}: " . $e->getMessage());
+                }
+            }
+
             return [
                 'success' => true,
                 'data' => [
                     'order_id' => $order->id,
                     'tracking_number' => $trackingNumber,
+                    'ghn_order_code' => $ghnOrderCode,
                     'total_amount' => $totalAmount,
                     'shipping_fee' => $shippingFee,
                     'status' => $order->status
@@ -108,6 +145,7 @@ class OrderService
                 'id' => '#' . $order->tracking_number,
                 'order_uuid' => $order->id,
                 'tracking_number' => $order->tracking_number,
+                'ghn_order_code' => $order->ghn_order_code,
                 'customer' => $order->customer_name,
                 'phone' => $order->customer_phone,
                 'email' => $order->customer_email,
@@ -273,6 +311,7 @@ class OrderService
 
         return [
             'id' => $order->tracking_number,
+            'ghn_order_code' => $order->ghn_order_code,
             'customer' => $order->customer_name,
             'phone' => $order->customer_phone,
             'address' => $order->shipping_address,

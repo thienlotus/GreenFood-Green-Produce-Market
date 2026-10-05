@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useCartStore } from '@/store/useCartStore';
-import { ChevronLeft, CheckCircle, ChevronRight, MapPin, CreditCard, Smartphone, Building2, Banknote, ShieldCheck, Truck, Package } from 'lucide-react';
+import { ChevronLeft, CheckCircle, ChevronRight, MapPin, CreditCard, Smartphone, Building2, Banknote, ShieldCheck, Truck, Package, Copy, Check, QrCode, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getGhnProvinces, getGhnDistricts, getGhnWards, calculateGhnShippingFee, createOrder, createMomoPayment } from '@/lib/api';
+import { getGhnProvinces, getGhnDistricts, getGhnWards, calculateGhnShippingFee, createOrder, createMomoPayment, createSepayPayment, checkSepayStatus, SepayPaymentResponse } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 
 // Fallback zones logic removed since we use GHN directly
@@ -39,6 +39,18 @@ export default function CheckoutPage() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [momoData, setMomoData] = useState<{ payUrl?: string; qrCodeUrl?: string } | null>(null);
   const [isGeneratingMomo, setIsGeneratingMomo] = useState(false);
+  const [sepayData, setSepayData] = useState<SepayPaymentResponse | null>(null);
+  const [isGeneratingSepay, setIsGeneratingSepay] = useState(false);
+  const [isSepayPaid, setIsSepayPaid] = useState(false);
+  const [tempOrderId, setTempOrderId] = useState('');
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    toast.success(`Đã sao chép ${field}!`);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   useEffect(() => {
     async function loadProvinces() {
@@ -91,7 +103,9 @@ export default function CheckoutPage() {
   }, [selectedDistrictId, selectedWardCode, items]);
 
   const totalAmount = items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const shippingFee = ghnShippingFee || 0;
+  const isFreeShipping = totalAmount >= 300000;
+  const rawShippingFee = ghnShippingFee !== null ? ghnShippingFee : (selectedWardCode ? 28000 : null);
+  const shippingFee = (selectedWardCode && !isFreeShipping) ? (rawShippingFee || 0) : 0;
   const finalTotal = totalAmount + shippingFee;
 
   const validateForm = (): boolean => {
@@ -108,6 +122,26 @@ export default function CheckoutPage() {
     return Object.keys(errors).length === 0;
   };
 
+  // Tự động kiểm tra trạng thái thanh toán SePay VietQR (polling 3s/lần)
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (showPaymentPopup && paymentMethod === 'BANK_TRANSFER' && tempOrderId && !isSepayPaid) {
+      interval = setInterval(async () => {
+        const res = await checkSepayStatus(tempOrderId);
+        if (res && res.isPaid) {
+          setIsSepayPaid(true);
+          toast.success('🎉 SePay đã xác nhận nhận tiền thành công!');
+          setTimeout(() => {
+            processOrder(tempOrderId, true);
+          }, 1200);
+        }
+      }, 3000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [showPaymentPopup, paymentMethod, tempOrderId, isSepayPaid]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -116,8 +150,8 @@ export default function CheckoutPage() {
       setShowPaymentPopup(true);
       if (!momoData) {
         setIsGeneratingMomo(true);
-        const tempOrderId = 'GF' + Math.floor(100000 + Math.random() * 900000);
-        createMomoPayment(tempOrderId, finalTotal, `Thanh toán đơn hàng GreenFood #${tempOrderId}`)
+        const tempId = 'GF' + Math.floor(100000 + Math.random() * 900000);
+        createMomoPayment(tempId, finalTotal, `Thanh toán đơn hàng GreenFood #${tempId}`)
           .then((res) => {
             if (res && res.success) {
               setMomoData(res);
@@ -128,14 +162,33 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (paymentMethod === 'BANK_TRANSFER' || paymentMethod === 'VNPAY') {
+    if (paymentMethod === 'BANK_TRANSFER') {
+      setShowPaymentPopup(true);
+      const code = tempOrderId || ('GF' + Math.floor(100000 + Math.random() * 900000));
+      if (!tempOrderId) {
+        setTempOrderId(code);
+      }
+      if (!sepayData) {
+        setIsGeneratingSepay(true);
+        createSepayPayment(code, finalTotal, `Thanh toán đơn hàng GreenFood #${code}`)
+          .then((res) => {
+            if (res && res.success) {
+              setSepayData(res);
+            }
+          })
+          .finally(() => setIsGeneratingSepay(false));
+      }
+      return;
+    }
+
+    if (paymentMethod === 'VNPAY') {
       setShowPaymentPopup(true);
       return;
     }
     processOrder();
   };
 
-  const processOrder = async () => {
+  const processOrder = async (customTrackingNumber?: string, isPrePaid?: boolean) => {
     setIsSubmitting(true);
     setShowPaymentPopup(false);
 
@@ -143,6 +196,9 @@ export default function CheckoutPage() {
     const districtName = districts.find(d => d.DistrictID === selectedDistrictId)?.DistrictName || '';
     const wardName = wards.find(w => w.WardCode === selectedWardCode)?.WardName || '';
     const fullAddress = `${address}, ${wardName}, ${districtName}, ${provinceName}`;
+
+    const effectiveTrackingNumber = customTrackingNumber || tempOrderId || undefined;
+    const isPaidOrder = isPrePaid || isSepayPaid;
 
     const res = await createOrder({
       customerName: fullName,
@@ -153,6 +209,9 @@ export default function CheckoutPage() {
       toDistrictId: selectedDistrictId ? Number(selectedDistrictId) : undefined,
       toWardCode: selectedWardCode ? String(selectedWardCode) : undefined,
       paymentMethod: paymentMethod,
+      trackingNumber: effectiveTrackingNumber,
+      paymentStatus: isPaidOrder ? 'paid' : 'unpaid',
+      status: isPaidOrder ? 'CONFIRMED' : 'PENDING',
       note: note,
       items: items.map(i => ({
         productId: String(i.id),
@@ -164,13 +223,14 @@ export default function CheckoutPage() {
       }))
     });
 
-    if (res.success && res.trackingNumber) {
-      setOrderId(res.trackingNumber);
+    if (res.success && (res.trackingNumber || effectiveTrackingNumber)) {
+      const finalCode = res.trackingNumber || effectiveTrackingNumber || '';
+      setOrderId(finalCode);
       
       // Save to local storage for tracking page
       const savedOrders = JSON.parse(localStorage.getItem('my_orders') || '[]');
       savedOrders.unshift({
-        code: res.trackingNumber,
+        code: finalCode,
         date: new Date().toISOString(),
         total: finalTotal
       });
@@ -179,7 +239,7 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
       setIsSuccess(true);
       clearCart();
-      toast.success('Đặt hàng thành công!');
+      toast.success(isPaidOrder ? 'Thanh toán & đặt hàng thành công!' : 'Đặt hàng thành công!');
     } else {
       setIsSubmitting(false);
       toast.error(res.message || 'Không thể tạo đơn hàng, vui lòng thử lại!');
@@ -228,7 +288,7 @@ export default function CheckoutPage() {
 
   const paymentMethods = [
     { id: 'COD' as PaymentMethod, name: 'Thanh toán khi nhận hàng (COD)', desc: 'Trả tiền mặt cho shipper khi nhận hàng', icon: Banknote, color: 'emerald' },
-    { id: 'BANK_TRANSFER' as PaymentMethod, name: 'Chuyển khoản ngân hàng', desc: 'Chuyển khoản qua tài khoản ngân hàng', icon: Building2, color: 'blue' },
+    { id: 'BANK_TRANSFER' as PaymentMethod, name: 'Chuyển khoản VietQR (SePay tự động)', desc: 'Quét mã VietQR SePay xác nhận tức thì trong 3 giây', icon: Building2, color: 'blue', badge: 'Tự động 24/7' },
     { id: 'MOMO' as PaymentMethod, name: 'Ví MoMo', desc: 'Thanh toán qua ví điện tử MoMo', icon: Smartphone, color: 'pink' },
     { id: 'VNPAY' as PaymentMethod, name: 'VNPay', desc: 'Thanh toán qua cổng VNPay', icon: CreditCard, color: 'indigo' },
   ];
@@ -325,19 +385,38 @@ export default function CheckoutPage() {
 
                 {selectedWardCode && (
                   <div className="mb-4">
-                    <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                      <div className="flex items-center justify-between text-emerald-700 text-sm font-medium">
+                    <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200">
+                      <div className="flex items-center justify-between text-emerald-800 text-sm font-medium">
                         <div className="flex items-center gap-2">
-                          <Truck size={16} /> Phí vận chuyển Giao Hàng Nhanh
+                          <Truck size={18} className="text-emerald-600" />
+                          <span>Phí vận chuyển Giao Hàng Nhanh (GHN)</span>
                         </div>
                         {isCalculatingFee ? (
-                          <span className="animate-pulse">Đang tính phí...</span>
-                        ) : ghnShippingFee !== null ? (
-                          <span>{ghnShippingFee.toLocaleString('vi-VN')}đ</span>
+                          <span className="text-xs text-gray-500 animate-pulse">Đang tính phí...</span>
+                        ) : isFreeShipping ? (
+                          <div className="text-right">
+                            <span className="line-through text-xs text-gray-400 mr-1.5">
+                              {(rawShippingFee || 28000).toLocaleString('vi-VN')}đ
+                            </span>
+                            <span className="text-emerald-700 font-bold">Miễn phí 🎉</span>
+                          </div>
+                        ) : rawShippingFee !== null ? (
+                          <span className="font-bold text-emerald-700 text-base">
+                            {rawShippingFee.toLocaleString('vi-VN')}đ
+                          </span>
                         ) : (
-                          <span className="text-rose-500">Không thể tính phí giao hàng</span>
+                          <span className="text-gray-500">Đang cập nhật...</span>
                         )}
                       </div>
+                      {isFreeShipping ? (
+                        <p className="text-[11px] text-emerald-600 mt-1">
+                          🎉 Đơn hàng từ 300.000đ được miễn phí vận chuyển toàn quốc!
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-gray-500 mt-1">
+                          Cước tính tự động theo địa chỉ người nhận và khối lượng hàng.
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -378,7 +457,14 @@ export default function CheckoutPage() {
                             <Icon size={20} />
                           </div>
                           <div>
-                            <span className="font-medium text-gray-800 text-sm">{pm.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-800 text-sm">{pm.name}</span>
+                              {(pm as any).badge && (
+                                <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                  {(pm as any).badge}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs text-gray-500 mt-0.5">{pm.desc}</p>
                           </div>
                         </div>
@@ -420,8 +506,14 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Phí giao hàng</span>
-                  <span className={shippingFee === 0 ? 'text-emerald-600 font-medium' : 'text-gray-700'}>
-                    {!selectedWardCode ? 'Chọn địa chỉ' : isCalculatingFee ? 'Đang tính...' : shippingFee === 0 ? 'Miễn phí 🎉' : `${shippingFee.toLocaleString('vi-VN')}đ`}
+                  <span className={isFreeShipping ? 'text-emerald-600 font-medium' : 'text-gray-700 font-medium'}>
+                    {!selectedWardCode
+                      ? 'Chọn địa chỉ'
+                      : isCalculatingFee
+                        ? 'Đang tính...'
+                        : isFreeShipping
+                          ? 'Miễn phí 🎉'
+                          : `${shippingFee.toLocaleString('vi-VN')}đ`}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -468,25 +560,109 @@ export default function CheckoutPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">
-              {paymentMethod === 'BANK_TRANSFER' && '🏦 Chuyển khoản ngân hàng'}
+              {paymentMethod === 'BANK_TRANSFER' && '⚡ Thanh toán VietQR SePay'}
               {paymentMethod === 'MOMO' && '📱 Thanh toán MoMo'}
               {paymentMethod === 'VNPAY' && '💳 Thanh toán VNPay'}
             </h3>
 
             {paymentMethod === 'BANK_TRANSFER' && (
-              <div className="space-y-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
-                  <p className="font-semibold text-blue-800 mb-2">Thông tin chuyển khoản:</p>
-                  <div className="space-y-1 text-blue-700">
-                    <p>🏦 Ngân hàng: <strong>Vietcombank</strong></p>
-                    <p>📋 Số TK: <strong>1234 5678 9012</strong></p>
-                    <p>👤 Chủ TK: <strong>CONG TY GREENFOOD</strong></p>
-                    <p>💰 Số tiền: <strong className="text-blue-900">{finalTotal.toLocaleString('vi-VN')}đ</strong></p>
-                    <p>📝 Nội dung: <strong>GF {phone}</strong></p>
+              <div className="space-y-3">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                      VietQR SePay tự động
+                    </span>
+                    <span className="text-[11px] text-blue-600 font-medium">Khớp lệnh tự động 24/7</span>
                   </div>
-                </div>
-                <div className="bg-gray-100 rounded-xl h-40 flex items-center justify-center text-gray-400 text-sm">
-                  [ QR Code chuyển khoản ]
+
+                  <div className="text-center my-2">
+                    <p className="text-xs text-gray-500 mb-0.5">Số tiền chuyển khoản</p>
+                    <p className="text-2xl font-black text-blue-700 font-mono">
+                      {finalTotal.toLocaleString('vi-VN')}đ
+                    </p>
+                  </div>
+
+                  {/* VietQR Display */}
+                  <div className="bg-white rounded-xl p-3 border border-blue-100 shadow-sm flex flex-col items-center justify-center my-2">
+                    {isGeneratingSepay ? (
+                      <div className="py-10 flex flex-col items-center gap-2 text-blue-600">
+                        <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-xs font-medium">Đang tạo mã VietQR...</span>
+                      </div>
+                    ) : sepayData?.qrCodeUrl ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <img
+                          src={sepayData.qrCodeUrl}
+                          alt="VietQR SePay"
+                          className="w-44 h-44 object-contain rounded-lg border border-gray-100 shadow-inner"
+                        />
+                        <p className="text-[11px] text-gray-500 text-center">
+                          Mở App ngân hàng bất kỳ để quét mã VietQR
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="py-10 text-center text-gray-400 text-xs">
+                        Đang tạo mã thanh toán...
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bank Details with Copy buttons */}
+                  <div className="space-y-1.5 text-xs bg-white/90 rounded-xl p-3 border border-blue-100">
+                    <div className="flex justify-between items-center py-1 border-b border-gray-100">
+                      <span className="text-gray-500">Ngân hàng:</span>
+                      <strong className="text-gray-800">{sepayData?.bank || 'MBBank'}</strong>
+                    </div>
+                    <div className="flex justify-between items-center py-1 border-b border-gray-100">
+                      <span className="text-gray-500">Số tài khoản:</span>
+                      <div className="flex items-center gap-1.5">
+                        <strong className="font-mono text-blue-700 text-sm font-bold">{sepayData?.accountNumber || '0987654321'}</strong>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(sepayData?.accountNumber || '0987654321', 'Số tài khoản')}
+                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600 transition-colors"
+                          title="Sao chép số tài khoản"
+                        >
+                          {copiedField === 'Số tài khoản' ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center py-1 border-b border-gray-100">
+                      <span className="text-gray-500">Chủ tài khoản:</span>
+                      <strong className="text-gray-800 uppercase">{sepayData?.accountName || 'CONG TY GREENFOOD'}</strong>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-gray-500">Nội dung CK:</span>
+                      <div className="flex items-center gap-1.5">
+                        <strong className="font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded text-xs">
+                          {sepayData?.description || tempOrderId}
+                        </strong>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(sepayData?.description || tempOrderId, 'Nội dung chuyển khoản')}
+                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-emerald-600 transition-colors"
+                          title="Sao chép nội dung"
+                        >
+                          {copiedField === 'Nội dung chuyển khoản' ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Realtime Waiting Indicator */}
+                  <div className="mt-2.5 flex items-center justify-center gap-2 py-2 px-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-[11px]">
+                    {isSepayPaid ? (
+                      <span className="flex items-center gap-1.5 text-emerald-600 font-bold">
+                        <Check size={16} /> Đã nhận tiền thành công! Đang lưu đơn...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-gray-600">
+                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                        Đang chờ quét mã... Hệ thống tự động xác nhận sau khi chuyển
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -555,7 +731,7 @@ export default function CheckoutPage() {
                 className="flex-1 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors border border-gray-200">
                 Hủy
               </button>
-              <button onClick={processOrder}
+              <button onClick={() => processOrder()}
                 className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors">
                 Xác nhận đã thanh toán
               </button>

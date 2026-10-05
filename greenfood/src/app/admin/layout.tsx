@@ -157,7 +157,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
                           isActive 
                             ? 'bg-white/20 text-white' 
-                            : item.highlight 
+                            : (item as any).highlight 
                               ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
                               : 'bg-slate-800 text-slate-400'
                         }`}>
