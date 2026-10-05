@@ -132,24 +132,27 @@ class UserService
             ];
         }
 
-        $verification = $this->emailVerificationRepository->findLatestPending($email);
+        // Tìm bản ghi OTP hợp lệ (khớp mã, chưa xác thực, còn trong thời hạn hiệu lực)
+        $verification = $this->emailVerificationRepository->findValidPendingByCode($email, $otpCode);
+
         if (!$verification) {
-            return [
-                'success' => false,
-                'status' => 400,
-                'message' => 'Không tìm thấy yêu cầu xác thực hoặc mã đã hết hạn. Vui lòng bấm gửi lại mã mới!',
-            ];
-        }
+            $latest = $this->emailVerificationRepository->findLatestPending($email);
+            if (!$latest) {
+                return [
+                    'success' => false,
+                    'status' => 400,
+                    'message' => 'Không tìm thấy yêu cầu xác thực hoặc mã đã hết hạn. Vui lòng bấm gửi lại mã mới!',
+                ];
+            }
 
-        if ($verification->isExpired()) {
-            return [
-                'success' => false,
-                'status' => 400,
-                'message' => 'Mã xác thực OTP đã hết hạn (chỉ có hiệu lực trong 10 phút)! Vui lòng nhấn gửi lại mã mới.',
-            ];
-        }
+            if ($latest->isExpired()) {
+                return [
+                    'success' => false,
+                    'status' => 400,
+                    'message' => 'Mã xác thực OTP đã hết hạn (chỉ có hiệu lực trong 10 phút)! Vui lòng nhấn gửi lại mã mới.',
+                ];
+            }
 
-        if (!hash_equals((string) $verification->otp_code, $otpCode)) {
             return [
                 'success' => false,
                 'status' => 400,
@@ -157,8 +160,9 @@ class UserService
             ];
         }
 
-        // Đánh dấu đã xác thực
+        // Đánh dấu đã xác thực và vô hiệu hóa các mã cũ khác của email
         $this->emailVerificationRepository->markAsVerified($verification);
+        $this->emailVerificationRepository->invalidatePreviousPending($email);
         $this->userRepository->update($user, ['email_verified' => true]);
 
         return [

@@ -24,7 +24,17 @@ class EmailVerificationRepository
     {
         return EmailVerification::where('email', strtolower(trim($email)))
             ->whereNull('verified_at')
-            ->latest('created_at')
+            ->latest('id')
+            ->first();
+    }
+
+    public function findValidPendingByCode(string $email, string $otpCode): ?EmailVerification
+    {
+        return EmailVerification::where('email', strtolower(trim($email)))
+            ->where('otp_code', trim($otpCode))
+            ->whereNull('verified_at')
+            ->where('expires_at', '>', Carbon::now())
+            ->latest('id')
             ->first();
     }
 

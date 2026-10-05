@@ -128,8 +128,8 @@
         </div>
 
         <div class="footer">
-            <p style="margin: 0 0 6px;">© 2026 GreenFood — Vì Sức Khỏe Gia Đình Bạn.</p>
-            <p style="margin: 0;">Website: <a href="https://greenfood.market">greenfood.market</a> | Hotline: 1900 6868</p>
+            <p style="margin: 0 0 6px;">© 2026 GreenFood — Nông Sản Sạch Từ Tâm.</p>
+            <p style="margin: 0;">Website: <a href="https://greenfood.asia">greenfood.asia</a> | Hotline: 028 7770 2614</p>
         </div>
     </div>
 </body>
