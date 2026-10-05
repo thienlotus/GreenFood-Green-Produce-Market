@@ -25,7 +25,6 @@ export default function LoginPage() {
   // Email OTP state (Sprint 2)
   const [showOtpModal, setShowOtpModal] = useState<boolean>(false);
   const [pendingEmail, setPendingEmail] = useState<string>('');
-  const [pendingDebugOtp, setPendingDebugOtp] = useState<string | undefined>(undefined);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +48,18 @@ export default function LoginPage() {
         return;
       }
 
+      const cleanEmail = username.trim().toLowerCase();
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(cleanEmail)) {
+        setError('Địa chỉ email không đúng định dạng! Vui lòng nhập đúng email có thật (VD: yourname@gmail.com).');
+        return;
+      }
+
+      if (cleanEmail.endsWith('@gmial.com') || cleanEmail.endsWith('@gmai.com') || cleanEmail.endsWith('@gamil.com')) {
+        setError('Địa chỉ email có dấu hiệu sai chính tả tên miền (@gmial / @gmai). Vui lòng kiểm tra lại đuôi @gmail.com!');
+        return;
+      }
+
       if (password !== confirmPassword) {
         setError('Mật khẩu nhập lại không khớp!');
         return;
@@ -59,7 +70,6 @@ export default function LoginPage() {
         return;
       }
       
-      const cleanEmail = username.includes('@') ? username : `${username}@greenfood.vn`;
       setIsLoading(true);
       try {
         const res = await register({
@@ -72,7 +82,6 @@ export default function LoginPage() {
         if (res.success && res.requireOtp) {
           toast.success(res.message);
           setPendingEmail(cleanEmail);
-          setPendingDebugOtp(res.debugOtp);
           setShowOtpModal(true);
         } else if (res.success && res.user) {
           toast.success(res.message);
@@ -92,7 +101,7 @@ export default function LoginPage() {
     // Login process
     setIsLoading(true);
     try {
-      const res = await authenticate(username, password);
+      const res = await authenticate(username.trim(), password);
       if (res.success && res.user) {
         toast.success(`Đăng nhập thành công! Chào mừng ${res.user.name}.`);
         if (res.user.role?.toLowerCase() === 'admin') {
@@ -104,8 +113,7 @@ export default function LoginPage() {
       }
 
       if (res.requireOtp) {
-        setPendingEmail(res.email || username);
-        setPendingDebugOtp(res.debugOtp);
+        setPendingEmail(res.email || username.trim());
         setShowOtpModal(true);
         setError(res.message || 'Tài khoản chưa được kích hoạt email! Vui lòng nhập mã OTP để tiếp tục.');
         toast.error(res.message || 'Tài khoản chưa kích hoạt email! Vui lòng xác thực OTP.');
@@ -308,7 +316,6 @@ export default function LoginPage() {
       <EmailOtpModal
         isOpen={showOtpModal}
         email={pendingEmail}
-        debugOtp={pendingDebugOtp}
         onVerify={handleVerifyOtp}
         onResend={handleResendOtp}
         onClose={() => setShowOtpModal(false)}

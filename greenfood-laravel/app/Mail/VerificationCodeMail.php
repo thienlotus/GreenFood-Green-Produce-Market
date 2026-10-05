@@ -28,7 +28,7 @@ class VerificationCodeMail extends Mailable
                 (string) config('mail.from.address', '0912lethieuhung@gmail.com'),
                 (string) config('mail.from.name', 'GreenFood - Chợ Nông Sản Sạch')
             ),
-            subject: "[GreenFood] Mã xác thực tài khoản của bạn: {$this->otpCode}",
+            subject: "[GreenFood] Mã xác thực OTP: {$this->otpCode} - Kích hoạt tài khoản (" . date('H:i') . ")",
         );
     }
 

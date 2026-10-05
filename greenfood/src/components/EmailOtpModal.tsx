@@ -1,22 +1,20 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Mail, Clock, RefreshCw, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Mail, Clock, RefreshCw, ArrowLeft, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface EmailOtpModalProps {
   isOpen: boolean;
   email: string;
-  debugOtp?: string;
   onVerify: (otpCode: string) => Promise<{ success: boolean; message: string }>;
-  onResend: () => Promise<{ success: boolean; message: string; remainingAttempts?: number; debugOtp?: string }>;
+  onResend: () => Promise<{ success: boolean; message: string; remainingAttempts?: number }>;
   onClose: () => void;
 }
 
 export default function EmailOtpModal({
   isOpen,
   email,
-  debugOtp: initialDebugOtp,
   onVerify,
   onResend,
   onClose,
@@ -25,16 +23,11 @@ export default function EmailOtpModal({
   const [timeLeft, setTimeLeft] = useState<number>(600); // 10 minutes in seconds
   const [resendCooldown, setResendCooldown] = useState<number>(60); // 60 seconds
   const [remainingAttempts, setRemainingAttempts] = useState<number>(2);
-  const [debugOtp, setDebugOtp] = useState<string | undefined>(initialDebugOtp);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [isResending, setIsResending] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  useEffect(() => {
-    setDebugOtp(initialDebugOtp);
-  }, [initialDebugOtp]);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -129,14 +122,14 @@ export default function EmailOtpModal({
     if (e) e.preventDefault();
     setErrorMessage('');
 
-    const fullCode = otp.join('');
+    const fullCode = otp.join('').trim();
     if (fullCode.length !== 6) {
       setErrorMessage('Vui lòng nhập đủ 6 chữ số mã xác thực!');
       return;
     }
 
     if (timeLeft <= 0) {
-      setErrorMessage('Mã OTP đã hết hạn! Vui lòng nhấn gửi lại mã mới.');
+      setErrorMessage('Mã xác thực OTP đã hết hạn! Vui lòng nhấn gửi lại mã mới.');
       return;
     }
 
@@ -147,11 +140,11 @@ export default function EmailOtpModal({
         toast.success(res.message || 'Xác thực email thành công!');
         onClose();
       } else {
-        setErrorMessage(res.message || 'Mã xác thực không hợp lệ!');
+        setErrorMessage(res.message || 'Mã xác thực không hợp lệ! Vui lòng kiểm tra lại.');
         toast.error(res.message || 'Xác thực thất bại!');
       }
     } catch {
-      setErrorMessage('Có lỗi xảy ra khi gửi yêu cầu xác thực!');
+      setErrorMessage('Có lỗi xảy ra khi kết nối máy chủ xác thực!');
     } finally {
       setIsVerifying(false);
     }
@@ -171,9 +164,6 @@ export default function EmailOtpModal({
         setOtp(['', '', '', '', '', '']);
         if (typeof res.remainingAttempts === 'number') {
           setRemainingAttempts(res.remainingAttempts);
-        }
-        if (res.debugOtp) {
-          setDebugOtp(res.debugOtp);
         }
         inputRefs.current[0]?.focus();
       } else {
@@ -216,23 +206,13 @@ export default function EmailOtpModal({
             <div className="font-semibold text-gray-900 mt-0.5 break-all">{email}</div>
           </div>
 
-          {debugOtp && (
-            <div className="bg-emerald-50/90 border border-emerald-200 text-emerald-900 text-xs px-3.5 py-2.5 rounded-xl flex items-center justify-between gap-2 shadow-sm">
-              <span className="text-gray-700">Mã OTP gửi đến bạn: <strong className="font-mono text-emerald-700 text-sm tracking-widest">{debugOtp}</strong></span>
-              <button
-                type="button"
-                onClick={() => {
-                  const digits = debugOtp.split('').slice(0, 6);
-                  setOtp(digits);
-                  setErrorMessage('');
-                  inputRefs.current[5]?.focus();
-                }}
-                className="font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1 rounded-lg transition-colors cursor-pointer shrink-0"
-              >
-                Điền nhanh
-              </button>
+          {/* Security guidance banner */}
+          <div className="bg-emerald-50/80 border border-emerald-200 text-emerald-900 text-xs px-3.5 py-3 rounded-xl flex items-start gap-2.5 shadow-sm leading-relaxed">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div>
+              Vui lòng mở ứng dụng <strong>Gmail</strong> hoặc hòm thư của bạn để lấy mã OTP 6 chữ số (kiểm tra cả mục <strong>Hộp thư đến</strong> và <strong>Spam/Quảng cáo</strong>).
             </div>
-          )}
+          </div>
 
           {errorMessage && (
             <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm px-4 py-3 rounded-xl flex items-start gap-2.5">

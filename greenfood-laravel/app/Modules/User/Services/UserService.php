@@ -8,6 +8,7 @@ use App\Mail\VerificationCodeMail;
 use App\Modules\User\Repositories\EmailVerificationRepository;
 use App\Modules\User\Repositories\UserRepository;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -57,8 +58,8 @@ class UserService
             'address' => $data['address'] ?? null,
         ]);
 
-        // Tạo mã OTP 6 chữ số xác thực email
-        $otpCode = sprintf('%06d', mt_rand(0, 999999));
+        // Tạo mã OTP 6 chữ số ngẫu nhiên an toàn bằng CSPRNG (100000 - 999999)
+        $otpCode = (string) random_int(100000, 999999);
         $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
 
         // Gửi email xác thực OTP
@@ -74,11 +75,11 @@ class UserService
             ]);
         }
 
-        Log::info("GreenFood OTP Created for [{$user->email}]: {$otpCode} | Sent: " . ($mailSent ? 'YES' : 'NO'));
+        Log::info("GreenFood OTP Created for [{$user->email}] | Sent: " . ($mailSent ? 'YES' : 'NO'));
 
         $message = $mailSent
             ? 'Đăng ký tài khoản thành công! Vui lòng kiểm tra hộp thư đến (hoặc mục Spam/Quảng cáo) để lấy mã OTP xác thực.'
-            : 'Đăng ký thành công! Hệ thống đã kích hoạt mã OTP tạm thời cho tài khoản của bạn.';
+            : 'Đăng ký thành công! Vui lòng kiểm tra email của bạn để lấy mã kích hoạt tài khoản.';
 
         return [
             'success' => true,
@@ -95,14 +96,21 @@ class UserService
                 'address' => $user->address ?? '',
                 'role' => strtolower($user->role),
             ],
-            'debug_otp' => $otpCode,
         ];
     }
 
     public function verifyEmail(string $email, string $otpCode): array
     {
         $email = strtolower(trim($email));
-        $otpCode = trim($otpCode);
+        $cleanOtp = preg_replace('/\D/', '', (string) $otpCode);
+
+        if (strlen($cleanOtp) !== 6) {
+            return [
+                'success' => false,
+                'status' => 400,
+                'message' => 'Mã xác thực OTP phải gồm đúng 6 chữ số!',
+            ];
+        }
 
         $user = $this->userRepository->findByEmail($email);
         if (!$user) {
@@ -132,10 +140,26 @@ class UserService
             ];
         }
 
-        // Tìm bản ghi OTP hợp lệ (khớp mã, chưa xác thực, còn trong thời hạn hiệu lực)
-        $verification = $this->emailVerificationRepository->findValidPendingByCode($email, $otpCode);
+        // Chống tấn công brute-force dò mã (tối đa 5 lần sai trong 15 phút)
+        $failKey = "otp_fails_{$email}";
+        $failedAttempts = (int) Cache::get($failKey, 0);
+        if ($failedAttempts >= 5) {
+            $this->emailVerificationRepository->invalidatePreviousPending($email);
+            return [
+                'success' => false,
+                'status' => 429,
+                'message' => 'Bạn đã nhập sai mã xác thực quá 5 lần! Để đảm bảo an toàn bảo mật, mã này đã bị hủy. Vui lòng bấm gửi lại mã mới.',
+            ];
+        }
+
+        // Tìm bản ghi OTP hợp lệ (khớp mã 6 số, chưa xác thực, còn trong thời hạn hiệu lực 10 phút)
+        $verification = $this->emailVerificationRepository->findValidPendingByCode($email, $cleanOtp);
 
         if (!$verification) {
+            $failedAttempts++;
+            Cache::put($failKey, $failedAttempts, now()->addMinutes(15));
+            $remainingTries = max(0, 5 - $failedAttempts);
+
             $latest = $this->emailVerificationRepository->findLatestPending($email);
             if (!$latest) {
                 return [
@@ -156,14 +180,17 @@ class UserService
             return [
                 'success' => false,
                 'status' => 400,
-                'message' => 'Mã xác thực OTP không chính xác! Vui lòng kiểm tra lại hộp thư.',
+                'message' => "Mã xác thực OTP không chính xác! Vui lòng kiểm tra lại hộp thư Gmail (còn {$remainingTries} lần thử).",
             ];
         }
 
-        // Đánh dấu đã xác thực và vô hiệu hóa các mã cũ khác của email
+        // Đánh dấu đã xác thực thành công, reset số lần sai và vô hiệu hóa các mã cũ khác
+        Cache::forget($failKey);
         $this->emailVerificationRepository->markAsVerified($verification);
         $this->emailVerificationRepository->invalidatePreviousPending($email);
         $this->userRepository->update($user, ['email_verified' => true]);
+
+        Log::info("GreenFood Email Successfully Verified for [{$user->email}]");
 
         return [
             'success' => true,
@@ -214,8 +241,8 @@ class UserService
             ];
         }
 
-        // Sinh mã mới (giữ các mã còn hạn để người dùng nhập mã nào trong email cũng hợp lệ)
-        $otpCode = sprintf('%06d', mt_rand(0, 999999));
+        // Sinh mã mới an toàn (100000 - 999999)
+        $otpCode = (string) random_int(100000, 999999);
         $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
 
         $mailSent = false;
@@ -229,18 +256,17 @@ class UserService
             ]);
         }
 
-        Log::info("GreenFood Resent OTP for [{$user->email}]: {$otpCode} | Sent: " . ($mailSent ? 'YES' : 'NO'));
+        Log::info("GreenFood Resent OTP for [{$user->email}] | Sent: " . ($mailSent ? 'YES' : 'NO'));
 
         $message = $mailSent
             ? 'Mã xác thực OTP mới đã được gửi! Vui lòng kiểm tra hộp thư đến hoặc mục Spam/Quảng cáo.'
-            : 'Mã xác thực mới đã được cấp thành công!';
+            : 'Mã xác thực mới đã được hệ thống tạo thành công!';
 
         return [
             'success' => true,
             'status' => 200,
             'message' => $message,
             'remaining_attempts' => max(0, 2 - $recentCount),
-            'debug_otp' => $otpCode,
         ];
     }
 
@@ -274,7 +300,7 @@ class UserService
             if ($pending && !$pending->isExpired()) {
                 $otpCode = $pending->otp_code;
             } else {
-                $otpCode = sprintf('%06d', mt_rand(0, 999999));
+                $otpCode = (string) random_int(100000, 999999);
                 $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
             }
 
@@ -287,7 +313,7 @@ class UserService
                 ]);
             }
 
-            Log::info("GreenFood Login Blocked: Email not verified for [{$user->email}], OTP: {$otpCode}");
+            Log::info("GreenFood Login Blocked: Email not verified for [{$user->email}]");
 
             return [
                 'success' => false,
@@ -295,7 +321,6 @@ class UserService
                 'require_otp' => true,
                 'email' => $user->email,
                 'message' => 'Tài khoản chưa được kích hoạt email! Vui lòng nhập mã OTP đã gửi đến hòm thư Gmail của bạn để tiếp tục.',
-                'debug_otp' => $otpCode,
             ];
         }
 

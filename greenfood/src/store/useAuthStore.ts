@@ -340,7 +340,6 @@ export const useAuthStore = create<AuthState>()(
               success: false,
               requireOtp: true,
               email: json.email || cleanIdent,
-              debugOtp: json.debug_otp,
               message: json.message || 'Tài khoản chưa được kích hoạt email! Vui lòng nhập mã OTP để tiếp tục.',
             };
           }
@@ -539,7 +538,6 @@ export const useAuthStore = create<AuthState>()(
                 message: json.message || 'Đăng ký thành công! Vui lòng kiểm tra hộp thư email để nhận mã OTP xác thực.',
                 requireOtp: true,
                 email: cleanEmail,
-                debugOtp: json.debug_otp,
               };
             }
 
@@ -605,10 +603,9 @@ export const useAuthStore = create<AuthState>()(
 
         return {
           success: true,
-          message: 'Đăng ký tài khoản thành công! Vui lòng nhập mã OTP để kích hoạt tài khoản.',
+          message: 'Đăng ký tài khoản thành công! Vui lòng kiểm tra Gmail để nhận mã OTP kích hoạt tài khoản.',
           requireOtp: true,
           email: cleanEmail,
-          debugOtp: '123456',
         };
       },
 
@@ -684,7 +681,14 @@ export const useAuthStore = create<AuthState>()(
           console.warn('Backend verify-email fallback:', netErr);
         }
 
-        // Local fallback nếu backend ngoại tuyến
+        if (typeof window !== 'undefined' && (window.location.hostname === 'greenfood.asia' || window.location.hostname.endsWith('.asia') || (!window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')))) {
+          return {
+            success: false,
+            message: 'Không thể kết nối đến máy chủ xác thực GreenFood. Vui lòng kiểm tra kết nối mạng và thử lại!',
+          };
+        }
+
+        // Local fallback nếu môi trường phát triển offline
         const accounts = get().registeredAccounts;
         const targetAcc = accounts.find((a) => a.email.toLowerCase() === cleanEmail);
         if (targetAcc) {
@@ -738,7 +742,6 @@ export const useAuthStore = create<AuthState>()(
               success: true,
               message: json.message || 'Mã xác thực OTP mới đã được gửi đến email của bạn!',
               remainingAttempts: json.remaining_attempts,
-              debugOtp: json.debug_otp,
             };
           } else if (json && json.message) {
             return {
@@ -750,11 +753,17 @@ export const useAuthStore = create<AuthState>()(
           console.warn('Backend resend-otp fallback:', netErr);
         }
 
+        if (typeof window !== 'undefined' && (window.location.hostname === 'greenfood.asia' || window.location.hostname.endsWith('.asia') || (!window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')))) {
+          return {
+            success: false,
+            message: 'Không thể gửi lại mã OTP lúc này. Vui lòng kiểm tra kết nối mạng!',
+          };
+        }
+
         return {
           success: true,
           message: 'Mã xác thực OTP mới đã được gửi lại vào email của bạn!',
           remainingAttempts: 2,
-          debugOtp: '123456',
         };
       },
 
