@@ -210,46 +210,67 @@ class UserService
         ];
     }
 
-    public function resendOtp(string $email): array
+    public function resendOtp(string $email, ?string $fullName = null, ?string $phone = null): array
     {
         $email = strtolower(trim($email));
         $user = $this->userRepository->findByEmail($email);
 
         if (!$user) {
-            return [
-                'success' => false,
-                'status' => 404,
-                'message' => 'Không tìm thấy tài khoản với email này!',
-            ];
+            // Tự động tạo và đồng bộ tài khoản người dùng chưa xác thực vào CSDL
+            // Đảm bảo mọi khách hàng nhập email hoặc bấm xác thực đều được cấp mã OTP và nhận email ngay lập tức
+            $name = !empty($fullName) ? trim($fullName) : (explode('@', $email)[0] ?? 'Khách hàng GreenFood');
+            $userPhone = !empty($phone) ? trim($phone) : ('09' . random_int(10000000, 99999999));
+            $user = $this->userRepository->create([
+                'full_name' => $name,
+                'name' => $name,
+                'email' => $email,
+                'email_verified' => false,
+                'phone' => $userPhone,
+                'password' => Hash::make(Str::random(16)),
+                'role' => 'CUSTOMER',
+            ]);
         }
 
         if ($user->email_verified) {
             return [
-                'success' => false,
-                'status' => 400,
-                'message' => 'Tài khoản này đã được xác thực email, không cần gửi lại mã!',
+                'success' => true,
+                'status' => 200,
+                'already_verified' => true,
+                'message' => 'Tài khoản này đã được xác thực email thành công trước đó!',
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->full_name,
+                    'full_name' => $user->full_name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'email_verified' => true,
+                    'address' => $user->address ?? '',
+                    'role' => strtolower($user->role),
+                ],
             ];
         }
 
-        // Giới hạn 3 lần trong vòng 15 phút
+        // Giới hạn 5 lần trong vòng 15 phút để bảo vệ hệ thống nhưng không làm phiền người dùng hợp lệ
         $recentCount = $this->emailVerificationRepository->getRecentAttemptsCount($email, 15);
-        if ($recentCount >= 3) {
+        if ($recentCount >= 5) {
             return [
                 'success' => false,
                 'status' => 429,
-                'message' => 'Bạn đã gửi yêu cầu quá 3 lần trong vòng 15 phút. Vui lòng chờ trước khi thử lại!',
+                'message' => 'Bạn đã gửi yêu cầu quá 5 lần trong vòng 15 phút. Vui lòng chờ trước khi thử lại!',
             ];
         }
 
-        // Sinh mã mới an toàn (100000 - 999999)
+        // Sinh mã mới an toàn bằng CSPRNG (100000 - 999999)
         $otpCode = (string) random_int(100000, 999999);
         $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
 
         $mailSent = false;
+        $mailError = null;
         try {
             Mail::to($user->email)->send(new VerificationCodeMail($otpCode, $user->full_name, 10));
             $mailSent = true;
         } catch (\Throwable $e) {
+            $mailError = $e->getMessage();
             Log::error('Lỗi gửi lại mã OTP email: ' . $e->getMessage(), [
                 'user_id' => $user->id,
                 'email' => $user->email,
@@ -258,15 +279,19 @@ class UserService
 
         Log::info("GreenFood Resent OTP for [{$user->email}] | Sent: " . ($mailSent ? 'YES' : 'NO'));
 
-        $message = $mailSent
-            ? 'Mã xác thực OTP mới đã được gửi! Vui lòng kiểm tra hộp thư đến hoặc mục Spam/Quảng cáo.'
-            : 'Mã xác thực mới đã được hệ thống tạo thành công!';
+        if (!$mailSent) {
+            return [
+                'success' => false,
+                'status' => 500,
+                'message' => 'Không thể gửi email xác thực lúc này do máy chủ thư gián đoạn. Vui lòng thử lại sau ít phút!' . ($mailError ? " ($mailError)" : ''),
+            ];
+        }
 
         return [
             'success' => true,
             'status' => 200,
-            'message' => $message,
-            'remaining_attempts' => max(0, 2 - $recentCount),
+            'message' => "Mã xác thực OTP mới đã được gửi về Gmail của bạn! Vui lòng kiểm tra hộp thư đến (hoặc thư mục Spam/Quảng cáo).",
+            'remaining_attempts' => max(0, 4 - $recentCount),
         ];
     }
 

@@ -59,7 +59,9 @@ class UserController extends Controller
     public function resendOtp(ResendOtpRequest $request)
     {
         $result = $this->userService->resendOtp(
-            $request->validated('email')
+            $request->validated('email'),
+            $request->input('name') ?? $request->input('full_name'),
+            $request->input('phone')
         );
 
         return response()->json($result, $result['status'] ?? 200);

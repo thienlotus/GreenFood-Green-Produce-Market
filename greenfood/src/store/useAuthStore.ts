@@ -211,7 +211,7 @@ interface AuthState {
     email?: string;
   }>;
   verifyEmailApi: (email: string, otpCode: string) => Promise<{ success: boolean; message: string; user?: User }>;
-  resendOtpApi: (email: string) => Promise<{ success: boolean; message: string; remainingAttempts?: number; debugOtp?: string }>;
+  resendOtpApi: (email: string, name?: string, phone?: string) => Promise<{ success: boolean; message: string; remainingAttempts?: number; debugOtp?: string; alreadyVerified?: boolean }>;
   syncUsersFromDb: () => Promise<void>;
   resetPassword: (identifier: string, newPassword: string) => { success: boolean; message: string };
   updateProfile: (data: Partial<User>) => void;
@@ -721,10 +721,12 @@ export const useAuthStore = create<AuthState>()(
       },
 
       /**
-       * Gửi lại mã OTP mới qua email (giới hạn 3 lần / 15 phút)
+       * Gửi lại mã OTP mới qua email (giới hạn 5 lần / 15 phút)
        */
-      resendOtpApi: async (email: string) => {
+      resendOtpApi: async (email: string, name?: string, phone?: string) => {
         const cleanEmail = email.trim().toLowerCase();
+        const userName = name || get().user?.name;
+        const userPhone = phone || get().user?.phone;
         try {
           const res = await fetch(`${getApiBaseUrl()}/resend-otp`, {
             method: 'POST',
@@ -732,10 +734,30 @@ export const useAuthStore = create<AuthState>()(
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
-            body: JSON.stringify({ email: cleanEmail }),
+            body: JSON.stringify({
+              email: cleanEmail,
+              name: userName,
+              phone: userPhone,
+            }),
           });
 
           const json = await res.json().catch(() => null);
+
+          if (json && json.already_verified) {
+            const currentUser = get().user;
+            if (currentUser) {
+              const updatedUser: User = { ...currentUser, email_verified: true };
+              const accounts = (get().registeredAccounts || []).map((a) =>
+                a.email.toLowerCase() === cleanEmail ? { ...a, email_verified: true } : a
+              );
+              set({ user: updatedUser, registeredAccounts: accounts });
+            }
+            return {
+              success: true,
+              alreadyVerified: true,
+              message: json.message || 'Tài khoản của bạn đã được xác thực email thành công!',
+            };
+          }
 
           if (res.ok && json && json.success) {
             return {
@@ -756,7 +778,7 @@ export const useAuthStore = create<AuthState>()(
         if (typeof window !== 'undefined' && (window.location.hostname === 'greenfood.asia' || window.location.hostname.endsWith('.asia') || (!window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')))) {
           return {
             success: false,
-            message: 'Không thể gửi lại mã OTP lúc này. Vui lòng kiểm tra kết nối mạng!',
+            message: 'Không thể kết nối máy chủ gửi OTP lúc này. Vui lòng kiểm tra lại kết nối mạng!',
           };
         }
 

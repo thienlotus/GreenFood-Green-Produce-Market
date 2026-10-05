@@ -144,7 +144,7 @@ export default function LoginPage() {
   };
 
   const handleResendOtp = async () => {
-    return await resendOtpApi(pendingEmail);
+    return await resendOtpApi(pendingEmail, isRegister ? fullName : undefined, isRegister ? phone : undefined);
   };
 
   return (

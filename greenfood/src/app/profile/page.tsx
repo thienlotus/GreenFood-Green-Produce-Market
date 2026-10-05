@@ -724,10 +724,20 @@ export default function ProfilePage() {
                             type="button"
                             onClick={async () => {
                               try {
-                                await resendOtpApi(user.email);
-                                toast.success('Đã gửi mã OTP xác thực mới về email của bạn!');
-                              } catch (e) {}
-                              setShowOtpModal(true);
+                                const res = await resendOtpApi(user.email, user.name, user.phone);
+                                if (res && res.alreadyVerified) {
+                                  toast.success('Tài khoản của bạn đã được xác thực email thành công!');
+                                  return;
+                                }
+                                if (res && !res.success) {
+                                  toast.error(res.message || 'Không thể gửi mã xác thực!');
+                                  return;
+                                }
+                                toast.success(res?.message || 'Đã gửi mã OTP xác thực mới về email của bạn!');
+                                setShowOtpModal(true);
+                              } catch {
+                                toast.error('Có lỗi xảy ra khi kết nối máy chủ gửi OTP!');
+                              }
                             }}
                             className="text-[10px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded flex items-center gap-1 transition-colors cursor-pointer"
                             title="Bấm để nhận mã OTP xác minh email"
@@ -1571,7 +1581,7 @@ export default function ProfilePage() {
             return { success: false, message: res.message || 'Mã xác thực không hợp lệ!' };
           }}
           onResend={async () => {
-            return await resendOtpApi(user.email);
+            return await resendOtpApi(user.email, user.name, user.phone);
           }}
           onClose={() => setShowOtpModal(false)}
         />
