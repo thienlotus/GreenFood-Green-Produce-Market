@@ -174,7 +174,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 'p1', 'farmer' => 'Vườn Trái Cây Chú Ba', 'category' => 'trai-cay',
                 'name' => 'Sầu Riêng Ri6 Hạt Lép', 'slug' => 'sau-rieng-ri6',
-                'image' => 'https://images.unsplash.com/photo-1550828520-4cb496926fc9?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/sau-rieng-ri6.jpg',
                 'badge' => 'Freeship', 'sold_count' => 154, 'rating' => 4.8, 'is_seasonal' => true,
                 'description' => 'Sầu riêng Ri6 trứ danh được trồng tại vùng phù sa màu mỡ Chợ Lách, Bến Tre. Cơm vàng óng, hạt lép, độ ngọt vừa phải và béo ngậy. Cam kết chín cây tự nhiên, không nhúng thuốc ép chín.',
                 'variants' => [
@@ -185,7 +185,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 'p2', 'farmer' => 'HTX Bưởi Da Xanh', 'category' => 'trai-cay',
                 'name' => 'Bưởi Da Xanh Ruột Hồng', 'slug' => 'buoi-da-xanh',
-                'image' => 'https://images.unsplash.com/photo-1557161189-ce564ad72591?q=80&w=800&auto=format&fit=crop',
+                'image' => '/products/buoi-da-xanh.jpg',
                 'badge' => 'VietGAP', 'sold_count' => 42, 'rating' => 4.6, 'is_seasonal' => true,
                 'description' => 'Bưởi da xanh Bến Tre vỏ mỏng, múi căng mọng, tép bưởi màu hồng tự nhiên, vị ngọt thanh mát đậm đà. Đạt chuẩn chứng nhận VietGAP an toàn tuyệt đối.',
                 'variants' => [

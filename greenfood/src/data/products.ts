@@ -91,7 +91,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Hơn 20 năm gắn bó với cây sầu riêng, vườn chú Ba áp dụng chuẩn VietGAP mang lại những trái sầu riêng an toàn nhất."
     },
     images: [
-      "https://images.unsplash.com/photo-1550828520-4cb496926fc9?q=80&w=800&auto=format&fit=crop"
+      "/products/sau-rieng-ri6.jpg"
     ],
     variants: [
       { id: "v1", unit: "Tách vỏ (Hộp 500g)", price: 150000, comparePrice: 190000 },
@@ -117,7 +117,7 @@ export const ALL_PRODUCTS: ProductItem[] = [
       story: "Hợp tác xã quy tụ 50 hộ gia đình trồng bưởi truyền thống với tiêu chuẩn sinh học sạch."
     },
     images: [
-      "https://images.unsplash.com/photo-1557161189-ce564ad72591?q=80&w=800&auto=format&fit=crop"
+      "/products/buoi-da-xanh.jpg"
     ],
     variants: [
       { id: "v1", unit: "Trái 1.2 - 1.5kg", price: 65000, comparePrice: 85000 },
