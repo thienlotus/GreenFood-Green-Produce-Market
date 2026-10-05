@@ -436,6 +436,8 @@ export async function createOrder(payload: {
   shippingAddress: string;
   shippingZoneId?: string;
   shippingFee?: number;
+  voucherCode?: string;
+  discountAmount?: number;
   toDistrictId?: number;
   toWardCode?: string;
   paymentMethod: string;
@@ -457,6 +459,8 @@ export async function createOrder(payload: {
         shipping_address: payload.shippingAddress,
         shipping_zone_id: payload.shippingZoneId,
         shipping_fee: payload.shippingFee,
+        voucher_code: payload.voucherCode,
+        discount_amount: payload.discountAmount,
         to_district_id: payload.toDistrictId,
         to_ward_code: payload.toWardCode,
         payment_method: payload.paymentMethod,

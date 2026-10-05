@@ -23,6 +23,8 @@ class OrderController extends Controller
             'shipping_zone_id' => 'nullable|string',
             'shipping_fee' => 'nullable|numeric|min:0',
             'payment_method' => 'required|in:COD,BANK_TRANSFER,MOMO,VNPAY',
+            'voucher_code' => 'nullable|string|max:50',
+            'discount_amount' => 'nullable|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.product_name' => 'required|string',
             'items.*.unit' => 'required|string',
