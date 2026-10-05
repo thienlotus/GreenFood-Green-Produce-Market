@@ -1215,7 +1215,7 @@ export const useAuthStore = create<AuthState>()(
       onRehydrateStorage: () => (state) => {
         if (state?.user) {
           state.user.name = cleanVietnameseMojibake(state.user.name);
-          if (state.user.role?.toLowerCase() === 'admin' && (!state.user.name || state.user.name.toLowerCase().includes('quản trị') || state.user.name.includes('ï'))) {
+          if (state.user.role?.toLowerCase() === 'admin') {
             state.user.name = 'Quản trị viên GreenFood';
           }
           if (state.user.address) {

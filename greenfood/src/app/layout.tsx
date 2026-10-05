@@ -24,7 +24,12 @@ export const metadata: Metadata = {
   title: "GreenFood - Chợ Nông Sản Sạch Việt Nam",
   description: "Trái cây tươi, đặc sản vùng miền sạch từ nông hộ đến tay bạn.",
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 };
 
@@ -35,6 +40,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
+      <head>
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="shortcut icon" href="/favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
+      </head>
       <body className={`antialiased bg-gray-50/60 font-sans flex flex-col min-h-screen ${pacifico.variable} ${beVietnamPro.variable}`}>
         <Toaster position="top-right" />
         <ClientLayoutWrapper>

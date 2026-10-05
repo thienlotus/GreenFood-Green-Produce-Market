@@ -17,12 +17,11 @@ export function cleanVietnameseMojibake(str: string | undefined | null): string 
 
   let s = str;
 
-  // Xóa bỏ triệt để các ký tự lỗi Latin1 như 'ï' (\u00EF) không thuộc bảng chữ cái tiếng Việt
-  s = s.replace(/Quản\s*trị[\u00EFï\?]+\s*viên\s*GreenFood/gi, 'Quản trị viên GreenFood');
-  s = s.replace(/Quản\s*trị[\u00EFï\?]+\s*viên/gi, 'Quản trị viên');
-  s = s.replace(/Quản\s*trị[\u00EFï\?]+/gi, 'Quản trị');
-  s = s.replace(/trị[\u00EFï\?]+/gi, 'trị');
-  s = s.replace(/[\u00EFï]/g, '');
+  // Xóa bỏ triệt để các ký tự lỗi Latin1 như 'ï' (\u00EF), '¬' (\u00AC)
+  s = s.replace(/Quản\s*tr[^\s]*\s*vi[^\s]*\s*GreenFood/gi, 'Quản trị viên GreenFood');
+  s = s.replace(/Quản\s*tr[\u00EFï\?]+[\u00AC¬]*\s*viên/gi, 'Quản trị viên');
+  s = s.replace(/tr[\u00EFï\?]+[\u00AC¬]*/gi, 'trị');
+  s = s.replace(/[\u00EFï\u00AC¬\uFFFD]/g, '');
 
   // 1. Tự động phục hồi chuỗi bị mã hóa đúp UTF-8 / Windows-1252
   if (/[ÃÂÄÅÆÇÉÈÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßÄ–—‘’“”‹›\u0080-\u00FF]/.test(s)) {
@@ -68,6 +67,9 @@ export function cleanVietnameseMojibake(str: string | undefined | null): string 
     'D╞░a L╞░ß╗¢i Mß║¡t Hß╗»u C╞í': 'Dưa Lưới Mật Hữu Cơ',
     'C├á Ph├¬ Robusta Mß╗Öc Ch├óu': 'Cà Phê Robusta Mộc Châu',
     'Rau Hß╗»u C╞í Tß╗òng Hß╗úp ─É├á Lß║ít': 'Rau Hữu Cơ Tổng Hợp Đà Lạt',
+    'Quản trï¬ viên GreenFood': 'Quản trị viên GreenFood',
+    'Quản trï¬ viên': 'Quản trị viên',
+    'Quản trï¬': 'Quản trị viên',
     'Quản trịï viên GreenFood': 'Quản trị viên GreenFood',
     'Quản trịï viên': 'Quản trị viên',
     'Quản trịï': 'Quản trị viên',

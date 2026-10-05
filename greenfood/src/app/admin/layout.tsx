@@ -3,7 +3,7 @@
 import AdminGuard from '@/components/AdminGuard';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import BrandLogo from '@/components/BrandLogo';
 import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
 import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
@@ -96,6 +96,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (norm.startsWith('/admin/settings')) return 'Cài đặt hệ thống';
     return 'Quản trị hệ thống';
   };
+
+  // Đồng bộ tiêu đề tab trình duyệt theo từng phân hệ quản trị
+  useEffect(() => {
+    const pageTitle = getPageTitle();
+    document.title = `GreenFood Admin - ${pageTitle}`;
+  }, [pathname]);
 
   return (
     <AdminGuard>
@@ -193,11 +199,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-white truncate">
                   {(() => {
-                    const cleaned = cleanVietnameseMojibake(user?.name);
-                    if (!cleaned || cleaned.toLowerCase().includes('quản trị') || cleaned.toLowerCase().includes('admin')) {
+                    const raw = user?.name || '';
+                    const cleaned = cleanVietnameseMojibake(raw);
+                    if (user?.role?.toLowerCase() === 'admin' || /qu[aả|§]+n/i.test(cleaned) || /greenfood/i.test(cleaned) || /admin/i.test(cleaned) || cleaned.includes('ï') || cleaned.includes('¬')) {
                       return 'Quản trị viên GreenFood';
                     }
-                    return cleaned;
+                    return cleaned || 'Quản trị viên GreenFood';
                   })()}
                 </p>
                 <p className="text-[11px] text-emerald-400 truncate">Quản trị viên trưởng</p>
