@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ShoppingCart, Star, MapPin, Sparkles } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 import { toast } from 'react-hot-toast';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop';
@@ -27,21 +28,27 @@ interface ProductCardProps {
 
 export default function ProductCard({
   id,
-  name,
+  name: rawName,
   slug,
-  farmerName,
-  region,
+  farmerName: rawFarmerName,
+  region: rawRegion,
   image,
   defaultPrice,
-  defaultUnit,
+  defaultUnit: rawDefaultUnit,
   defaultVariantId,
   originalPrice,
-  badge = "Đặc sản",
+  badge: rawBadge = "Đặc sản",
   rating = 5,
   soldCount = 0,
   showSoldProgress = false
 }: ProductCardProps) {
   const { addItem } = useCartStore();
+
+  const name = cleanVietnameseMojibake(rawName);
+  const farmerName = cleanVietnameseMojibake(rawFarmerName);
+  const region = cleanVietnameseMojibake(rawRegion);
+  const defaultUnit = cleanVietnameseMojibake(rawDefaultUnit);
+  const badge = rawBadge ? cleanVietnameseMojibake(rawBadge) : "Đặc sản";
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();

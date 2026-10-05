@@ -96,7 +96,6 @@ class GHNService
             return $response;
         });
     }
-    }
 
     /**
      * Cấu hình kích thước và quy cách đóng gói mặc định cho gói hàng
@@ -251,7 +250,7 @@ class GHNService
             }
 
             return $response->json() ?? ['code' => -1, 'message' => 'GHN trả về phản hồi rỗng.'];
-        } catch (ConnectionException $exception) {
+        } catch (\Throwable $exception) {
             Log::error('Không thể kết nối đến máy chủ GHN', ['uri' => $uri, 'error' => $exception->getMessage()]);
             return ['code' => -1, 'message' => 'Không thể kết nối tới máy chủ GHN.'];
         }
@@ -280,7 +279,7 @@ class GHNService
             }
 
             return $response->json() ?? ['code' => -1, 'message' => 'GHN trả về phản hồi rỗng.'];
-        } catch (ConnectionException $exception) {
+        } catch (\Throwable $exception) {
             Log::error('Không thể kết nối đến máy chủ GHN', ['uri' => $uri, 'error' => $exception->getMessage()]);
             return ['code' => -1, 'message' => 'Không thể kết nối tới máy chủ GHN.'];
         }

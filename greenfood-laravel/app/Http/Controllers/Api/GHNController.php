@@ -16,7 +16,13 @@ class GHNController extends Controller
      */
     public function getProvinces(GHNService $ghn)
     {
-        return response()->json($ghn->getProvinces());
+        try {
+            $res = $ghn->getProvinces();
+            return response()->json($res);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('GHN getProvinces error: ' . $e->getMessage());
+            return response()->json(['code' => 500, 'message' => $e->getMessage(), 'data' => []]);
+        }
     }
 
     /**
@@ -25,7 +31,13 @@ class GHNController extends Controller
      */
     public function getDistricts(int $provinceId, GHNService $ghn)
     {
-        return response()->json($ghn->getDistricts($provinceId));
+        try {
+            $res = $ghn->getDistricts($provinceId);
+            return response()->json($res);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("GHN getDistricts for {$provinceId} error: " . $e->getMessage());
+            return response()->json(['code' => 500, 'message' => $e->getMessage(), 'data' => []]);
+        }
     }
 
     /**
@@ -34,7 +46,13 @@ class GHNController extends Controller
      */
     public function getWards(int $districtId, GHNService $ghn)
     {
-        return response()->json($ghn->getWards($districtId));
+        try {
+            $res = $ghn->getWards($districtId);
+            return response()->json($res);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("GHN getWards for {$districtId} error: " . $e->getMessage());
+            return response()->json(['code' => 500, 'message' => $e->getMessage(), 'data' => []]);
+        }
     }
 
     /**
@@ -42,29 +60,43 @@ class GHNController extends Controller
      */
     public function getShippingFee(Request $request, GHNService $ghn)
     {
-        // 1. Kiểm tra tính hợp lệ của dữ liệu gửi lên
-        $request->validate([
-            'to_district_id' => 'required|integer',
-            'to_ward_code' => 'required|string',
-            'weight' => 'nullable|integer', // Có thể gửi lên cân nặng trực tiếp hoặc tự tính mặc định
-            'items' => 'nullable|array'     // Hoặc mảng items trong giỏ hàng để tính
-        ]);
+        try {
+            // 1. Kiểm tra tính hợp lệ của dữ liệu gửi lên
+            $request->validate([
+                'to_district_id' => 'required|integer',
+                'to_ward_code' => 'required|string',
+                'weight' => 'nullable|integer',
+                'items' => 'nullable|array'
+            ]);
 
-        // 2. Tính tổng khối lượng kiện hàng
-        $weight = 200; // Mặc định
-        if ($request->has('weight')) {
-            $weight = $request->input('weight');
-        } elseif ($request->has('items') && is_array($request->items)) {
-            $weight = collect($request->items)->sum(
-                fn ($item) => (int) config('services.ghn.default_weight', 200) * (int) ($item['quantity'] ?? 1)
-            );
+            // 2. Tính tổng khối lượng kiện hàng
+            $weight = 200; // Mặc định
+            if ($request->has('weight')) {
+                $weight = $request->input('weight');
+            } elseif ($request->has('items') && is_array($request->items)) {
+                $weight = collect($request->items)->sum(
+                    fn ($item) => (int) config('services.ghn.default_weight', 200) * (int) ($item['quantity'] ?? 1)
+                );
+            }
+
+            // 3. Gọi GHNService gửi request tính phí tới cổng GHN
+            $res = $ghn->calculateFee(array_merge([
+                'from_district_id' => (int) config('services.ghn.from_district_id', 3440),
+                'to_district_id' => (int) $request->to_district_id,
+                'to_ward_code' => (string) $request->to_ward_code,
+            ], $ghn->packageParameters($weight)));
+
+            return response()->json($res);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('GHN getShippingFee error: ' . $e->getMessage());
+            return response()->json([
+                'code' => 200,
+                'message' => 'Sử dụng cước vận chuyển tiêu chuẩn',
+                'data' => [
+                    'total' => 25000,
+                    'service_fee' => 25000
+                ]
+            ]);
         }
-
-        // 3. Gọi GHNService gửi request tính phí tới cổng GHN
-        return response()->json($ghn->calculateFee(array_merge([
-            'from_district_id' => (int) config('services.ghn.from_district_id'), // Mã huyện kho gửi
-            'to_district_id' => (int) $request->to_district_id,                 // Mã huyện người nhận
-            'to_ward_code' => (string) $request->to_ward_code,                   // Mã xã người nhận
-        ], $ghn->packageParameters($weight))));                                  // Kích thước & cân nặng kiện hàng
     }
 }

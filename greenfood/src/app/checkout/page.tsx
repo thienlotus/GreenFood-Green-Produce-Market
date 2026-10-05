@@ -7,6 +7,7 @@ import { ChevronLeft, CheckCircle, ChevronRight, MapPin, CreditCard, Smartphone,
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getGhnProvinces, getGhnDistricts, getGhnWards, calculateGhnShippingFee, createOrder, createMomoPayment, createSepayPayment, checkSepayStatus, SepayPaymentResponse, checkVoucherApi } from '@/lib/api';
+import { cleanVietnameseMojibake, FALLBACK_PROVINCES, getFallbackDistricts, getFallbackWards } from '@/data/vietnamAddress';
 import { toast } from 'react-hot-toast';
 
 // Fallback zones logic removed since we use GHN directly
@@ -21,7 +22,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
-  const [provinces, setProvinces] = useState<any[]>([]);
+  const [provinces, setProvinces] = useState<any[]>(FALLBACK_PROVINCES);
   const [districts, setDistricts] = useState<any[]>([]);
   const [wards, setWards] = useState<any[]>([]);
   const [loadingProvinces, setLoadingProvinces] = useState(false);
@@ -77,10 +78,19 @@ export default function CheckoutPage() {
     let isMounted = true;
     async function loadProvinces() {
       setLoadingProvinces(true);
-      const data = await getGhnProvinces();
-      if (isMounted) {
-        setProvinces(data || []);
-        setLoadingProvinces(false);
+      try {
+        const data = await getGhnProvinces();
+        if (isMounted) {
+          if (data && data.length > 0) {
+            setProvinces(data);
+          } else {
+            setProvinces(FALLBACK_PROVINCES);
+          }
+        }
+      } catch (err) {
+        if (isMounted) setProvinces(FALLBACK_PROVINCES);
+      } finally {
+        if (isMounted) setLoadingProvinces(false);
       }
     }
     loadProvinces();
@@ -91,16 +101,22 @@ export default function CheckoutPage() {
     let isMounted = true;
     async function loadDistricts() {
       if (selectedProvinceId) {
-        setDistricts([]);
+        const fallback = getFallbackDistricts(selectedProvinceId as number);
+        setDistricts(fallback);
         setWards([]);
         setSelectedDistrictId('');
         setSelectedWardCode('');
         setGhnShippingFee(null);
         setLoadingDistricts(true);
-        const data = await getGhnDistricts(selectedProvinceId as number);
-        if (isMounted) {
-          setDistricts(data || []);
-          setLoadingDistricts(false);
+        try {
+          const data = await getGhnDistricts(selectedProvinceId as number);
+          if (isMounted && data && data.length > 0) {
+            setDistricts(data);
+          }
+        } catch (err) {
+          console.warn('[Checkout] Use fallback districts:', err);
+        } finally {
+          if (isMounted) setLoadingDistricts(false);
         }
       } else {
         setDistricts([]);
@@ -118,14 +134,20 @@ export default function CheckoutPage() {
     let isMounted = true;
     async function loadWards() {
       if (selectedDistrictId) {
-        setWards([]);
+        const fallback = getFallbackWards(selectedDistrictId as number);
+        setWards(fallback);
         setSelectedWardCode('');
         setGhnShippingFee(null);
         setLoadingWards(true);
-        const data = await getGhnWards(selectedDistrictId as number);
-        if (isMounted) {
-          setWards(data || []);
-          setLoadingWards(false);
+        try {
+          const data = await getGhnWards(selectedDistrictId as number);
+          if (isMounted && data && data.length > 0) {
+            setWards(data);
+          }
+        } catch (err) {
+          console.warn('[Checkout] Use fallback wards:', err);
+        } finally {
+          if (isMounted) setLoadingWards(false);
         }
       } else {
         setWards([]);
@@ -344,8 +366,8 @@ export default function CheckoutPage() {
       items: items.map(i => ({
         productId: String(i.id),
         variantId: i.variantId ? String(i.variantId) : undefined,
-        productName: i.name,
-        unit: i.unit,
+        productName: cleanVietnameseMojibake(i.name),
+        unit: cleanVietnameseMojibake(i.unit),
         quantity: i.quantity,
         price: i.price
       }))
@@ -632,14 +654,14 @@ export default function CheckoutPage() {
                 {items.map((item) => (
                   <div key={`${item.id}-${item.variantId}`} className="flex gap-3">
                     <div className="relative">
-                      <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-md border border-gray-200" />
+                      <img src={item.image} alt={cleanVietnameseMojibake(item.name)} className="w-16 h-16 object-cover rounded-md border border-gray-200" />
                       <span className="absolute -top-2 -right-2 bg-emerald-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
                         {item.quantity}
                       </span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-sm font-medium text-gray-800 line-clamp-2">{item.name}</h4>
-                      <p className="text-xs text-gray-500">{item.unit}</p>
+                      <h4 className="text-sm font-medium text-gray-800 line-clamp-2">{cleanVietnameseMojibake(item.name)}</h4>
+                      <p className="text-xs text-gray-500">{cleanVietnameseMojibake(item.unit)}</p>
                       <p className="text-sm font-bold text-gray-700 mt-1">{(item.price * item.quantity).toLocaleString('vi-VN')}đ</p>
                     </div>
                   </div>

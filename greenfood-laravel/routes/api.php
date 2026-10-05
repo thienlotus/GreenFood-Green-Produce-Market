@@ -100,12 +100,6 @@ Route::prefix('v1')->group(function () {
     Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
     Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
     Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
-
-    // 9. GHN Logistics & Address Module
-    Route::get('/ghn/provinces', [GHNController::class, 'getProvinces']);
-    Route::get('/ghn/districts/{provinceId}', [GHNController::class, 'getDistricts']);
-    Route::get('/ghn/wards/{districtId}', [GHNController::class, 'getWards']);
-    Route::post('/ghn/calculate-fee', [GHNController::class, 'getShippingFee']);
 });
 
 // Direct aliases without v1 prefix for backward compatibility
@@ -174,11 +168,6 @@ Route::get('/admin/orders', [OrderController::class, 'index']);
 Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
 Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
 Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
-
-Route::get('/ghn/provinces', [GHNController::class, 'getProvinces']);
-Route::get('/ghn/districts/{provinceId}', [GHNController::class, 'getDistricts']);
-Route::get('/ghn/wards/{districtId}', [GHNController::class, 'getWards']);
-Route::post('/ghn/calculate-fee', [GHNController::class, 'getShippingFee']);
 
 // 10. Chat Module (Live Chat Support)
 Route::prefix('chat')->group(function () {

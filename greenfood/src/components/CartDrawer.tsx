@@ -2,6 +2,7 @@
 
 import { X, Trash2, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -70,13 +71,13 @@ export default function CartDrawer() {
                 <div key={`${item.id}-${item.variantId}`} className="flex gap-4 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
                   <img 
                     src={item.image} 
-                    alt={item.name} 
+                    alt={cleanVietnameseMojibake(item.name)} 
                     className="w-20 h-20 object-cover rounded-lg border border-gray-50"
                   />
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start">
-                        <h3 className="font-semibold text-gray-800 text-sm line-clamp-2 pr-2">{item.name}</h3>
+                        <h3 className="font-semibold text-gray-800 text-sm line-clamp-2 pr-2">{cleanVietnameseMojibake(item.name)}</h3>
                         <button 
                           onClick={() => removeItem(item.variantId)}
                           className="text-gray-400 hover:text-red-500 transition-colors p-1"
@@ -84,7 +85,7 @@ export default function CartDrawer() {
                           <Trash2 size={16} />
                         </button>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">{item.unit}</p>
+                      <p className="text-xs text-gray-500 mt-1">{cleanVietnameseMojibake(item.unit)}</p>
                     </div>
                     
                     <div className="flex items-center justify-between mt-2">

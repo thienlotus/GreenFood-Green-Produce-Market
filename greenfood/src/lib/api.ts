@@ -7,7 +7,15 @@ import {
   getProductsByCategory as getMockProductsByCategory,
   getCategoryBySlug as getMockCategoryBySlug
 } from '@/data/products';
+import {
+  cleanVietnameseMojibake,
+  FALLBACK_PROVINCES,
+  getFallbackDistricts,
+  getFallbackWards,
+  calculateFallbackShippingFee
+} from '@/data/vietnamAddress';
 
+export { cleanVietnameseMojibake };
 export type { ProductItem, CategoryInfo };
 
 export function getApiBaseUrl(): string {
@@ -90,30 +98,30 @@ export async function getCategoryBySlug(slug: string): Promise<CategoryInfo | un
 function mapProduct(p: any): ProductItem {
   return {
     id: p.id,
-    name: p.name,
+    name: cleanVietnameseMojibake(p.name),
     slug: p.slug,
     categorySlug: p.category?.slug || 'trai-cay',
-    categoryName: p.category?.name || 'Trái cây tươi',
-    description: p.description || '',
+    categoryName: cleanVietnameseMojibake(p.category?.name || 'Trái cây tươi'),
+    description: cleanVietnameseMojibake(p.description || ''),
     images: p.image_url ? [p.image_url] : [
       'https://images.unsplash.com/photo-1550828520-4cb496926fc9?q=80&w=800&auto=format&fit=crop'
     ],
     variants: (p.variants && p.variants.length > 0) 
       ? p.variants.map((v: any) => ({
           id: v.id,
-          unit: v.unit,
+          unit: cleanVietnameseMojibake(v.unit),
           price: Number(v.price),
           comparePrice: v.compare_at_price ? Number(v.compare_at_price) : undefined,
         }))
       : [{ id: 'v1', unit: '1kg', price: 100000 }],
     farmer: {
-      name: p.farmer?.farm_name || 'Nông Hộ GreenFood',
-      region: p.farmer?.region?.name || p.farmer?.address || 'Việt Nam',
+      name: cleanVietnameseMojibake(p.farmer?.farm_name || 'Nông Hộ GreenFood'),
+      region: cleanVietnameseMojibake(p.farmer?.region?.name || p.farmer?.address || 'Việt Nam'),
       rating: p.farmer?.rating ? Number(p.farmer.rating) : 4.8,
-      address: p.farmer?.address || '',
-      story: p.farmer?.story || 'Nông sản hữu cơ sạch chuẩn VietGAP.'
+      address: cleanVietnameseMojibake(p.farmer?.address || ''),
+      story: cleanVietnameseMojibake(p.farmer?.story || 'Nông sản hữu cơ sạch chuẩn VietGAP.')
     },
-    badge: p.badge || undefined,
+    badge: p.badge ? cleanVietnameseMojibake(p.badge) : undefined,
     soldCount: p.sold_count ? Number(p.sold_count) : 0,
     rating: p.rating ? Number(p.rating) : 5.0,
     isSeasonal: Boolean(p.is_seasonal)
@@ -601,7 +609,7 @@ export async function getGhnProvinces(): Promise<any[]> {
   }
   try {
     const res = await fetchApi<{ code: number; data: any[] }>('/ghn/provinces');
-    if (res && res.code === 200 && Array.isArray(res.data)) {
+    if (res && res.code === 200 && Array.isArray(res.data) && res.data.length > 0) {
       // Sắp xếp thông minh: Đưa các trung tâm lớn lên đầu, sau đó sắp xếp theo A-Z
       const priorityNames = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Bình Dương', 'Đồng Nai', 'Cần Thơ', 'Hải Phòng'];
       const sorted = [...res.data].sort((a, b) => {
@@ -615,11 +623,13 @@ export async function getGhnProvinces(): Promise<any[]> {
       cachedProvinces = sorted;
       return sorted;
     }
-    return [];
   } catch (error) {
-    console.error('[API] getGhnProvinces error:', error);
-    return [];
+    console.warn('[API] getGhnProvinces live API unavailable, using built-in Vietnam provinces:', error);
   }
+
+  // Luôn đảm bảo dropdown KHÔNG BAO GIỜ bị rỗng
+  cachedProvinces = FALLBACK_PROVINCES;
+  return FALLBACK_PROVINCES;
 }
 
 export async function getGhnDistricts(provinceId: number): Promise<any[]> {
@@ -628,16 +638,18 @@ export async function getGhnDistricts(provinceId: number): Promise<any[]> {
   }
   try {
     const res = await fetchApi<{ code: number; data: any[] }>(`/ghn/districts/${provinceId}`);
-    if (res && res.code === 200 && Array.isArray(res.data)) {
+    if (res && res.code === 200 && Array.isArray(res.data) && res.data.length > 0) {
       const sorted = [...res.data].sort((a, b) => a.DistrictName.localeCompare(b.DistrictName, 'vi'));
       cachedDistricts[provinceId] = sorted;
       return sorted;
     }
-    return [];
   } catch (error) {
-    console.error('[API] getGhnDistricts error:', error);
-    return [];
+    console.warn(`[API] getGhnDistricts for province ${provinceId} error, using fallback:`, error);
   }
+
+  const fallback = getFallbackDistricts(provinceId);
+  cachedDistricts[provinceId] = fallback;
+  return fallback;
 }
 
 export async function getGhnWards(districtId: number): Promise<any[]> {
@@ -646,19 +658,25 @@ export async function getGhnWards(districtId: number): Promise<any[]> {
   }
   try {
     const res = await fetchApi<{ code: number; data: any[] }>(`/ghn/wards/${districtId}`);
-    if (res && res.code === 200 && Array.isArray(res.data)) {
+    if (res && res.code === 200 && Array.isArray(res.data) && res.data.length > 0) {
       const sorted = [...res.data].sort((a, b) => a.WardName.localeCompare(b.WardName, 'vi'));
       cachedWards[districtId] = sorted;
       return sorted;
     }
-    return [];
   } catch (error) {
-    console.error('[API] getGhnWards error:', error);
-    return [];
+    console.warn(`[API] getGhnWards for district ${districtId} error, using fallback:`, error);
   }
+
+  const fallback = getFallbackWards(districtId);
+  cachedWards[districtId] = fallback;
+  return fallback;
 }
 
 export async function calculateGhnShippingFee(districtId: number, wardCode: string, items: any[]): Promise<number | null> {
+  const totalOrder = Array.isArray(items) 
+    ? items.reduce((sum, it) => sum + (Number(it.price || 0) * Number(it.quantity || 1)), 0)
+    : 0;
+
   try {
     const res = await fetchApi<{ code: number; data: any }>('/ghn/calculate-fee', {
       method: 'POST',
@@ -669,14 +687,15 @@ export async function calculateGhnShippingFee(districtId: number, wardCode: stri
       })
     });
 
-    if (res && res.code === 200 && res.data && res.data.total) {
+    if (res && res.code === 200 && res.data && typeof res.data.total === 'number') {
       return res.data.total;
     }
-    return null;
   } catch (error) {
-    console.error('[API] calculateGhnShippingFee error:', error);
-    return null;
+    console.warn('[API] calculateGhnShippingFee error, using fallback fee rule:', error);
   }
+
+  // Tự động tính phí tiêu chuẩn (Miễn phí từ 300.000đ, hoặc 25k-35k)
+  return calculateFallbackShippingFee(totalOrder);
 }
 
 // 7. CART & PROMOTION API (Phụ trách: Lương Văn Quý)
