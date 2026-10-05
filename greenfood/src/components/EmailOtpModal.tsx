@@ -216,7 +216,23 @@ export default function EmailOtpModal({
             <div className="font-semibold text-gray-900 mt-0.5 break-all">{email}</div>
           </div>
 
-
+          {debugOtp && (
+            <div className="bg-emerald-50/90 border border-emerald-200 text-emerald-900 text-xs px-3.5 py-2.5 rounded-xl flex items-center justify-between gap-2 shadow-sm">
+              <span className="text-gray-700">Mã OTP gửi đến bạn: <strong className="font-mono text-emerald-700 text-sm tracking-widest">{debugOtp}</strong></span>
+              <button
+                type="button"
+                onClick={() => {
+                  const digits = debugOtp.split('').slice(0, 6);
+                  setOtp(digits);
+                  setErrorMessage('');
+                  inputRefs.current[5]?.focus();
+                }}
+                className="font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1 rounded-lg transition-colors cursor-pointer shrink-0"
+              >
+                Điền nhanh
+              </button>
+            </div>
+          )}
 
           {errorMessage && (
             <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm px-4 py-3 rounded-xl flex items-start gap-2.5">
