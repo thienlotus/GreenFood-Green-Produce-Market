@@ -2,7 +2,11 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, ChevronDown, List, Map, Package, LogOut, ShieldCheck, X } from 'lucide-react';
+import { 
+  ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, 
+  ChevronDown, List, Map, Package, LogOut, ShieldCheck, X,
+  ShoppingBag, Apple, Coffee, Gift, Store
+} from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useState, useEffect } from 'react';
@@ -240,22 +244,27 @@ export default function Navbar() {
               {isCategoryOpen && (
                 <div className="absolute top-full left-0 w-64 bg-white/95 backdrop-blur-xl shadow-2xl border border-slate-200/90 py-2.5 z-50 rounded-2xl mt-1.5 animate-fadeIn">
                   {[
-                    { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: '🛒' },
-                    { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: '🍉' },
-                    { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: '☕' },
-                    { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: '🎁' },
-                    { name: 'Agrishow Triển lãm', href: '/category/agrishow/', icon: '🌾' },
-                    { name: 'Nông hộ & Nhà vườn', href: '/farmers/', icon: '👨‍🌾' }
-                  ].map((cat) => (
-                    <Link 
-                      key={cat.name} 
-                      href={cat.href} 
-                      className="flex items-center gap-3 px-5 py-2.5 hover:bg-emerald-50/80 hover:text-emerald-700 text-slate-700 text-xs font-semibold transition-all group"
-                    >
-                      <span className="text-base group-hover:scale-115 transition-transform">{cat.icon}</span>
-                      <span>{cat.name}</span>
-                    </Link>
-                  ))}
+                    { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: ShoppingBag, color: 'text-emerald-600 bg-emerald-50' },
+                    { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: Apple, color: 'text-rose-600 bg-rose-50' },
+                    { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700 bg-amber-50' },
+                    { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: Gift, color: 'text-purple-600 bg-purple-50' },
+                    { name: 'Agrishow Triển lãm', href: '/category/agrishow/', icon: Store, color: 'text-teal-600 bg-teal-50' },
+                    { name: 'Nông hộ & Nhà vườn', href: '/farmers/', icon: Users, color: 'text-sky-600 bg-sky-50' }
+                  ].map((cat) => {
+                    const IconComp = cat.icon;
+                    return (
+                      <Link 
+                        key={cat.name} 
+                        href={cat.href} 
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50/80 hover:text-emerald-800 text-slate-700 text-xs font-semibold transition-all group"
+                      >
+                        <span className={`w-7 h-7 rounded-lg flex items-center justify-center ${cat.color} group-hover:scale-110 transition-transform`}>
+                          <IconComp size={15} />
+                        </span>
+                        <span>{cat.name}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -266,25 +275,25 @@ export default function Navbar() {
                 href="/category/di-cho-online/" 
                 className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
               >
-                <span>🛒</span> Đi chợ online
+                <ShoppingBag size={14} className="text-emerald-600" /> Đi chợ online
               </Link>
               <Link 
                 href="/category/trai-cay/" 
                 className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
               >
-                <span>🍉</span> Trái cây
+                <Apple size={14} className="text-rose-500" /> Trái cây
               </Link>
               <Link 
                 href="/category/tra-ca-phe/" 
                 className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
               >
-                <span>☕</span> Trà - Cà phê
+                <Coffee size={14} className="text-amber-700" /> Trà - Cà phê
               </Link>
               <Link 
                 href="/category/dac-san/" 
                 className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
               >
-                <span>🎁</span> Đặc sản
+                <Gift size={14} className="text-purple-600" /> Đặc sản
               </Link>
               <Link 
                 href="/map/" 
@@ -393,23 +402,27 @@ export default function Navbar() {
             <div className="space-y-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 px-3">Danh mục chính</span>
               {[
-                { name: 'Đi chợ online', href: '/category/di-cho-online/' },
-                { name: 'Trái cây tươi ngon', href: '/category/trai-cay/' },
-                { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/' },
-                { name: 'Đặc sản vùng miền', href: '/category/dac-san/' },
-                { name: 'Bản đồ nhà vườn', href: '/map/' },
-                { name: 'Theo dõi đơn hàng', href: '/tracking/' },
-                { name: 'Hồ sơ cá nhân & VIP', href: '/profile/' },
-              ].map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
-                >
-                  {link.name}
-                </Link>
-              ))}
+                { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: ShoppingBag, color: 'text-emerald-600' },
+                { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: Apple, color: 'text-rose-500' },
+                { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700' },
+                { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: Gift, color: 'text-purple-600' },
+                { name: 'Bản đồ nhà vườn', href: '/map/', icon: Map, color: 'text-emerald-600' },
+                { name: 'Theo dõi đơn hàng', href: '/tracking/', icon: Package, color: 'text-amber-600' },
+                { name: 'Hồ sơ cá nhân & VIP', href: '/profile/', icon: User, color: 'text-teal-600' },
+              ].map((link) => {
+                const IconComp = link.icon;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
+                  >
+                    <IconComp size={16} className={link.color} />
+                    <span>{link.name}</span>
+                  </Link>
+                );
+              })}
             </div>
 
             {user?.role === 'admin' && (
