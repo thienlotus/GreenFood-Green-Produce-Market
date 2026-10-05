@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 720" fill="none" stroke="currentColor">
+  <!-- Vietnamese Bamboo Grove (Lũy Tre Xanh Việt Nam) -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- Main Tall Bamboo Stalk (Thân tre chính vươn cao) -->
+    <g stroke="#047857" stroke-width="4.5">
+      <!-- Section 1 (Base) -->
+      <line x1="70" y1="700" x2="75" y2="580" />
+      <!-- Section 2 -->
+      <line x1="76" y1="576" x2="84" y2="450" />
+      <!-- Section 3 -->
+      <line x1="85" y1="446" x2="98" y2="310" />
+      <!-- Section 4 -->
+      <line x1="100" y1="306" x2="120" y2="180" />
+      <!-- Section 5 (Top Arch) -->
+      <line x1="122" y1="176" x2="160" y2="60" />
+      <!-- Section 6 (Tip) -->
+      <line x1="162" y1="58" x2="200" y2="10" stroke-width="3" />
+    </g>
+
+    <!-- Bamboo Nodes (Các đốt tre dày chắc) -->
+    <g stroke="#065f46" stroke-width="6.5">
+      <line x1="71" y1="578" x2="80" y2="578" />
+      <line x1="80" y1="448" x2="90" y2="448" />
+      <line x1="93" y1="308" x2="105" y2="308" />
+      <line x1="114" y1="178" x2="128" y2="178" />
+      <line x1="154" y1="60" x2="168" y2="60" stroke-width="5" />
+    </g>
+
+    <!-- Secondary Slender Bamboo Stalk (Thân tre phụ uốn lượn) -->
+    <g stroke="#059669" stroke-width="3.5">
+      <line x1="120" y1="700" x2="122" y2="600" />
+      <line x1="123" y1="596" x2="128" y2="480" />
+      <line x1="129" y1="476" x2="138" y2="360" />
+      <line x1="140" y1="356" x2="155" y2="240" />
+      <line x1="157" y1="236" x2="185" y2="130" />
+      <line x1="187" y1="127" x2="230" y2="40" stroke-width="2.5" />
+    </g>
+
+    <!-- Secondary Nodes -->
+    <g stroke="#047857" stroke-width="5">
+      <line x1="118" y1="598" x2="126" y2="598" />
+      <line x1="124" y1="478" x2="132" y2="478" />
+      <line x1="134" y1="358" x2="143" y2="358" />
+      <line x1="150" y1="238" x2="160" y2="238" />
+      <line x1="180" y1="128" x2="190" y2="128" stroke-width="4" />
+    </g>
+
+    <!-- Slender Twigs & Branches (Các nhánh tre con đâm chồi) -->
+    <g stroke="#10b981" stroke-width="1.8">
+      <!-- From Node 2 -->
+      <path d="M 85 448 C 60 430, 35 440, 10 460" />
+      <path d="M 85 448 C 110 420, 140 430, 170 450" />
+
+      <!-- From Node 3 -->
+      <path d="M 98 308 C 60 280, 20 290, -5 320" />
+      <path d="M 103 308 C 140 280, 180 290, 220 310" />
+
+      <!-- From Node 4 -->
+      <path d="M 120 178 C 80 140, 30 150, 0 180" />
+      <path d="M 125 178 C 170 150, 220 160, 260 180" />
+
+      <!-- From Node 5 (Top Arch) -->
+      <path d="M 160 60 C 130 30, 90 40, 60 70" />
+      <path d="M 165 60 C 210 30, 260 40, 300 70" />
+      <path d="M 195 15 C 240 -10, 280 5, 320 30" />
+    </g>
+
+    <!-- Clusters of Pointed Bamboo Leaves (Từng chùm lá tre thanh mảnh xòe rộng) -->
+    <g fill="#10b981" fill-opacity="0.3" stroke="#059669" stroke-width="1.2">
+      <!-- Cluster 1 (Left Lower) -->
+      <path d="M 10 460 C 2 440, 15 420, 45 425 C 25 435, 15 450, 10 460 Z" />
+      <path d="M 10 460 C -8 450, -5 430, 25 435 C 10 445, 2 455, 10 460 Z" />
+      <path d="M 10 460 C 5 475, 25 480, 50 470 C 30 475, 18 470, 10 460 Z" />
+
+      <!-- Cluster 2 (Right Mid-Lower) -->
+      <path d="M 170 450 C 195 435, 225 440, 245 460 C 220 455, 195 455, 170 450 Z" />
+      <path d="M 170 450 C 190 465, 215 475, 235 490 C 210 480, 190 470, 170 450 Z" />
+      <path d="M 170 450 C 180 430, 205 425, 230 435 C 205 435, 185 440, 170 450 Z" />
+
+      <!-- Cluster 3 (Left Mid) -->
+      <path d="M -5 320 C -15 300, 5 285, 35 290 C 15 300, 5 315, -5 320 Z" />
+      <path d="M -5 320 C -25 315, -20 295, 10 300 C -5 310, -15 318, -5 320 Z" />
+      <path d="M -5 320 C 0 338, 20 345, 45 335 C 25 340, 10 335, -5 320 Z" />
+
+      <!-- Cluster 4 (Right Mid) -->
+      <path d="M 220 310 C 250 295, 280 305, 305 325 C 280 320, 250 318, 220 310 Z" />
+      <path d="M 220 310 C 240 325, 270 340, 290 360 C 265 345, 245 330, 220 310 Z" />
+      <path d="M 220 310 C 235 290, 265 285, 295 295 C 265 295, 245 300, 220 310 Z" />
+
+      <!-- Cluster 5 (Left Upper) -->
+      <path d="M 0 180 C -10 160, 10 145, 40 150 C 20 160, 10 175, 0 180 Z" />
+      <path d="M 0 180 C -20 175, -15 155, 15 160 C 0 170, -10 178, 0 180 Z" />
+      <path d="M 0 180 C 10 198, 30 205, 55 195 C 35 200, 20 195, 0 180 Z" />
+
+      <!-- Cluster 6 (Right Upper) -->
+      <path d="M 260 180 C 290 165, 320 175, 345 195 C 320 190, 290 188, 260 180 Z" />
+      <path d="M 260 180 C 280 195, 310 210, 330 230 C 305 215, 285 200, 260 180 Z" />
+      <path d="M 260 180 C 275 160, 305 155, 335 165 C 305 165, 285 170, 260 180 Z" />
+
+      <!-- Cluster 7 (Top Arch - Left) -->
+      <path d="M 60 70 C 40 50, 60 30, 95 35 C 75 45, 65 60, 60 70 Z" />
+      <path d="M 60 70 C 35 65, 45 45, 75 50 C 60 60, 50 68, 60 70 Z" />
+      <path d="M 60 70 C 70 88, 90 95, 115 85 C 95 90, 80 85, 60 70 Z" />
+
+      <!-- Cluster 8 (Top Arch - Right) -->
+      <path d="M 300 70 C 325 55, 345 65, 360 85 C 340 80, 320 78, 300 70 Z" />
+      <path d="M 300 70 C 315 85, 335 100, 350 120 C 330 105, 315 90, 300 70 Z" />
+      <path d="M 300 70 C 310 50, 335 45, 355 55 C 335 55, 320 60, 300 70 Z" />
+
+      <!-- Cluster 9 (Very Top Tip) -->
+      <path d="M 320 30 C 340 15, 355 25, 365 45 C 350 40, 335 38, 320 30 Z" />
+      <path d="M 320 30 C 330 45, 345 60, 355 75 C 340 60, 330 45, 320 30 Z" />
+      <path d="M 320 30 C 325 10, 345 5, 360 15 C 345 15, 335 20, 320 30 Z" />
+    </g>
+  </g>
+</svg>

@@ -1,16 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import {
   ArrowRight, Truck, ShieldCheck, RefreshCw, CreditCard, ChevronRight, ChevronLeft,
   Zap, Flame, Sparkles, Tag, Copy, Check, Leaf, Award, MapPin, Package, Heart, Star,
-  ShoppingBag, Apple, Coffee, Store, Users, Ticket
+  ShoppingBag, Apple, Coffee, Store, Users, Ticket, Mail
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
+import WelcomeLetterModal from '@/components/WelcomeLetterModal';
 import { getProducts, type ProductItem } from '@/lib/api';
 import { ALL_PRODUCTS } from '@/data/products';
 
@@ -236,9 +237,32 @@ export default function Home() {
     return () => { cancelled = true; };
   }, []);
 
+  const [showWelcomeLetter, setShowWelcomeLetter] = useState(false);
+  const flashSaleScrollerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScrollPosition = () => {
+    const el = flashSaleScrollerRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 10);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+  };
+
+  const scrollFlashSale = (direction: 'left' | 'right') => {
+    const el = flashSaleScrollerRef.current;
+    if (!el) return;
+    const scrollAmount = Math.max(280, el.clientWidth * 0.7);
+    el.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
+    setTimeout(checkScrollPosition, 350);
+  };
+
   const flashSale = useMemo(() => {
     const discounted = products.filter((p) => discountOf(p) > 0).sort((a, b) => discountOf(b) - discountOf(a));
-    return (discounted.length >= 5 ? discounted : [...discounted, ...products.filter((p) => discountOf(p) === 0)]).slice(0, 5);
+    return (discounted.length >= 8 ? discounted : [...discounted, ...products.filter((p) => discountOf(p) === 0)]).slice(0, 10);
   }, [products]);
 
   const tabProducts = useMemo(() => {
@@ -284,15 +308,22 @@ export default function Home() {
       <div className="absolute top-60 right-[-100px] w-96 h-96 bg-amber-500/[0.04] rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="absolute top-[800px] left-[-100px] w-96 h-96 bg-emerald-500/[0.05] rounded-full blur-3xl pointer-events-none -z-10" />
 
-      {/* Họa tiết chìm biểu tượng cây lúa trĩu hạt đang rung rinh trong gió nhẹ (3.5% opacity, chìm tuyệt đối dưới nền, không che chữ hay ảnh) */}
-      <div className="absolute top-12 right-2 w-80 md:w-[440px] h-[580px] opacity-[0.038] pointer-events-none select-none -z-10 animate-rice-sway">
-        <img src="/watermark-rice-plant.svg" alt="" className="w-full h-full object-contain origin-bottom" />
+      {/* Họa tiết chìm Lũy Tre Xanh Việt Nam đung đưa trong gió nhẹ (Bamboo Grove Gentle Sway) */}
+      {/* Vị trí 1: Góc trên phải khu vực Hero */}
+      <div className="absolute top-6 -right-6 md:right-0 w-80 md:w-[460px] h-[640px] opacity-[0.11] md:opacity-[0.14] pointer-events-none select-none -z-10 animate-bamboo-sway">
+        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom" />
       </div>
-      <div className="absolute top-[850px] -left-6 w-72 md:w-[400px] h-[540px] opacity-[0.032] pointer-events-none select-none -z-10 animate-rice-sway-delayed -scale-x-100">
-        <img src="/watermark-rice-plant.svg" alt="" className="w-full h-full object-contain origin-bottom" />
+      {/* Vị trí 2: Phía bên trái khu vực Flash Sale & Vouchers */}
+      <div className="absolute top-[760px] -left-10 md:-left-4 w-72 md:w-[430px] h-[620px] opacity-[0.10] md:opacity-[0.13] pointer-events-none select-none -z-10 animate-bamboo-sway-delayed -scale-x-100">
+        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom" />
       </div>
-      <div className="absolute top-[1850px] right-4 w-80 md:w-[420px] h-[560px] opacity-[0.028] pointer-events-none select-none -z-10 animate-rice-sway">
-        <img src="/watermark-rice-plant.svg" alt="" className="w-full h-full object-contain origin-bottom" />
+      {/* Vị trí 3: Phía bên phải khu vực Gợi ý hôm nay */}
+      <div className="absolute top-[1650px] -right-8 md:right-2 w-80 md:w-[460px] h-[640px] opacity-[0.10] md:opacity-[0.13] pointer-events-none select-none -z-10 animate-bamboo-sway">
+        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom" />
+      </div>
+      {/* Vị trí 4: Phía bên trái khu vực Nông sản miệt vườn */}
+      <div className="absolute top-[2550px] -left-10 md:left-0 w-72 md:w-[420px] h-[600px] opacity-[0.09] md:opacity-[0.12] pointer-events-none select-none -z-10 animate-bamboo-sway-delayed -scale-x-100">
+        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom" />
       </div>
 
       {/* ============================ HERO ============================ */}
@@ -552,17 +583,104 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <Link 
-              href="/category/di-cho-online/" 
-              className="self-start sm:self-auto inline-flex items-center gap-1.5 text-xs md:text-sm font-bold text-rose-950 bg-white hover:bg-amber-100 px-4 py-2 rounded-full transition-all shadow-sm"
-            >
-              Xem tất cả deal <ChevronRight size={16} />
-            </Link>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              {/* Nút điều hướng cuộn ngang mượt mà trên thanh tiêu đề */}
+              <div className="flex items-center gap-1 bg-black/25 backdrop-blur-sm p-1 rounded-full border border-white/20">
+                <button
+                  type="button"
+                  onClick={() => scrollFlashSale('left')}
+                  disabled={!canScrollLeft}
+                  aria-label="Cuộn sang trái"
+                  title="Cuộn sang trái"
+                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                    canScrollLeft 
+                      ? 'bg-white text-rose-950 hover:scale-105 active:scale-95 shadow-sm' 
+                      : 'bg-white/20 text-white/40 cursor-not-allowed'
+                  }`}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollFlashSale('right')}
+                  disabled={!canScrollRight}
+                  aria-label="Cuộn sang phải"
+                  title="Cuộn sang phải"
+                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                    canScrollRight 
+                      ? 'bg-white text-rose-950 hover:scale-105 active:scale-95 shadow-sm' 
+                      : 'bg-white/20 text-white/40 cursor-not-allowed'
+                  }`}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+
+              <Link 
+                href="/category/di-cho-online/" 
+                className="inline-flex items-center gap-1.5 text-xs md:text-sm font-bold text-rose-950 bg-white hover:bg-amber-100 px-4 py-2 rounded-full transition-all shadow-sm"
+              >
+                Xem tất cả deal <ChevronRight size={16} />
+              </Link>
+            </div>
           </div>
-          <div className={`p-4 md:p-6 ${GRID}`}>
-            {loading ? <ProductGridSkeleton /> : flashSale.map((p) => (
-              <ProductCard key={`flash-${p.id}`} {...toCardProps(p)} showSoldProgress />
-            ))}
+
+          {/* Vùng sản phẩm cuộn ngang nhẹ nhàng & siêu mượt */}
+          <div className="relative group/flash-scroller">
+            {/* Nút cuộn trái nổi trên desktop */}
+            <button
+              type="button"
+              onClick={() => scrollFlashSale('left')}
+              aria-label="Cuộn nông sản sang trái"
+              className={`hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 hover:bg-white text-rose-950 shadow-xl border border-rose-200/80 items-center justify-center transition-all hover:scale-110 active:scale-95 ${
+                canScrollLeft ? 'opacity-90 hover:opacity-100 cursor-pointer' : 'opacity-0 pointer-events-none'
+              }`}
+            >
+              <ChevronLeft size={22} />
+            </button>
+
+            <div
+              ref={flashSaleScrollerRef}
+              onScroll={checkScrollPosition}
+              className="flex gap-3.5 sm:gap-4 md:gap-5 overflow-x-auto scroll-smooth scrollbar-none p-4 md:p-6 snap-x snap-mandatory"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
+              {loading ? (
+                <ProductGridSkeleton count={5} />
+              ) : (
+                flashSale.map((p) => (
+                  <div 
+                    key={`flash-${p.id}`} 
+                    className="shrink-0 w-[230px] sm:w-[250px] md:w-[270px] snap-start transition-transform hover:-translate-y-1"
+                  >
+                    <ProductCard {...toCardProps(p)} showSoldProgress />
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Nút cuộn phải nổi trên desktop */}
+            <button
+              type="button"
+              onClick={() => scrollFlashSale('right')}
+              aria-label="Cuộn nông sản sang phải"
+              className={`hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 hover:bg-white text-rose-950 shadow-xl border border-rose-200/80 items-center justify-center transition-all hover:scale-110 active:scale-95 ${
+                canScrollRight ? 'opacity-90 hover:opacity-100 cursor-pointer' : 'opacity-0 pointer-events-none'
+              }`}
+            >
+              <ChevronRight size={22} />
+            </button>
+          </div>
+
+          {/* Dải hướng dẫn cuộn ngang tinh tế */}
+          <div className="px-4 md:px-6 py-2.5 flex items-center justify-between text-xs text-rose-950/70 border-t border-rose-100/60 bg-rose-50/40">
+            <span className="flex items-center gap-1.5 font-medium text-[11px] sm:text-xs">
+              <Sparkles size={13} className="text-amber-500 fill-amber-500" />
+              Cuộn ngang nhẹ nhàng hoặc bấm mũi tên để khám phá tất cả nông sản Flash Sale
+            </span>
+            <span className="hidden sm:inline font-mono font-bold text-[11px] text-rose-800 bg-rose-100/80 px-2.5 py-0.5 rounded-full border border-rose-200/60">
+              {flashSale.length} Sản phẩm giá sốc
+            </span>
           </div>
         </div>
       </section>
@@ -794,6 +912,30 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* ==================== NÚT NỔI MỞ LẠI THƯ ƯU ĐÃI ==================== */}
+      <button
+        type="button"
+        onClick={() => setShowWelcomeLetter(true)}
+        aria-label="Mở Tâm Thư & Ưu Đãi Hôm Nay"
+        className="fixed bottom-5 left-5 z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#fbf7ee]/95 hover:bg-[#f5edd9] text-[#4a3520] border-2 border-[#d9c7a7] shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all group backdrop-blur-sm"
+        title="Xem Thư Chào & Mã Giảm Giá Hôm Nay"
+      >
+        <span className="relative flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-600"></span>
+        </span>
+        <Mail size={16} className="text-rose-700" />
+        <span className="font-handwriting text-lg font-bold text-emerald-950 leading-none">
+          Thư Ưu Đãi Hôm Nay
+        </span>
+      </button>
+
+      {/* ================= BẢNG THÔNG BÁO TÂM THƯ GIẤY ================= */}
+      <WelcomeLetterModal 
+        forceOpen={showWelcomeLetter} 
+        onClose={() => setShowWelcomeLetter(false)} 
+      />
     </div>
   );
 }

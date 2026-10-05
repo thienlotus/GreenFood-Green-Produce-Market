@@ -1,10 +1,18 @@
-import { Pacifico, Be_Vietnam_Pro } from 'next/font/google';
+import { Pacifico, Be_Vietnam_Pro, Dancing_Script } from 'next/font/google';
 import "./globals.css";
 
 const pacifico = Pacifico({
   weight: '400',
   subsets: ['latin', 'vietnamese'],
   variable: '--font-pacifico',
+  display: 'swap',
+  fallback: ['cursive', 'sans-serif'],
+});
+
+const dancingScript = Dancing_Script({
+  weight: ['400', '600', '700'],
+  subsets: ['latin', 'vietnamese'],
+  variable: '--font-dancing',
   display: 'swap',
   fallback: ['cursive', 'sans-serif'],
 });
@@ -45,7 +53,7 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.png" type="image/png" />
         <link rel="apple-touch-icon" href="/favicon.png" />
       </head>
-      <body className={`antialiased bg-gray-50/60 font-sans flex flex-col min-h-screen ${pacifico.variable} ${beVietnamPro.variable}`}>
+      <body className={`antialiased bg-gray-50/60 font-sans flex flex-col min-h-screen ${pacifico.variable} ${dancingScript.variable} ${beVietnamPro.variable}`}>
         <Toaster position="top-right" />
         <ClientLayoutWrapper>
           {children}

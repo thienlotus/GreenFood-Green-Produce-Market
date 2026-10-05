@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Pacifico&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Pacifico&family=Dancing+Script:wght@500;600;700&family=Caveat:wght@500;600;700&display=swap');
 @import 'leaflet/dist/leaflet.css';
 
 @tailwind base;
@@ -23,6 +23,14 @@ body {
 
 .font-pacifico {
   font-family: var(--font-pacifico), 'Pacifico', cursive !important;
+}
+
+.font-handwriting {
+  font-family: var(--font-dancing), 'Dancing Script', 'Caveat', 'Pacifico', cursive, sans-serif !important;
+}
+
+.font-caveat {
+  font-family: 'Caveat', 'Dancing Script', cursive, sans-serif !important;
 }
 
 /* ==========================================================================
@@ -138,31 +146,66 @@ body {
 }
 
 /* =========================================================================
-   HIỆU ỨNG RUNG RINH CÂY LÚA (RICE PLANT GENTLE BREEZE SWAY)
+   HIỆU ỨNG RUNG RINH LŨY TRE XANH VIỆT NAM (BAMBOO GROVE GENTLE BREEZE SWAY)
+   Đung đưa nhẹ nhàng, sống động nhưng tuyệt đối chìm dưới nền
    ========================================================================= */
-@keyframes riceSwayGentle {
+@keyframes bambooSwayGentle {
   0%, 100% {
-    transform: rotate(0deg) translateY(0);
+    transform: rotate(0deg) skewX(0deg);
   }
-  25% {
-    transform: rotate(1.8deg) translateY(-2px);
+  28% {
+    transform: rotate(2.4deg) skewX(1deg);
   }
-  50% {
-    transform: rotate(0deg) translateY(0);
-  }
-  75% {
-    transform: rotate(-1.5deg) translateY(-1px);
+  68% {
+    transform: rotate(-1.8deg) skewX(-0.8deg);
   }
 }
 
-.animate-rice-sway {
-  transform-origin: bottom center;
-  animation: riceSwayGentle 9s ease-in-out infinite;
+@keyframes bambooSwayGentleAlt {
+  0%, 100% {
+    transform: rotate(0deg) skewX(0deg);
+  }
+  32% {
+    transform: rotate(-2.6deg) skewX(-1.2deg);
+  }
+  72% {
+    transform: rotate(2deg) skewX(0.9deg);
+  }
 }
 
-.animate-rice-sway-delayed {
+.animate-bamboo-sway {
   transform-origin: bottom center;
-  animation: riceSwayGentle 12s ease-in-out 3s infinite;
+  animation: bambooSwayGentle 9s ease-in-out infinite;
+}
+
+.animate-bamboo-sway-delayed {
+  transform-origin: bottom center;
+  animation: bambooSwayGentleAlt 11s ease-in-out 1.2s infinite;
+}
+
+/* =========================================================================
+   TIỆN ÍCH CUỘN NGANG MƯỢT MÀ & ẨN THANH CUỘN (SMOOTH HORIZONTAL SCROLL)
+   ========================================================================= */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* =========================================================================
+   HIỆU ỨNG LÁ THƯ GIẤY MỘC MẠC (VINTAGE PARCHMENT LETTER TEXTURE)
+   ========================================================================= */
+.letter-paper-texture {
+  background-color: #fbf7ee;
+  background-image: 
+    radial-gradient(ellipse at 50% 30%, rgba(255, 252, 242, 0.95) 0%, rgba(246, 237, 218, 0.92) 100%),
+    repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(160, 130, 80, 0.08) 31px, rgba(160, 130, 80, 0.08) 32px);
+  box-shadow: 
+    0 25px 60px -15px rgba(44, 32, 19, 0.28),
+    0 0 0 1px rgba(180, 150, 100, 0.25),
+    inset 0 0 50px rgba(190, 160, 110, 0.12);
 }
 
 /* =========================================================================
