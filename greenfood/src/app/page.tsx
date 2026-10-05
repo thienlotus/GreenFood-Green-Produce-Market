@@ -281,7 +281,7 @@ export default function Home() {
     let lastScrollY = window.scrollY;
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (Math.abs(currentScrollY - lastScrollY) > 6) {
+      if (Math.abs(currentScrollY - lastScrollY) > 5) {
         setScrollDir(currentScrollY > lastScrollY ? 'down' : 'up');
         lastScrollY = currentScrollY;
       }
@@ -289,25 +289,28 @@ export default function Home() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-revealed');
-          }
-        });
-      },
-      { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
-    );
+    // Kích hoạt quan sát sau khi DOM đã render
+    const timer = setTimeout(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-revealed');
+            }
+          });
+        },
+        { threshold: 0.05, rootMargin: '0px 0px -15px 0px' }
+      );
 
-    const elements = document.querySelectorAll('.reveal-on-scroll');
-    elements.forEach((el) => observer.observe(el));
+      const elements = document.querySelectorAll('.reveal-on-scroll, .product-reveal-item');
+      elements.forEach((el) => observer.observe(el));
+    }, 60);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
+      clearTimeout(timer);
     };
-  }, [products]);
+  }, [products, activeTab, loading]);
 
   const flashSale = useMemo(() => {
     const discounted = products.filter((p) => discountOf(p) > 0).sort((a, b) => discountOf(b) - discountOf(a));
@@ -703,7 +706,8 @@ export default function Home() {
                 flashSale.map((p, idx) => (
                   <div 
                     key={`flash-${p.id}-${idx}`} 
-                    className="shrink-0 w-[230px] sm:w-[250px] md:w-[270px] snap-start scroll-reactive-item transition-transform hover:-translate-y-1.5 duration-300"
+                    className="shrink-0 w-[230px] sm:w-[250px] md:w-[270px] snap-start product-reveal-item scroll-reactive-item transition-transform hover:-translate-y-1.5 duration-300"
+                    style={{ transitionDelay: `${(idx % 6) * 70}ms` }}
                   >
                     <ProductCard {...toCardProps(p)} showSoldProgress />
                   </div>
@@ -810,8 +814,12 @@ export default function Home() {
           </div>
         </SectionHeader>
         <div className={GRID}>
-          {loading ? <ProductGridSkeleton count={10} /> : tabProducts.map((p) => (
-            <div key={`tab-${activeTab}-${p.id}`} className="scroll-reactive-item">
+          {loading ? <ProductGridSkeleton count={10} /> : tabProducts.map((p, idx) => (
+            <div 
+              key={`tab-${activeTab}-${p.id}`} 
+              className="product-reveal-item scroll-reactive-item"
+              style={{ transitionDelay: `${(idx % 5) * 80}ms` }}
+            >
               <ProductCard {...toCardProps(p)} />
             </div>
           ))}
@@ -877,8 +885,14 @@ export default function Home() {
                   </span>
                 </div>
               </Link>
-              {loading ? <ProductGridSkeleton count={4} /> : section.items.map((p) => (
-                <ProductCard key={`${section.key}-${p.id}`} {...toCardProps(p)} />
+              {loading ? <ProductGridSkeleton count={4} /> : section.items.map((p, idx) => (
+                <div 
+                  key={`${section.key}-${p.id}`} 
+                  className="product-reveal-item scroll-reactive-item"
+                  style={{ transitionDelay: `${(idx % 4) * 85}ms` }}
+                >
+                  <ProductCard {...toCardProps(p)} />
+                </div>
               ))}
             </div>
             <Link 

@@ -11,8 +11,8 @@ interface WelcomeLetterModalProps {
 
 export default function WelcomeLetterModal({ forceOpen = false, onClose }: WelcomeLetterModalProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isShrinking, setIsShrinking] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [dontShowAgainToday, setDontShowAgainToday] = useState(false);
 
   useEffect(() => {
     if (forceOpen) {
@@ -20,36 +20,36 @@ export default function WelcomeLetterModal({ forceOpen = false, onClose }: Welco
       return;
     }
 
-    try {
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const dismissedDate = localStorage.getItem('greenfood_welcome_letter_dismissed_date');
-      const sessionSeen = sessionStorage.getItem('greenfood_welcome_letter_seen');
+    // Tự động hiện thư sau 600ms mỗi khi khách vào trang
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 600);
 
-      if (dismissedDate === todayStr || sessionSeen === 'true') {
-        return;
-      }
-
-      // Hiện sau 800ms
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-        sessionStorage.setItem('greenfood_welcome_letter_seen', 'true');
-      }, 800);
-
-      return () => clearTimeout(timer);
-    } catch {
-      // Fallback
-    }
+    return () => clearTimeout(timer);
   }, [forceOpen]);
 
   const handleClose = () => {
-    if (dontShowAgainToday) {
-      try {
-        const todayStr = new Date().toISOString().slice(0, 10);
-        localStorage.setItem('greenfood_welcome_letter_dismissed_date', todayStr);
-      } catch {}
-    }
-    setIsOpen(false);
-    onClose?.();
+    setIsShrinking(true);
+    setTimeout(() => {
+      setIsOpen(false);
+      setIsShrinking(false);
+      onClose?.();
+    }, 280);
+  };
+
+  const handleReadAndCollapse = () => {
+    toast.success('Đã thu gọn lá thư! Bạn có thể mở lại ở icon góc trái màn hình.', {
+      icon: '✉️',
+      duration: 3000,
+      style: {
+        borderRadius: '12px',
+        background: '#064e3b',
+        color: '#ffffff',
+        fontWeight: 600,
+        fontSize: '13px',
+      },
+    });
+    handleClose();
   };
 
   const handleCopy = async (code: string) => {
@@ -91,24 +91,31 @@ export default function WelcomeLetterModal({ forceOpen = false, onClose }: Welco
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/65 backdrop-blur-sm animate-in fade-in duration-300"
-      onClick={handleClose}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/65 backdrop-blur-sm transition-opacity duration-300 ${
+        isShrinking ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}
+      onClick={handleReadAndCollapse}
       role="dialog"
       aria-modal="true"
     >
       <div 
-        className="relative w-full max-w-[480px] letter-paper-texture rounded-3xl p-5 sm:p-6 border-2 border-[#d9c7a7] text-[#2c2013] overflow-hidden transform animate-in zoom-in-95 duration-300 my-auto shadow-2xl"
+        className={`relative w-full max-w-[480px] letter-paper-texture rounded-3xl p-5 sm:p-6 border-2 border-[#d9c7a7] text-[#2c2013] overflow-hidden my-auto shadow-2xl transition-all duration-300 ${
+          isShrinking 
+            ? 'scale-0 opacity-0 -translate-x-44 translate-y-64 pointer-events-none' 
+            : 'scale-100 opacity-100 transform animate-in zoom-in-95'
+        }`}
         onClick={(e) => e.stopPropagation()}
         style={{
           boxShadow: '0 20px 50px -10px rgba(44, 32, 19, 0.4), 0 0 0 1px rgba(180, 150, 100, 0.35)',
         }}
       >
-        {/* Nút đóng phong cách cổ điển */}
+        {/* Nút đóng / thu gọn phong cách cổ điển */}
         <button
           type="button"
-          onClick={handleClose}
-          aria-label="Đóng thư chào mừng"
-          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 w-8 h-8 rounded-full bg-[#ede0c7] hover:bg-[#e2cead] text-[#5c4028] flex items-center justify-center transition-all hover:rotate-90 hover:scale-105 active:scale-95 shadow-xs z-10"
+          onClick={handleReadAndCollapse}
+          aria-label="Thu gọn lá thư"
+          title="Đã đọc và thu gọn"
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 w-8 h-8 rounded-full bg-[#ede0c7] hover:bg-[#e2cead] text-[#5c4028] flex items-center justify-center transition-all hover:rotate-90 hover:scale-105 active:scale-95 shadow-xs z-10 cursor-pointer"
         >
           <X size={16} />
         </button>
@@ -227,35 +234,25 @@ export default function WelcomeLetterModal({ forceOpen = false, onClose }: Welco
           </div>
         </div>
 
-        {/* Nút hành động chính */}
-        <div className="mt-4 pt-2 border-t border-[#e2d2b5]/60 flex items-center justify-between gap-2.5">
-          <label className="flex items-center gap-1.5 cursor-pointer select-none text-[11px] text-[#705230]">
-            <input
-              type="checkbox"
-              checked={dontShowAgainToday}
-              onChange={(e) => setDontShowAgainToday(e.target.checked)}
-              className="rounded border-[#cbb391] text-emerald-700 focus:ring-emerald-500 w-3.5 h-3.5"
-            />
-            <span>Không hiện lại hôm nay</span>
-          </label>
+        {/* Nút hành động: Nổi bật nút ĐÃ ĐỌC (Thu gọn) */}
+        <div className="mt-4 pt-3 border-t border-[#dfcca9] flex items-center justify-between gap-2.5">
+          <button
+            type="button"
+            onClick={handleReadAndCollapse}
+            className="inline-flex items-center gap-1.5 px-4.5 py-2 rounded-full bg-[#ebdcc4] hover:bg-[#dfcca8] text-[#3d2712] border-2 border-[#bfa278] font-black text-xs transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <Check size={15} className="text-emerald-800 stroke-[3]" />
+            <span>Đã đọc (Thu gọn)</span>
+          </button>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-3.5 py-1.5 rounded-full border border-[#d6be9c] text-[#5e4325] hover:bg-[#eddcc4] font-bold text-xs transition-colors"
-            >
-              Đóng
-            </button>
-            <button
-              type="button"
-              onClick={handleAcceptAndShop}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-800 to-teal-800 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-xs shadow-md hover:scale-105 active:scale-95 transition-all"
-            >
-              <span>Nhận ưu đãi & Đi chợ</span>
-              <ArrowRight size={13} />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleAcceptAndShop}
+            className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2 rounded-full bg-gradient-to-r from-emerald-800 via-emerald-900 to-teal-900 hover:from-emerald-700 hover:to-teal-800 text-amber-200 font-extrabold text-xs shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer border border-emerald-600/40"
+          >
+            <span>Nhận mã & Đi chợ</span>
+            <ArrowRight size={13} />
+          </button>
         </div>
       </div>
     </div>
