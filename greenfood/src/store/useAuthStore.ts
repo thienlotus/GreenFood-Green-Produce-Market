@@ -208,6 +208,7 @@ interface AuthState {
   changePasswordApi: (oldPassword: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
   // Loyalty points & vouchers
   redeemVoucher: (voucherDef: typeof AVAILABLE_VOUCHERS[0]) => { success: boolean; message: string; voucher?: VoucherItem };
+  markVoucherAsUsed: (code: string) => void;
   // Saved addresses
   addSavedAddress: (addr: Omit<SavedAddress, 'id'>) => void;
   removeSavedAddress: (id: string) => void;
@@ -851,6 +852,17 @@ export const useAuthStore = create<AuthState>()(
           message: `Đổi thành công mã ${newVoucher.code}! Bạn đã được trừ ${voucherDef.pointsCost} điểm.`,
           voucher: newVoucher,
         };
+      },
+
+      /**
+       * Đánh dấu Voucher đã được sử dụng khi thanh toán đơn hàng thành công
+       */
+      markVoucherAsUsed: (code: string) => {
+        const currentVouchers = get().userVouchers || [];
+        const updated = currentVouchers.map((v) =>
+          v.code === code ? { ...v, isUsed: true } : v
+        );
+        set({ userVouchers: updated });
       },
 
       /**

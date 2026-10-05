@@ -32,13 +32,22 @@ class OrderService
             } else {
                 $shippingFee = ($zone && $itemsTotal >= $zone->free_ship_minimum) ? 0 : ($zone ? (float)$zone->base_fee : 0);
             }
-            $totalAmount = $itemsTotal + $shippingFee;
+            $discountAmount = isset($data['discount_amount']) ? (float)$data['discount_amount'] : 0;
+            $voucherCode = $data['voucher_code'] ?? null;
+            $totalAmount = max(0, $itemsTotal + $shippingFee - $discountAmount);
+
             $rawTracking = !empty($data['tracking_number']) ? trim($data['tracking_number']) : null;
             if (!empty($rawTracking)) {
                 $exists = $this->orderRepository->findByIdOrTracking($rawTracking);
                 $trackingNumber = $exists ? ('GF' . mt_rand(100000, 999999)) : $rawTracking;
             } else {
                 $trackingNumber = 'GF' . mt_rand(100000, 999999);
+            }
+
+            $orderNote = $data['note'] ?? null;
+            if ($voucherCode && $discountAmount > 0) {
+                $voucherPrefix = "[Voucher: {$voucherCode} - Giảm " . number_format($discountAmount, 0, ',', '.') . "đ]";
+                $orderNote = $orderNote ? ($voucherPrefix . " | " . $orderNote) : $voucherPrefix;
             }
 
             $order = $this->orderRepository->createOrder([
@@ -56,7 +65,7 @@ class OrderService
                 'status' => !empty($data['status']) ? $data['status'] : 'PENDING',
                 'payment_method' => $data['payment_method'],
                 'payment_status' => $data['payment_status'] ?? 'unpaid',
-                'note' => $data['note'] ?? null,
+                'note' => $orderNote,
                 'shipper_name' => 'Trần Minh Đức',
                 'shipper_phone' => '0912345678',
                 'shipper_lat' => 10.7769,

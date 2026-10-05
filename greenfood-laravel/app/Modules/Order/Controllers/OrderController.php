@@ -25,6 +25,8 @@ class OrderController extends Controller
             'to_district_id' => 'nullable|integer',
             'to_ward_code' => 'nullable|string',
             'payment_method' => 'required|in:COD,BANK_TRANSFER,MOMO,VNPAY',
+            'voucher_code' => 'nullable|string|max:50',
+            'discount_amount' => 'nullable|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.product_name' => 'required|string',
             'items.*.unit' => 'required|string',

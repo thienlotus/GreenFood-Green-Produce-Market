@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -43,51 +44,58 @@ class GHNService
     }
 
     /**
-     * Lấy danh sách 63 Tỉnh/Thành phố từ GHN
+     * Lấy danh sách 63 Tỉnh/Thành phố từ GHN (Cache 24 giờ để tăng tốc tức thì)
      */
     public function getProvinces(): array
     {
-        return $this->get('/master-data/province');
+        return Cache::remember('ghn_master_provinces', 86400, function () {
+            return $this->get('/master-data/province');
+        });
     }
 
     /**
-     * Lấy danh sách Quận/Huyện theo ID Tỉnh (chỉ lấy các quận/huyện đang hoạt động và nhận giao hàng)
+     * Lấy danh sách Quận/Huyện theo ID Tỉnh (chỉ lấy các quận/huyện đang hoạt động và nhận giao hàng, Cache 24 giờ)
      */
     public function getDistricts(int $provinceId): array
     {
-        $response = $this->get('/master-data/district', [
-            'province_id' => $provinceId,
-        ]);
+        return Cache::remember("ghn_master_districts_{$provinceId}", 86400, function () use ($provinceId) {
+            $response = $this->get('/master-data/district', [
+                'province_id' => $provinceId,
+            ]);
 
-        if (!empty($response['data']) && is_array($response['data'])) {
-            $response['data'] = array_values(array_filter($response['data'], function ($item) {
-                $status = (int) ($item['Status'] ?? 1);
-                $supportType = (int) ($item['SupportType'] ?? 1);
-                return $status === 1 && $supportType > 0;
-            }));
-        }
+            if (!empty($response['data']) && is_array($response['data'])) {
+                $response['data'] = array_values(array_filter($response['data'], function ($item) {
+                    $status = (int) ($item['Status'] ?? 1);
+                    $supportType = (int) ($item['SupportType'] ?? 1);
+                    return $status === 1 && $supportType > 0;
+                }));
+            }
 
-        return $response;
+            return $response;
+        });
     }
 
     /**
-     * Lấy danh sách Phường/Xã theo ID Huyện (chỉ lấy các phường/xã đang hoạt động)
+     * Lấy danh sách Phường/Xã theo ID Huyện (chỉ lấy các phường/xã đang hoạt động, Cache 24 giờ)
      */
     public function getWards(int $districtId): array
     {
-        $response = $this->get('/master-data/ward', [
-            'district_id' => $districtId,
-        ]);
+        return Cache::remember("ghn_master_wards_{$districtId}", 86400, function () use ($districtId) {
+            $response = $this->get('/master-data/ward', [
+                'district_id' => $districtId,
+            ]);
 
-        if (!empty($response['data']) && is_array($response['data'])) {
-            $response['data'] = array_values(array_filter($response['data'], function ($item) {
-                $status = (int) ($item['Status'] ?? 1);
-                $supportType = (int) ($item['SupportType'] ?? 1);
-                return $status === 1 && $supportType > 0;
-            }));
-        }
+            if (!empty($response['data']) && is_array($response['data'])) {
+                $response['data'] = array_values(array_filter($response['data'], function ($item) {
+                    $status = (int) ($item['Status'] ?? 1);
+                    $supportType = (int) ($item['SupportType'] ?? 1);
+                    return $status === 1 && $supportType > 0;
+                }));
+            }
 
-        return $response;
+            return $response;
+        });
+    }
     }
 
     /**

@@ -26,6 +26,19 @@ import {
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'react-hot-toast';
 
+interface NavItem {
+  name: string;
+  href: string;
+  icon: any;
+  badge?: string;
+  highlight?: boolean;
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
@@ -36,7 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     toast.success('Đã đăng xuất khỏi trang quản trị');
   };
 
-  const navGroups = [
+  const navGroups: NavGroup[] = [
     {
       title: 'TỔNG QUAN',
       items: [
