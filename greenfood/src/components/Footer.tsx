@@ -94,13 +94,13 @@ export default function Footer() {
           
           {/* Cột 1 */}
           <div>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-1.5 bg-white rounded-2xl shadow-xs">
-                <img src="/logo.jpg" alt="GreenFood" className="h-12 w-12 object-contain" />
+            <div className="flex items-center gap-3.5 mb-5">
+              <div className="p-2 bg-white rounded-2xl shadow-sm shrink-0 flex items-center justify-center">
+                <img src="/logo.png" alt="GreenFood" className="h-14 w-auto object-contain" />
               </div>
-              <div>
-                <span className="text-3xl font-bold text-white font-pacifico leading-none block">GreenFood</span>
-                <span className="text-[10px] text-emerald-300 font-semibold tracking-wider uppercase mt-1 block">Nông sản sạch từ tâm</span>
+              <div className="flex flex-col justify-center">
+                <span className="text-3xl sm:text-4xl font-bold text-white font-pacifico leading-none pb-1 block select-none">GreenFood</span>
+                <span className="text-[10px] sm:text-[11px] text-emerald-200 font-bold tracking-[0.22em] uppercase mt-3.5 block select-none">Nông sản sạch từ tâm</span>
               </div>
             </div>
             <h4 className="text-emerald-200 font-bold mb-4 text-xs uppercase tracking-wider">CÔNG TY CỔ PHẦN GREENFOOD</h4>
