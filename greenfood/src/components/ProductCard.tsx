@@ -87,10 +87,10 @@ export default function ProductCard({
     <Link
       href={`/product/${slug}`}
       id={`product-card-${id}`}
-      className="group flex flex-col h-full bg-white rounded-2xl border border-gray-100/90 overflow-hidden relative transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-900/5 hover:border-emerald-200"
+      className="group flex flex-col h-full bg-white/95 backdrop-blur-sm rounded-3xl border border-slate-200/80 overflow-hidden relative transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-emerald-950/5 hover:border-emerald-300/80"
     >
       {/* Ảnh sản phẩm */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50/80">
+      <div className="relative aspect-square overflow-hidden bg-slate-50/80">
         <img
           src={image || FALLBACK_IMAGE}
           alt={name}
@@ -100,17 +100,17 @@ export default function ProductCard({
         />
 
         {/* Lớp bóng đổ mờ nghệ thuật tạo chiều sâu ảnh */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
         {/* Huy hiệu đặc sản & Giảm giá (Frosted Glass Badge) */}
         <div className="absolute top-2.5 left-2.5 z-10 flex flex-col items-start gap-1.5 pointer-events-none">
           {discountPercent > 0 && (
-            <span className="bg-gradient-to-r from-rose-500 to-amber-500 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm tracking-wide">
+            <span className="bg-gradient-to-r from-rose-500 to-amber-500 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md tracking-wide">
               -{discountPercent}%
             </span>
           )}
           {badge && (
-            <span className="glass-pill text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+            <span className="glass-pill text-emerald-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               {badge}
             </span>
@@ -121,16 +121,16 @@ export default function ProductCard({
         <button
           type="button"
           onClick={handleAddToCart}
-          className="hidden md:flex absolute bottom-3 left-3 right-3 items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-950/20 opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 active:scale-95"
+          className="hidden md:flex absolute bottom-3 left-3 right-3 items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold py-2.5 px-4 rounded-2xl shadow-xl shadow-emerald-950/20 opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 active:scale-95 cursor-pointer"
         >
           <ShoppingCart size={15} /> Thêm nhanh vào giỏ
         </button>
       </div>
 
       {/* Thông tin sản phẩm */}
-      <div className="flex flex-col flex-1 p-3.5 md:p-4">
+      <div className="flex flex-col flex-1 p-3.5 md:p-4 bg-white">
         {/* Nguồn gốc & Nông hộ */}
-        <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-800/80 mb-1.5 min-w-0 bg-emerald-50/70 self-start px-2 py-0.5 rounded-md border border-emerald-100/60">
+        <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-800/90 mb-1.5 min-w-0 bg-emerald-50/80 self-start px-2.5 py-0.5 rounded-full border border-emerald-200/60">
           <MapPin size={11} className="text-emerald-600 shrink-0" />
           <span className="truncate max-w-[90px]">{region}</span>
           <span className="text-emerald-300">•</span>
@@ -138,7 +138,7 @@ export default function ProductCard({
         </div>
 
         {/* Tên sản phẩm */}
-        <h3 className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2 min-h-[2.6rem] group-hover:text-emerald-700 transition-colors">
+        <h3 className="font-bold text-slate-900 text-sm leading-snug line-clamp-2 min-h-[2.6rem] group-hover:text-emerald-700 transition-colors">
           {name}
         </h3>
 
@@ -151,26 +151,26 @@ export default function ProductCard({
                 size={12}
                 fill={i < roundedRating ? "currentColor" : "none"}
                 strokeWidth={i < roundedRating ? 0 : 2}
-                className={i >= roundedRating ? "text-gray-200" : ""}
+                className={i >= roundedRating ? "text-slate-200" : ""}
               />
             ))}
           </div>
-          <span className="text-[11px] text-gray-400 font-medium">
+          <span className="text-[11px] text-slate-400 font-medium">
             {soldCount > 0 ? `Đã bán ${soldCount.toLocaleString('vi-VN')}` : 'Mới về'}
           </span>
         </div>
 
         {/* Giá & Nút giỏ hàng mobile */}
-        <div className="flex items-end justify-between gap-2 mt-auto pt-3 border-t border-gray-100/80">
+        <div className="flex items-end justify-between gap-2 mt-auto pt-3 border-t border-slate-100">
           <div className="min-w-0">
             <div className="flex items-baseline gap-1 flex-wrap">
-              <span className="text-rose-600 font-extrabold text-base md:text-lg leading-none tracking-tight">
+              <span className="text-emerald-700 font-black text-base md:text-lg leading-none tracking-tight">
                 {defaultPrice.toLocaleString('vi-VN')}đ
               </span>
-              <span className="text-[11px] text-gray-400 font-normal">/{defaultUnit}</span>
+              <span className="text-[11px] text-slate-400 font-normal">/{defaultUnit}</span>
             </div>
             {discountPercent > 0 && originalPrice && (
-              <span className="text-[11px] text-gray-400 line-through block mt-0.5">
+              <span className="text-[11px] text-slate-400 line-through block mt-0.5">
                 {originalPrice.toLocaleString('vi-VN')}đ
               </span>
             )}
@@ -178,7 +178,7 @@ export default function ProductCard({
           <button
             type="button"
             onClick={handleAddToCart}
-            className="md:hidden shrink-0 bg-emerald-600 active:bg-emerald-700 text-white p-2.5 rounded-xl shadow-md active:scale-95 transition-all"
+            className="md:hidden shrink-0 bg-emerald-600 active:bg-emerald-700 text-white p-2.5 rounded-full shadow-md active:scale-95 transition-all"
             title="Thêm vào giỏ"
             aria-label={`Thêm ${name} vào giỏ`}
           >

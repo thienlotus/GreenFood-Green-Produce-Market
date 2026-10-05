@@ -37,83 +37,96 @@ export default function Navbar() {
 
   return (
     <header className="bg-white sticky top-0 z-50 shadow-sm relative">
-      {/* 1. TOP BAR */}
-      <div className="bg-emerald-700 text-white text-xs hidden md:block">
+      {/* 1. TOP BAR - Modern Dark Glassmorphic Strip */}
+      <div className="bg-slate-950 text-slate-300 text-xs hidden md:block border-b border-slate-900/80">
         <div className="container mx-auto px-4 lg:px-8 flex justify-between items-center h-8">
-          <div className="text-emerald-100 font-medium">
-            Nông Sản Sạch Trực Tiếp Từ Vườn Đến Bếp Mọi Gia Đình
+          <div className="flex items-center gap-3 text-slate-300 font-medium">
+            <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full text-[11px] font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Nông sản sạch từ nhà vườn
+            </span>
+            <span className="hidden lg:inline text-slate-400">
+              Giao hỏa tốc 2H • 100% Chuẩn VietGAP & OCOP
+            </span>
           </div>
           
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-1 hover:text-emerald-200 cursor-pointer transition-colors">
-              HOTLINE <a href="tel:02877702614" className="font-bold ml-1">028 7770 2614</a>
+          <div className="flex items-center gap-5">
+            <a 
+              href="tel:02877702614" 
+              className="inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all shadow-xs"
+            >
+              <span>HOTLINE:</span>
+              <span className="text-white">028 7770 2614</span>
+            </a>
+            <div onClick={() => toast('Tính năng tải ứng dụng đang phát triển')} className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 cursor-pointer transition-colors text-[11px]">
+              <Download size={13} /> Tải ứng dụng
             </div>
-            <div onClick={() => toast('Tính năng tải ứng dụng đang phát triển')} className="flex items-center gap-1 hover:text-emerald-200 cursor-pointer transition-colors">
-              <Download size={14} /> Tải ứng dụng
-            </div>
-            <Link href="/partners" className="flex items-center gap-1 hover:text-emerald-200 transition-colors">
-              <Users size={14} /> Dành cho Nông hộ
+            <Link href="/partners" className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 transition-colors text-[11px]">
+              <Users size={13} /> Dành cho Nông hộ
             </Link>
             {mounted && isAuthenticated && user && (
-              <Link href="/profile" className="flex items-center gap-1 text-amber-300 hover:text-amber-200 font-bold transition-colors">
-                <User size={13} /> Hồ sơ & Điểm thưởng VIP
+              <Link href="/profile" className="flex items-center gap-1 text-amber-400 hover:text-amber-300 font-bold transition-colors text-[11px]">
+                <User size={12} /> Hồ sơ & Điểm VIP
               </Link>
             )}
           </div>
         </div>
       </div>
 
-      {/* 2. MAIN HEADER */}
+      {/* 2. MAIN HEADER - Modern Glassmorphic Elevation */}
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex items-center justify-between py-3.5 sm:py-4 lg:py-5 min-h-[5.5rem] lg:min-h-[6.5rem] gap-4 lg:gap-8">
+        <div className="flex items-center justify-between py-3 sm:py-3.5 lg:py-4 min-h-[5rem] lg:min-h-[5.5rem] gap-4 lg:gap-8">
           {/* Brand Logo Đồng Bộ Chuẩn */}
           <BrandLogo variant="light" size="md" href="/" />
 
-          {/* Search Bar */}
+          {/* Search Bar - Modern Floating Pill Design */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl relative">
-            <input 
-              type="text" 
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              placeholder="Nhập nội dung tìm kiếm (vd: bưởi, sầu riêng, rau củ...)" 
-              className="w-full pl-5 pr-12 py-3 bg-gray-100 border border-transparent rounded-full text-sm focus:outline-none focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-inner"
-            />
-            <button 
-              type="submit" 
-              title="Tìm kiếm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 bg-emerald-600 text-white p-2 rounded-full hover:bg-emerald-700 transition-colors cursor-pointer"
-            >
-              <Search size={18} />
-            </button>
+            <div className="w-full relative flex items-center bg-slate-100/80 hover:bg-slate-100 border border-slate-200/90 focus-within:bg-white focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10 rounded-full transition-all duration-300 shadow-inner pl-4 pr-1.5 py-1.5">
+              <Search size={18} className="text-emerald-600/70 mr-2.5 shrink-0" />
+              <input 
+                type="text" 
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="Tìm nông sản tươi ngon (vd: sầu riêng Ri6, bưởi da xanh, dưa lưới...)" 
+                className="w-full bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:outline-none"
+              />
+              <button 
+                type="submit" 
+                title="Tìm kiếm"
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-4 py-2 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer shrink-0 ml-2"
+              >
+                Tìm kiếm
+              </button>
+            </div>
           </form>
 
           {/* Actions */}
-          <div className="flex items-center gap-4 lg:gap-5 shrink-0">
+          <div className="flex items-center gap-3.5 lg:gap-4 shrink-0">
             {/* Notification */}
             <button 
               onClick={() => toast('Tính năng thông báo đang phát triển', { icon: '🔔' })}
-              className="hidden lg:flex items-center gap-1.5 text-gray-600 hover:text-emerald-600 font-medium text-sm transition-colors cursor-pointer"
+              className="hidden lg:flex items-center gap-1.5 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/80 px-3 py-2 rounded-full font-medium text-xs transition-all cursor-pointer border border-transparent hover:border-emerald-200/60"
             >
-              <Bell size={20} />
+              <Bell size={18} className="text-emerald-600" />
               <span>Thông báo</span>
             </button>
 
             {/* Auth Button / Profile Badge */}
             {mounted && isAuthenticated && user ? (
-              <div className="hidden md:flex items-center gap-3 border-l pl-4 border-gray-200">
+              <div className="hidden md:flex items-center gap-2.5 border-l pl-3.5 border-slate-200">
                 {/* Clickable Profile Badge */}
                 <Link
                   href="/profile"
-                  className="flex items-center gap-2.5 bg-emerald-50 hover:bg-emerald-100/90 text-emerald-950 px-3.5 py-1.5 rounded-2xl border border-emerald-200 transition-all shadow-xs group"
+                  className="flex items-center gap-2.5 bg-slate-100/90 hover:bg-emerald-50/90 text-slate-900 px-3.5 py-1.5 rounded-full border border-slate-200/90 hover:border-emerald-300 transition-all shadow-xs group"
                   title="Xem và chỉnh sửa hồ sơ tài khoản"
                 >
                   <img
                     src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.name)}`}
                     alt={user.name}
-                    className="w-8 h-8 rounded-full border border-emerald-500 object-cover bg-white shrink-0"
+                    className="w-7 h-7 rounded-full border border-emerald-500 object-cover bg-white shrink-0 shadow-xs"
                   />
                   <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-gray-900 group-hover:text-emerald-700 transition-colors line-clamp-1 max-w-[120px]">
+                    <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1 max-w-[120px]">
                       {user.name}
                     </span>
                     <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
@@ -124,7 +137,10 @@ export default function Navbar() {
                 </Link>
 
                 {user.role === 'admin' && (
-                  <Link href="/admin" className="bg-purple-100 text-purple-700 hover:bg-purple-200 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1">
+                  <Link 
+                    href="/admin" 
+                    className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm hover:shadow-purple-500/20 hover:scale-105 active:scale-95 flex items-center gap-1.5"
+                  >
                     <ShieldCheck size={14} />
                     <span>Quản Trị</span>
                   </Link>
@@ -135,7 +151,7 @@ export default function Navbar() {
                     logout();
                     toast.success('Đã đăng xuất!');
                   }}
-                  className="text-gray-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                  className="text-slate-400 hover:text-rose-600 p-2 rounded-full hover:bg-rose-50 transition-colors cursor-pointer"
                   title="Đăng xuất"
                 >
                   <LogOut size={16} />
@@ -144,9 +160,9 @@ export default function Navbar() {
             ) : (
               <Link 
                 href="/login"
-                className="hidden md:flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm transition-colors border-l pl-5 border-gray-200"
+                className="hidden md:flex items-center gap-1.5 text-slate-700 hover:text-emerald-700 font-bold text-xs bg-slate-100/80 hover:bg-emerald-50 px-4 py-2 rounded-full border border-slate-200 transition-all"
               >
-                <User size={20} />
+                <User size={16} />
                 <span>Đăng nhập</span>
               </Link>
             )}
@@ -154,12 +170,12 @@ export default function Navbar() {
             {/* Warehouse Pickup */}
             <div 
               onClick={() => toast.success('Đã cập nhật kho: TP. Hồ Chí Minh')}
-              className="hidden xl:flex items-center gap-2 bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-100 cursor-pointer hover:bg-emerald-100 transition-colors"
+              className="hidden xl:flex items-center gap-2 bg-emerald-50/90 text-emerald-950 px-3.5 py-1.5 rounded-full border border-emerald-200/80 cursor-pointer hover:bg-emerald-100/90 transition-all shadow-xs"
             >
-              <MapPin size={18} className="text-emerald-600" />
+              <MapPin size={16} className="text-emerald-600 shrink-0" />
               <div className="flex flex-col text-[11px] leading-tight">
-                <span>Giao hàng từ kho:</span>
-                <b className="text-amber-600">Chọn kho gần bạn</b>
+                <span className="text-slate-500">Kho hàng:</span>
+                <b className="text-emerald-800 font-bold">TP. Hồ Chí Minh</b>
               </div>
             </div>
 
@@ -178,14 +194,15 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* Cart */}
+            {/* Cart Button */}
             <button 
-              className="relative p-2 text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors cursor-pointer"
+              className="relative p-2.5 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-full transition-all cursor-pointer border border-slate-200/80 hover:border-emerald-300"
               onClick={() => setIsOpen(true)}
+              aria-label="Giỏ hàng"
             >
-              <ShoppingCart size={24} />
+              <ShoppingCart size={22} className="text-emerald-700" />
               {mounted && totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[11px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[11px] font-bold h-5 min-w-[20px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
                   {totalItems}
                 </span>
               )}
@@ -194,7 +211,7 @@ export default function Navbar() {
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden text-gray-700 hover:text-emerald-600 p-2 cursor-pointer"
+              className="md:hidden text-slate-700 hover:text-emerald-600 p-2 cursor-pointer rounded-xl hover:bg-slate-100"
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -202,35 +219,41 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 3. MENU BAR (Desktop Only) */}
-      <div className="hidden lg:block border-t border-gray-100 bg-white">
+      {/* 3. MENU BAR (Desktop Only) - Modern Pill Tabs Navigation */}
+      <div className="hidden lg:block border-t border-slate-200/70 bg-white/90 backdrop-blur-md">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex items-center h-12">
+          <div className="flex items-center justify-between h-13 py-1.5">
             
             {/* Mega Menu Toggle */}
             <div 
-              className="relative h-full flex items-center"
+              className="relative flex items-center"
               onMouseEnter={() => setIsCategoryOpen(true)}
               onMouseLeave={() => setIsCategoryOpen(false)}
             >
-              <button className="flex items-center gap-2 bg-emerald-600 text-white px-5 h-full font-semibold text-sm hover:bg-emerald-700 transition-colors cursor-pointer">
-                <List size={18} />
-                Danh mục sản phẩm
-                <ChevronDown size={16} className={`transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
+              <button className="flex items-center gap-2 bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white px-5 py-2 rounded-full font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow-md hover:shadow-emerald-950/20 active:scale-95 transition-all cursor-pointer">
+                <List size={16} />
+                <span>Danh mục nông sản</span>
+                <ChevronDown size={14} className={`transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Dropdown Content */}
               {isCategoryOpen && (
-                <div className="absolute top-full left-0 w-64 bg-white shadow-xl border border-gray-100 py-2 z-50 rounded-b-lg">
+                <div className="absolute top-full left-0 w-64 bg-white/95 backdrop-blur-xl shadow-2xl border border-slate-200/90 py-2.5 z-50 rounded-2xl mt-1.5 animate-fadeIn">
                   {[
-                    { name: 'Đi chợ online', href: '/category/di-cho-online/' },
-                    { name: 'Trái cây tươi ngon', href: '/category/trai-cay/' },
-                    { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/' },
-                    { name: 'Đặc sản vùng miền', href: '/category/dac-san/' },
-                    { name: 'Nông hộ & Nhà vườn', href: '/farmers/' }
+                    { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: '🛒' },
+                    { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: '🍉' },
+                    { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: '☕' },
+                    { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: '🎁' },
+                    { name: 'Agrishow Triển lãm', href: '/category/agrishow/', icon: '🌾' },
+                    { name: 'Nông hộ & Nhà vườn', href: '/farmers/', icon: '👨‍🌾' }
                   ].map((cat) => (
-                    <Link key={cat.name} href={cat.href} className="block px-5 py-3 hover:bg-emerald-50 hover:text-emerald-600 text-gray-700 text-sm font-medium transition-colors">
-                      {cat.name}
+                    <Link 
+                      key={cat.name} 
+                      href={cat.href} 
+                      className="flex items-center gap-3 px-5 py-2.5 hover:bg-emerald-50/80 hover:text-emerald-700 text-slate-700 text-xs font-semibold transition-all group"
+                    >
+                      <span className="text-base group-hover:scale-115 transition-transform">{cat.icon}</span>
+                      <span>{cat.name}</span>
                     </Link>
                   ))}
                 </div>
@@ -238,28 +261,49 @@ export default function Navbar() {
             </div>
 
             {/* Horizontal Links */}
-            <nav className="flex items-center gap-6 ml-8">
-              <Link href="/category/di-cho-online/" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
-                ĐI CHỢ ONLINE
+            <nav className="flex items-center gap-1.5">
+              <Link 
+                href="/category/di-cho-online/" 
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
+              >
+                <span>🛒</span> Đi chợ online
               </Link>
-              <Link href="/category/trai-cay/" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
-                TRÁI CÂY
+              <Link 
+                href="/category/trai-cay/" 
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
+              >
+                <span>🍉</span> Trái cây
               </Link>
-              <Link href="/category/tra-ca-phe/" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
-                TRÀ - CÀ PHÊ
+              <Link 
+                href="/category/tra-ca-phe/" 
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
+              >
+                <span>☕</span> Trà - Cà phê
               </Link>
-              <Link href="/category/dac-san/" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
-                ĐẶC SẢN
+              <Link 
+                href="/category/dac-san/" 
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all flex items-center gap-1.5 uppercase tracking-wide"
+              >
+                <span>🎁</span> Đặc sản
               </Link>
-              <Link href="/map/" className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
-                <Map size={15} /> BẢN ĐỒ NHÀ VƯỜN
+              <Link 
+                href="/map/" 
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/80 hover:bg-emerald-100/90 border border-emerald-200/60 transition-all flex items-center gap-1.5 uppercase tracking-wide shadow-xs"
+              >
+                <Map size={14} className="text-emerald-600" /> Bản đồ nhà vườn
               </Link>
-              <Link href="/tracking/" className="flex items-center gap-1.5 text-amber-700 hover:text-amber-600 font-bold text-sm uppercase transition-colors">
-                <Package size={15} /> THEO DÕI ĐƠN
+              <Link 
+                href="/tracking/" 
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-800 hover:text-amber-950 bg-amber-50/80 hover:bg-amber-100/90 border border-amber-200/60 transition-all flex items-center gap-1.5 uppercase tracking-wide shadow-xs"
+              >
+                <Package size={14} className="text-amber-600" /> Theo dõi đơn
               </Link>
               {mounted && isAuthenticated && user && (
-                <Link href="/profile/" className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 font-bold text-sm uppercase transition-colors bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                  <User size={15} /> HỒ SƠ CỦA TÔI
+                <Link 
+                  href="/profile/" 
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold text-teal-800 hover:text-teal-950 bg-teal-50/80 hover:bg-teal-100/90 border border-teal-200/60 transition-all flex items-center gap-1.5 uppercase tracking-wide shadow-xs"
+                >
+                  <User size={14} className="text-teal-600" /> Hồ sơ của tôi
                 </Link>
               )}
             </nav>

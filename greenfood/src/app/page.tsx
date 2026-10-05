@@ -21,26 +21,26 @@ const BANNERS = [
     image: '/banners/hero-fresh-produce.jpg',
     tag: 'Mùa vụ mới 2026',
     title: 'Nông sản sạch\ntừ vườn đến bếp',
-    desc: 'Thu hoạch trong ngày, giao nhanh 2H nội thành. Giảm đến 30% cho đơn đầu tiên.',
+    desc: 'Thu hoạch tươi ngon trong ngày, giao nhanh 2H nội thành. Giảm đến 30% cho đơn đầu tiên.',
     cta: 'Mua sắm ngay',
     href: '/category/di-cho-online/',
   },
   {
     id: 2,
-    image: 'https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1600&auto=format&fit=crop',
     tag: 'Đặc sản 3 miền',
     title: 'Đặc sản trứ danh\nquà biếu sang trọng',
-    desc: 'Sầu riêng Ri6, bưởi da xanh, mật ong rừng tràm — đóng hộp quà tinh tế.',
+    desc: 'Sầu riêng Ri6, bưởi da xanh Bến Tre, mật ong rừng Tràm — đóng hộp quà cao cấp tinh tế.',
     cta: 'Khám phá đặc sản',
     href: '/category/dac-san/',
   },
   {
     id: 3,
-    image: 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?q=80&w=1600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1600&auto=format&fit=crop',
     tag: 'Chuẩn VietGAP',
     title: 'Rau củ hữu cơ\ntươi mới mỗi ngày',
-    desc: 'Truy xuất nguồn gốc từng nông hộ, minh bạch trên bản đồ vùng trồng.',
-    cta: 'Xem vùng trồng',
+    desc: 'Truy xuất nguồn gốc từng nông hộ, minh bạch 100% trên bản đồ vùng trồng GIS.',
+    cta: 'Xem bản đồ vùng trồng',
     href: '/map/',
   },
 ];
@@ -57,23 +57,23 @@ const SIDEBAR_CATEGORIES = [
 ];
 
 const QUICK_LINKS = [
-  { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: '🛒', bg: 'bg-emerald-50/80 border-emerald-100 text-emerald-800' },
-  { name: 'Trái cây Việt', href: '/category/trai-cay/', icon: '🍉', bg: 'bg-orange-50/80 border-orange-100 text-orange-800' },
-  { name: 'Trà - Cà phê', href: '/category/tra-ca-phe/', icon: '☕', bg: 'bg-teal-50/80 border-teal-100 text-teal-800' },
-  { name: 'Đặc sản', href: '/category/dac-san/', icon: '🎁', bg: 'bg-amber-50/80 border-amber-100 text-amber-800' },
-  { name: 'Agrishow', href: '/category/agrishow/', icon: '🌾', bg: 'bg-purple-50/80 border-purple-100 text-purple-800' },
-  { name: 'Deal sốc', href: '#flash-sale', icon: '🔥', bg: 'bg-rose-50/80 border-rose-100 text-rose-800' },
-  { name: 'Mã giảm giá', href: '#vouchers', icon: '🎟️', bg: 'bg-pink-50/80 border-pink-100 text-pink-800' },
-  { name: 'Bản đồ vườn', href: '/map/', icon: '📍', bg: 'bg-sky-50/80 border-sky-100 text-sky-800' },
-  { name: 'Theo dõi đơn', href: '/tracking/', icon: '📦', bg: 'bg-indigo-50/80 border-indigo-100 text-indigo-800' },
-  { name: 'Nông hộ sạch', href: '/farmers/', icon: '👨‍🌾', bg: 'bg-lime-50/80 border-lime-100 text-lime-800' },
+  { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: '🛒', bg: 'bg-emerald-50/90 border-emerald-200/80 text-emerald-800' },
+  { name: 'Trái cây Việt', href: '/category/trai-cay/', icon: '🍉', bg: 'bg-orange-50/90 border-orange-200/80 text-orange-800' },
+  { name: 'Trà - Cà phê', href: '/category/tra-ca-phe/', icon: '☕', bg: 'bg-teal-50/90 border-teal-200/80 text-teal-800' },
+  { name: 'Đặc sản', href: '/category/dac-san/', icon: '🎁', bg: 'bg-amber-50/90 border-amber-200/80 text-amber-800' },
+  { name: 'Agrishow', href: '/category/agrishow/', icon: '🌾', bg: 'bg-purple-50/90 border-purple-200/80 text-purple-800' },
+  { name: 'Deal sốc', href: '#flash-sale', icon: '🔥', bg: 'bg-rose-50/90 border-rose-200/80 text-rose-800' },
+  { name: 'Mã giảm giá', href: '#vouchers', icon: '🎟️', bg: 'bg-pink-50/90 border-pink-200/80 text-pink-800' },
+  { name: 'Bản đồ vườn', href: '/map/', icon: '📍', bg: 'bg-sky-50/90 border-sky-200/80 text-sky-800' },
+  { name: 'Theo dõi đơn', href: '/tracking/', icon: '📦', bg: 'bg-indigo-50/90 border-indigo-200/80 text-indigo-800' },
+  { name: 'Nông hộ sạch', href: '/farmers/', icon: '👨‍🌾', bg: 'bg-lime-50/90 border-lime-200/80 text-lime-800' },
 ];
 
 const USPS = [
-  { icon: Truck, title: 'Giao nhanh 2H', desc: 'Nội thành TP.HCM & Hà Nội' },
-  { icon: ShieldCheck, title: 'Chuẩn VietGAP', desc: 'Truy xuất nguồn gốc 100%' },
-  { icon: RefreshCw, title: 'Đổi trả 24H', desc: 'Bảo hành tươi ngon tận bàn' },
-  { icon: CreditCard, title: 'Thanh toán linh hoạt', desc: 'COD • MoMo • VNPay' },
+  { icon: Truck, title: 'Giao nhanh 2H', desc: 'Nội thành TP.HCM & Hà Nội', color: 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' },
+  { icon: ShieldCheck, title: 'Chuẩn VietGAP', desc: 'Truy xuất nguồn gốc 100%', color: 'bg-teal-500/10 text-teal-600 border border-teal-500/20' },
+  { icon: RefreshCw, title: 'Đổi trả 24H', desc: 'Bảo hành tươi ngon tận bàn', color: 'bg-amber-500/10 text-amber-600 border border-amber-500/20' },
+  { icon: CreditCard, title: 'Thanh toán linh hoạt', desc: 'COD • MoMo • VNPay', color: 'bg-sky-500/10 text-sky-600 border border-sky-500/20' },
 ];
 
 const VOUCHERS = [
@@ -275,45 +275,57 @@ export default function Home() {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className="min-h-screen bg-watermark-pattern pb-20 relative overflow-hidden">
+    <div className="min-h-screen bg-tech-grid pb-20 relative overflow-hidden">
       <h1 className="sr-only">GreenFood - Chợ Nông Sản Sạch Việt Nam</h1>
 
-      {/* Vùng hào quang ánh sáng tự nhiên dịu mắt */}
-      <div className="absolute top-0 right-10 w-[500px] h-[500px] bg-emerald-500/[0.02] rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-96 left-0 w-[450px] h-[450px] bg-amber-500/[0.015] rounded-full blur-3xl pointer-events-none" />
+      {/* Vùng hào quang quang hợp & công nghệ chìm tinh tế phong cách SaaS */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[520px] bg-gradient-to-b from-emerald-500/[0.08] via-teal-500/[0.03] to-transparent blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-60 right-[-100px] w-96 h-96 bg-amber-500/[0.04] rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-[800px] left-[-100px] w-96 h-96 bg-emerald-500/[0.05] rounded-full blur-3xl pointer-events-none -z-10" />
+
+      {/* Họa tiết chìm đơn giản (nhẹ 3%, tuyệt đối không che chữ/ảnh) */}
+      <div className="absolute top-20 right-8 w-96 h-96 opacity-[0.035] pointer-events-none select-none -z-10">
+        <img src="/watermark-leaf.svg" alt="" className="w-full h-full object-contain" />
+      </div>
+      <div className="absolute top-[900px] left-6 w-80 h-80 opacity-[0.03] pointer-events-none select-none -z-10">
+        <img src="/watermark-botanical-dark.svg" alt="" className="w-full h-full object-contain" />
+      </div>
+      <div className="absolute top-[1800px] right-10 w-96 h-96 opacity-[0.025] pointer-events-none select-none -z-10">
+        <img src="/watermark-leaf.svg" alt="" className="w-full h-full object-contain rotate-90" />
+      </div>
 
       {/* ============================ HERO ============================ */}
       <section className="container mx-auto px-4 lg:px-8 pt-5 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           
-          {/* Sidebar danh mục sản phẩm (Desktop) */}
-          <aside className="hidden xl:flex xl:col-span-3 flex-col bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-[410px]">
-            <div className="px-5 py-3.5 bg-gradient-to-r from-emerald-800 to-emerald-700 text-white font-bold text-sm flex items-center justify-between shadow-xs">
+          {/* Sidebar danh mục sản phẩm (Desktop) - Modern Glassmorphic Elevation */}
+          <aside className="hidden xl:flex xl:col-span-3 flex-col bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden h-[420px]">
+            <div className="px-5 py-4 bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-800 text-white font-bold text-sm flex items-center justify-between shadow-xs">
               <span className="flex items-center gap-2">
                 <Leaf size={16} className="text-emerald-300" /> Danh mục nông sản
               </span>
-              <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-normal">VietGAP</span>
+              <span className="text-[10px] bg-white/20 border border-white/20 px-2.5 py-0.5 rounded-full font-semibold">VietGAP</span>
             </div>
-            <ul className="flex-1 divide-y divide-gray-50 text-sm overflow-y-auto">
+            <ul className="flex-1 divide-y divide-slate-100 text-sm overflow-y-auto py-1">
               {SIDEBAR_CATEGORIES.map((c) => (
                 <li key={c.name}>
                   <Link
                     href={c.href}
-                    className="flex items-center justify-between px-5 py-2.5 text-gray-700 hover:text-emerald-700 hover:bg-emerald-50/70 hover:pl-6 transition-all duration-200 group font-medium"
+                    className="flex items-center justify-between px-4 py-2.5 mx-2 my-0.5 rounded-2xl text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 hover:pl-5 transition-all duration-200 group font-semibold text-xs"
                   >
-                    <span className="flex items-center gap-3">
-                      <span className="text-base group-hover:scale-110 transition-transform">{c.icon}</span>
+                    <span className="flex items-center gap-2.5">
+                      <span className="w-7 h-7 rounded-xl bg-slate-100 group-hover:bg-white flex items-center justify-center text-sm shadow-xs group-hover:scale-110 transition-transform">{c.icon}</span>
                       <span>{c.name}</span>
                     </span>
-                    <ChevronRight size={14} className="text-gray-300 group-hover:text-emerald-600 transition-colors" />
+                    <ChevronRight size={14} className="text-slate-300 group-hover:text-emerald-600 transition-colors" />
                   </Link>
                 </li>
               ))}
             </ul>
           </aside>
 
-          {/* Carousel Banner chính */}
-          <div className="lg:col-span-8 xl:col-span-6 relative rounded-3xl overflow-hidden shadow-elevated-card border border-emerald-950/10 group h-[280px] sm:h-[350px] lg:h-[410px]">
+          {/* Carousel Banner chính - Modern Cinematic Presentation */}
+          <div className="lg:col-span-8 xl:col-span-6 relative rounded-3xl overflow-hidden shadow-elevated-card border border-slate-200/90 group h-[300px] sm:h-[370px] lg:h-[420px]">
             <div ref={emblaRef} className="overflow-hidden h-full">
               <div className="flex h-full">
                 {BANNERS.map((b) => (
@@ -321,23 +333,23 @@ export default function Home() {
                     <img
                       src={b.image}
                       alt={b.title.replace('\n', ' ')}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-103 transition-transform duration-1000"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                    <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 text-white max-w-lg">
-                      <span className="glass-pill text-[11px] font-bold text-emerald-900 px-3 py-1 rounded-full uppercase tracking-wider mb-2.5 inline-flex items-center gap-1.5 self-start shadow-sm">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/35 to-transparent" />
+                    <div className="relative h-full flex flex-col justify-end p-6 sm:p-9 text-white max-w-lg z-10">
+                      <span className="glass-pill text-[11px] font-bold text-emerald-950 px-3 py-1 rounded-full uppercase tracking-wider mb-2.5 inline-flex items-center gap-1.5 self-start shadow-sm">
                         <Sparkles size={13} className="text-amber-500 fill-amber-500" />
                         {b.tag}
                       </span>
-                      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-tight whitespace-pre-line drop-shadow-md">
+                      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight whitespace-pre-line tracking-tight drop-shadow-lg">
                         {b.title}
                       </h2>
-                      <p className="text-xs sm:text-sm text-gray-200 mt-2 line-clamp-2 drop-shadow">
+                      <p className="text-xs sm:text-sm text-slate-100/90 mt-2 line-clamp-2 drop-shadow font-medium">
                         {b.desc}
                       </p>
                       <Link
                         href={b.href}
-                        className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full self-start shadow-lg shadow-emerald-950/30 hover:gap-3 transition-all duration-300"
+                        className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 rounded-full self-start shadow-xl shadow-emerald-950/30 hover:gap-3 hover:scale-105 active:scale-95 transition-all duration-300"
                       >
                         {b.cta} <ArrowRight size={15} />
                       </Link>
@@ -352,7 +364,7 @@ export default function Home() {
               type="button"
               onClick={scrollPrev}
               aria-label="Banner trước"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/85 hover:bg-white text-gray-800 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 z-20"
             >
               <ChevronLeft size={20} />
             </button>
@@ -360,52 +372,52 @@ export default function Home() {
               type="button"
               onClick={scrollNext}
               aria-label="Banner tiếp theo"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/85 hover:bg-white text-gray-800 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 z-20"
             >
               <ChevronRight size={20} />
             </button>
 
             {/* Indicator Dots */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
               {BANNERS.map((b, i) => (
                 <button
                   key={b.id}
                   type="button"
                   aria-label={`Chuyển tới banner ${i + 1}`}
                   onClick={() => emblaApi?.scrollTo(i)}
-                  className={`h-2 rounded-full transition-all duration-300 ${selectedSlide === i ? 'w-7 bg-amber-400' : 'w-2 bg-white/60 hover:bg-white'}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${selectedSlide === i ? 'w-8 bg-emerald-400' : 'w-2 bg-white/60 hover:bg-white'}`}
                 />
               ))}
             </div>
           </div>
 
-          {/* 2 Banner phụ (Desktop) */}
-          <div className="hidden lg:grid lg:col-span-4 xl:col-span-3 grid-rows-2 gap-4 h-[410px]">
-            <Link href="/category/trai-cay/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card border border-emerald-950/10">
+          {/* 2 Banner phụ (Desktop) - Modern Frosted Cards */}
+          <div className="hidden lg:grid lg:col-span-4 xl:col-span-3 grid-rows-2 gap-4 h-[420px]">
+            <Link href="/category/trai-cay/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 border border-slate-200/90">
               <img
                 src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop"
                 alt="Trái cây tươi"
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-orange-950/85 via-orange-950/30 to-transparent" />
-              <div className="absolute bottom-0 p-5 text-white">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-2 py-0.5 rounded-md">Trái cây chín cây</span>
-                <p className="text-xl font-extrabold mt-1">Giảm đến 25%</p>
-                <span className="text-xs inline-flex items-center gap-1 mt-1 font-medium text-orange-200 group-hover:gap-2 transition-all">Mua ngay <ArrowRight size={13} /></span>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
+              <div className="absolute bottom-0 p-5 text-white z-10">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-300 bg-black/40 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-white/10">Trái cây chín cây</span>
+                <p className="text-xl font-black mt-1.5 drop-shadow">Giảm đến 25%</p>
+                <span className="text-xs inline-flex items-center gap-1 mt-1 font-semibold text-amber-200 group-hover:gap-2 transition-all">Mua ngay <ArrowRight size={13} /></span>
               </div>
             </Link>
 
-            <Link href="/category/tra-ca-phe/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card border border-emerald-950/10">
+            <Link href="/category/tra-ca-phe/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 border border-slate-200/90">
               <img
                 src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=800&auto=format&fit=crop"
                 alt="Trà và cà phê"
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/30 to-transparent" />
-              <div className="absolute bottom-0 p-5 text-white">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-black/40 px-2 py-0.5 rounded-md">Trà & Cà phê Mộc</span>
-                <p className="text-xl font-extrabold mt-1">Rang mộc 100%</p>
-                <span className="text-xs inline-flex items-center gap-1 mt-1 font-medium text-amber-200 group-hover:gap-2 transition-all">Khám phá <ArrowRight size={13} /></span>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
+              <div className="absolute bottom-0 p-5 text-white z-10">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300 bg-black/40 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-white/10">Trà & Cà phê Mộc</span>
+                <p className="text-xl font-black mt-1.5 drop-shadow">Rang mộc 100%</p>
+                <span className="text-xs inline-flex items-center gap-1 mt-1 font-semibold text-emerald-200 group-hover:gap-2 transition-all">Khám phá <ArrowRight size={13} /></span>
               </div>
             </Link>
           </div>
@@ -414,16 +426,16 @@ export default function Home() {
       </section>
 
       {/* ============================ USPS (LỢI ÍCH DỊCH VỤ) ============================ */}
-      <section className="container mx-auto px-4 lg:px-8 mt-6 relative z-10">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 md:p-4 grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
-          {USPS.map(({ icon: Icon, title, desc }, i) => (
-            <div key={title} className={`flex items-center gap-3.5 p-3 lg:px-6 ${i % 2 === 1 ? 'border-l lg:border-l-0 border-gray-100' : ''}`}>
-              <div className="w-12 h-12 shrink-0 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center shadow-xs">
+      <section className="container mx-auto px-4 lg:px-8 mt-7 relative z-10">
+        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-sm border border-slate-200/80 p-3.5 md:p-5 grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+          {USPS.map(({ icon: Icon, title, desc, color }, i) => (
+            <div key={title} className={`flex items-center gap-3.5 p-3 lg:px-6 group hover:-translate-y-0.5 transition-transform ${i % 2 === 1 ? 'border-l lg:border-l-0 border-slate-100' : ''}`}>
+              <div className={`w-12 h-12 shrink-0 rounded-2xl ${color || 'bg-emerald-50 text-emerald-700'} flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform`}>
                 <Icon size={22} />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-bold text-gray-900 leading-tight">{title}</p>
-                <p className="text-xs text-gray-500 truncate mt-0.5">{desc}</p>
+                <p className="text-sm font-bold text-slate-900 leading-tight group-hover:text-emerald-700 transition-colors">{title}</p>
+                <p className="text-xs text-slate-500 truncate mt-0.5">{desc}</p>
               </div>
             </div>
           ))}
@@ -431,15 +443,15 @@ export default function Home() {
       </section>
 
       {/* ========================= QUICK LINKS (DANH MỤC TRUY CẬP NHANH) ========================= */}
-      <section className="container mx-auto px-4 lg:px-8 mt-6 relative z-10">
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-sm">
+      <section className="container mx-auto px-4 lg:px-8 mt-7 relative z-10">
+        <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-slate-200/80 p-5 md:p-6 shadow-sm">
           <div className="grid grid-cols-5 md:grid-cols-10 gap-y-5 gap-x-2">
             {QUICK_LINKS.map((c) => (
               <Link key={c.name} href={c.href} className="flex flex-col items-center gap-2 group">
                 <div className={`w-13 h-13 md:w-15 md:h-15 rounded-2xl ${c.bg} flex items-center justify-center text-2xl md:text-3xl border shadow-xs group-hover:-translate-y-1.5 group-hover:shadow-md transition-all duration-300`}>
                   {c.icon}
                 </div>
-                <span className="text-[11px] md:text-xs font-semibold text-gray-700 text-center leading-tight group-hover:text-emerald-700 transition-colors">
+                <span className="text-[11px] md:text-xs font-semibold text-slate-700 text-center leading-tight group-hover:text-emerald-700 transition-colors">
                   {c.name}
                 </span>
               </Link>

@@ -26,69 +26,113 @@ body {
 }
 
 /* ==========================================================================
-   ORGANIC WATERMARKS & DEPTH TEXTURES (Họa tiết chìm tinh tế & hài hòa)
+   MODERN ORGANIC & TECH-ELEVATED PATTERNS (Họa tiết chìm & chiều sâu hiện đại)
+   Tham khảo phong cách nền chìm tinh tế như ipkeyvn.com / Stripe / Vercel
    ========================================================================== */
 
-/* Nền chìm quang hợp tự nhiên, dịu mắt, làm nổi bật sản phẩm */
-.bg-watermark-pattern {
-  background-color: #f8faf8;
-  background-image: 
-    radial-gradient(circle at 5% 10%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 95% 45%, rgba(245, 158, 11, 0.025) 0%, transparent 45%),
-    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+/* Nền chấm bi vi mô tinh tế, dịu mắt, không che nội dung */
+.bg-tech-dots {
+  background-color: #f8fafc;
+  background-image: radial-gradient(rgba(15, 23, 42, 0.07) 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
 }
 
-/* Hiệu ứng hào quang ánh sáng quang hợp */
+/* Nền lưới công nghệ chìm kết hợp vi hạt hữu cơ */
+.bg-tech-grid {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(circle at 10% 15%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 90% 40%, rgba(245, 158, 11, 0.035) 0%, transparent 45%),
+    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
+    radial-gradient(rgba(15, 23, 42, 0.065) 1.1px, transparent 1.1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 20px 20px;
+}
+
+/* Hiệu ứng chìm tương thích ngược */
+.bg-watermark-pattern {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(circle at 5% 10%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 95% 45%, rgba(245, 158, 11, 0.03) 0%, transparent 45%),
+    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
+    radial-gradient(rgba(15, 23, 42, 0.06) 1.1px, transparent 1.1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 22px 22px;
+}
+
+/* Hào quang ánh sáng quang hợp tự nhiên & hiện đại */
 .ambient-glow-emerald {
-  background: radial-gradient(ellipse at 50% -20%, rgba(16, 185, 129, 0.08), transparent 70%);
+  background: radial-gradient(ellipse at 50% -20%, rgba(16, 185, 129, 0.12), transparent 70%);
 }
 
 .ambient-glow-warm {
-  background: radial-gradient(ellipse at 80% 0%, rgba(245, 158, 11, 0.06), transparent 60%);
+  background: radial-gradient(ellipse at 80% 0%, rgba(245, 158, 11, 0.08), transparent 60%);
 }
 
 /* ==========================================================================
-   GLASSMORPHISM & ELEVATED CARDS (Hiệu ứng kính mờ & Đổ bóng tầng thanh lịch)
+   GLASSMORPHISM & MODERN ELEVATED CARDS (Kính mờ cao cấp & đổ bóng phân tầng)
    ========================================================================== */
 
 .glass-frosted {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(229, 231, 235, 0.8);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+}
+
+.glass-card-modern {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 8px 24px -4px rgba(15, 23, 42, 0.04);
 }
 
 .glass-pill {
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  box-shadow: 0 2px 8px rgba(6, 78, 59, 0.05);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 2px 10px rgba(6, 78, 59, 0.06);
 }
 
-/* Đổ bóng đa tầng nhẹ nhàng, tôn dáng thẻ sản phẩm không gây rối mắt */
+/* Đổ bóng đa tầng cao cấp phong cách SaaS/Stripe */
 .shadow-elevated-card {
   box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.03),
-    0 4px 12px -2px rgba(6, 78, 59, 0.05);
+    0 1px 3px rgba(15, 23, 42, 0.03),
+    0 6px 18px -3px rgba(6, 78, 59, 0.05);
 }
 
 .shadow-elevated-hover {
   box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.04),
-    0 12px 24px -4px rgba(6, 78, 59, 0.09);
+    0 4px 6px -1px rgba(15, 23, 42, 0.04),
+    0 16px 32px -4px rgba(6, 78, 59, 0.1);
 }
 
-/* Keyframe hiệu ứng nhịp thở nhẹ nhàng */
+/* Hiệu ứng thở nhẹ nhàng */
 @keyframes soft-float {
   0%, 100% {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
   }
 }
 
 .animate-soft-float {
   animation: soft-float 4s ease-in-out infinite;
+}
+
+/* Text Gradients Hiện Đại */
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-amber {
+  background: linear-gradient(135deg, #b45309 0%, #d97706 50%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
