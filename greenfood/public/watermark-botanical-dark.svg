@@ -1,0 +1,19 @@
+<svg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g opacity="0.12">
+    <!-- Big graceful organic leaves -->
+    <path d="M 80,480 C 60,340 150,200 320,140 C 380,120 450,110 500,125 C 480,180 430,260 340,320 C 260,375 160,460 80,480 Z" stroke="#34d399" stroke-width="2" stroke-dasharray="6 3" fill="none"/>
+    <path d="M 120,440 C 200,340 310,240 460,145" stroke="#6ee7b7" stroke-width="2" fill="none"/>
+    <path d="M 200,350 C 240,310 290,300 330,310" stroke="#34d399" stroke-width="1.5" fill="none"/>
+    <path d="M 260,290 C 300,250 350,240 390,250" stroke="#34d399" stroke-width="1.5" fill="none"/>
+    <path d="M 320,230 C 360,190 410,180 440,190" stroke="#34d399" stroke-width="1.5" fill="none"/>
+
+    <path d="M 450,450 C 430,390 390,360 350,375 C 365,405 395,435 450,450 Z" stroke="#fbbf24" stroke-width="1.8" fill="none"/>
+    <path d="M 450,450 C 480,410 495,370 465,340 C 435,355 435,395 450,450 Z" stroke="#fbbf24" stroke-width="1.8" fill="none"/>
+    
+    <!-- Delicate floating leaf seeds/circles -->
+    <circle cx="150" cy="120" r="4" fill="#34d399" />
+    <circle cx="220" cy="90" r="3" fill="#fbbf24" />
+    <circle cx="480" cy="280" r="5" fill="#34d399" />
+    <circle cx="100" cy="260" r="3" fill="#6ee7b7" />
+  </g>
+</svg>

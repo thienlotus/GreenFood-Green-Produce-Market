@@ -1,9 +1,8 @@
 "use client";
 
 import Link from 'next/link';
-import { ShoppingCart, Star, MapPin } from 'lucide-react';
+import { ShoppingCart, Star, MapPin, Sparkles } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
-
 import { toast } from 'react-hot-toast';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop';
@@ -57,7 +56,16 @@ export default function ProductCard({
       quantity: 1,
       image
     });
-    toast.success(`Đã thêm ${name} vào giỏ hàng!`);
+    toast.success(`Đã thêm "${name}" vào giỏ hàng!`, {
+      icon: '🌿',
+      style: {
+        borderRadius: '12px',
+        background: '#064e3b',
+        color: '#fff',
+        fontSize: '13px',
+        fontWeight: '500',
+      }
+    });
   };
 
   const discountPercent = originalPrice && originalPrice > defaultPrice
@@ -72,83 +80,90 @@ export default function ProductCard({
     <Link
       href={`/product/${slug}`}
       id={`product-card-${id}`}
-      className="group flex flex-col h-full bg-white rounded-2xl border border-gray-100 overflow-hidden relative transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-900/5 hover:border-emerald-200"
+      className="group flex flex-col h-full bg-white/95 rounded-2xl border border-emerald-900/10 overflow-hidden relative transition-all duration-300 hover:-translate-y-1.5 shadow-elevated-card hover:shadow-elevated-hover hover:border-emerald-300"
     >
-      {/* Ảnh sản phẩm */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
+      {/* Ảnh sản phẩm với lớp đổ bóng viền tinh tế */}
+      <div className="relative aspect-square overflow-hidden bg-gradient-to-b from-gray-50 to-emerald-50/20">
         <img
           src={image || FALLBACK_IMAGE}
           alt={name}
           loading="lazy"
           onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
-          className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-out"
+          className="object-cover w-full h-full group-hover:scale-108 transition-transform duration-700 ease-out"
         />
 
-        {/* Badges */}
-        <div className="absolute top-2.5 left-2.5 z-10 flex flex-col items-start gap-1">
+        {/* Lớp bóng đổ mờ nghệ thuật tạo chiều sâu ảnh */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+        {/* Huy hiệu đặc sản & Giảm giá (Frosted Glass Badge) */}
+        <div className="absolute top-2.5 left-2.5 z-10 flex flex-col items-start gap-1.5 pointer-events-none">
           {discountPercent > 0 && (
-            <span className="bg-rose-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-md shadow-sm">
+            <span className="bg-gradient-to-r from-rose-500 to-amber-500 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm tracking-wide">
               -{discountPercent}%
             </span>
           )}
           {badge && (
-            <span className="bg-white/95 backdrop-blur text-emerald-700 text-[10px] font-semibold px-2 py-0.5 rounded-md shadow-sm border border-emerald-100">
+            <span className="glass-pill text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               {badge}
             </span>
           )}
         </div>
 
-        {/* Nút thêm nhanh vào giỏ (hiện khi hover trên desktop) */}
+        {/* Nút thêm nhanh vào giỏ desktop (trượt nhẹ từ dưới lên với gradient mượt) */}
         <button
           type="button"
           onClick={handleAddToCart}
-          className="hidden md:flex absolute bottom-3 left-3 right-3 items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2.5 rounded-xl shadow-lg opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
+          className="hidden md:flex absolute bottom-3 left-3 right-3 items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-950/20 opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 active:scale-95"
         >
-          <ShoppingCart size={16} /> Thêm vào giỏ
+          <ShoppingCart size={15} /> Thêm nhanh vào giỏ
         </button>
       </div>
 
-      {/* Thông tin */}
-      <div className="flex flex-col flex-1 p-3 md:p-3.5">
-        <div className="flex items-center gap-1 text-[11px] text-gray-500 mb-1 min-w-0">
-          <MapPin size={11} className="text-emerald-500 shrink-0" />
-          <span className="truncate">{region}</span>
-          <span className="text-gray-300">•</span>
-          <span className="truncate">{farmerName}</span>
+      {/* Thông tin sản phẩm */}
+      <div className="flex flex-col flex-1 p-3.5 md:p-4">
+        {/* Nguồn gốc & Nông hộ */}
+        <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-800/80 mb-1.5 min-w-0 bg-emerald-50/70 self-start px-2 py-0.5 rounded-md border border-emerald-100/60">
+          <MapPin size={11} className="text-emerald-600 shrink-0" />
+          <span className="truncate max-w-[90px]">{region}</span>
+          <span className="text-emerald-300">•</span>
+          <span className="truncate max-w-[100px] text-emerald-900 font-semibold">{farmerName}</span>
         </div>
 
-        <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-emerald-700 transition-colors">
+        {/* Tên sản phẩm */}
+        <h3 className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2 min-h-[2.6rem] group-hover:text-emerald-700 transition-colors">
           {name}
         </h3>
 
-        <div className="flex items-center gap-1.5 mt-1.5">
+        {/* Đánh giá sao & Số lượng đã bán */}
+        <div className="flex items-center gap-1.5 mt-2">
           <div className="flex items-center text-amber-400">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                size={11}
+                size={12}
                 fill={i < roundedRating ? "currentColor" : "none"}
                 strokeWidth={i < roundedRating ? 0 : 2}
-                className={i >= roundedRating ? "text-gray-300" : ""}
+                className={i >= roundedRating ? "text-gray-200" : ""}
               />
             ))}
           </div>
-          <span className="text-[11px] text-gray-400">
-            {soldCount > 0 ? `Đã bán ${soldCount.toLocaleString('vi-VN')}` : 'Mới'}
+          <span className="text-[11px] text-gray-400 font-medium">
+            {soldCount > 0 ? `Đã bán ${soldCount.toLocaleString('vi-VN')}` : 'Mới về'}
           </span>
         </div>
 
-        {/* Giá + nút giỏ hàng */}
-        <div className="flex items-end justify-between gap-2 mt-auto pt-3">
+        {/* Giá & Nút giỏ hàng mobile */}
+        <div className="flex items-end justify-between gap-2 mt-auto pt-3 border-t border-gray-100/80">
           <div className="min-w-0">
             <div className="flex items-baseline gap-1 flex-wrap">
-              <span className="text-rose-600 font-bold text-base md:text-lg leading-none">
+              <span className="text-rose-600 font-extrabold text-base md:text-lg leading-none tracking-tight">
                 {defaultPrice.toLocaleString('vi-VN')}đ
               </span>
-              <span className="text-[11px] text-gray-400 truncate">/{defaultUnit}</span>
+              <span className="text-[11px] text-gray-400 font-normal">/{defaultUnit}</span>
             </div>
             {discountPercent > 0 && originalPrice && (
-              <span className="text-[11px] text-gray-400 line-through">
+              <span className="text-[11px] text-gray-400 line-through block mt-0.5">
                 {originalPrice.toLocaleString('vi-VN')}đ
               </span>
             )}
@@ -156,7 +171,7 @@ export default function ProductCard({
           <button
             type="button"
             onClick={handleAddToCart}
-            className="md:hidden shrink-0 bg-emerald-50 active:bg-emerald-600 text-emerald-600 active:text-white p-2 rounded-full border border-emerald-100 transition-colors"
+            className="md:hidden shrink-0 bg-emerald-600 active:bg-emerald-700 text-white p-2.5 rounded-xl shadow-md active:scale-95 transition-all"
             title="Thêm vào giỏ"
             aria-label={`Thêm ${name} vào giỏ`}
           >
@@ -164,15 +179,16 @@ export default function ProductCard({
           </button>
         </div>
 
+        {/* Thanh tiến độ Flash Sale */}
         {showSoldProgress && (
           <div className="mt-3">
-            <div className="relative h-4 rounded-full bg-rose-100 overflow-hidden">
+            <div className="relative h-4 rounded-full bg-rose-100/80 overflow-hidden shadow-inner">
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-orange-400 to-rose-500"
+                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-400 via-rose-500 to-red-500 transition-all duration-500"
                 style={{ width: `${soldPercent}%` }}
               />
-              <span className="relative z-10 flex items-center justify-center h-full text-[10px] font-bold text-white uppercase tracking-wide drop-shadow">
-                {soldPercent >= 85 ? 'Sắp cháy hàng' : `Đã bán ${soldCount}`}
+              <span className="relative z-10 flex items-center justify-center h-full text-[10px] font-bold text-white uppercase tracking-wider drop-shadow-xs">
+                {soldPercent >= 85 ? 'Sắp cháy hàng 🔥' : `Đã bán ${soldCount}`}
               </span>
             </div>
           </div>

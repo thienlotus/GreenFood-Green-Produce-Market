@@ -6,7 +6,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import {
   ArrowRight, Truck, ShieldCheck, RefreshCw, CreditCard, ChevronRight, ChevronLeft,
-  Zap, Flame, Sparkles, Tag, Copy, Check, Leaf, Award, MapPin, Package
+  Zap, Flame, Sparkles, Tag, Copy, Check, Leaf, Award, MapPin, Package, Heart, Star
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
@@ -57,39 +57,38 @@ const SIDEBAR_CATEGORIES = [
 ];
 
 const QUICK_LINKS = [
-  { name: 'Đi chợ online', href: '/category/di-cho-online', icon: '🛒', bg: 'bg-emerald-50' },
-  { name: 'Trái cây Việt', href: '/category/trai-cay', icon: '🍉', bg: 'bg-orange-50' },
-  { name: 'Trà - Cà phê', href: '/category/tra-ca-phe', icon: '☕', bg: 'bg-teal-50' },
-  { name: 'Đặc sản', href: '/category/dac-san', icon: '🎁', bg: 'bg-amber-50' },
-  { name: 'Agrishow', href: '/category/agrishow', icon: '🌾', bg: 'bg-purple-50' },
-  { name: 'Deal sốc', href: '#flash-sale', icon: '🔥', bg: 'bg-rose-50' },
-  { name: 'Mã giảm giá', href: '#vouchers', icon: '🎟️', bg: 'bg-pink-50' },
-  { name: 'Bản đồ vườn', href: '/map', icon: '📍', bg: 'bg-sky-50' },
-  { name: 'Theo dõi đơn', href: '/tracking', icon: '📦', bg: 'bg-indigo-50' },
-  { name: 'Nông hộ sạch', href: '/farmers', icon: '👨‍🌾', bg: 'bg-lime-50' },
+  { name: 'Đi chợ online', href: '/category/di-cho-online', icon: '🛒', bg: 'bg-emerald-50/80 border-emerald-100 text-emerald-800' },
+  { name: 'Trái cây Việt', href: '/category/trai-cay', icon: '🍉', bg: 'bg-orange-50/80 border-orange-100 text-orange-800' },
+  { name: 'Trà - Cà phê', href: '/category/tra-ca-phe', icon: '☕', bg: 'bg-teal-50/80 border-teal-100 text-teal-800' },
+  { name: 'Đặc sản', href: '/category/dac-san', icon: '🎁', bg: 'bg-amber-50/80 border-amber-100 text-amber-800' },
+  { name: 'Agrishow', href: '/category/agrishow', icon: '🌾', bg: 'bg-purple-50/80 border-purple-100 text-purple-800' },
+  { name: 'Deal sốc', href: '#flash-sale', icon: '🔥', bg: 'bg-rose-50/80 border-rose-100 text-rose-800' },
+  { name: 'Mã giảm giá', href: '#vouchers', icon: '🎟️', bg: 'bg-pink-50/80 border-pink-100 text-pink-800' },
+  { name: 'Bản đồ vườn', href: '/map', icon: '📍', bg: 'bg-sky-50/80 border-sky-100 text-sky-800' },
+  { name: 'Theo dõi đơn', href: '/tracking', icon: '📦', bg: 'bg-indigo-50/80 border-indigo-100 text-indigo-800' },
+  { name: 'Nông hộ sạch', href: '/farmers', icon: '👨‍🌾', bg: 'bg-lime-50/80 border-lime-100 text-lime-800' },
 ];
 
 const USPS = [
-  { icon: Truck, title: 'Giao nhanh 2H', desc: 'Nội thành HN & HCM' },
-  { icon: ShieldCheck, title: 'Chuẩn VietGAP', desc: 'Truy xuất nguồn gốc' },
-  { icon: RefreshCw, title: 'Đổi trả 24H', desc: 'Hoàn tiền nếu không tươi' },
-  { icon: CreditCard, title: 'Thanh toán an toàn', desc: 'COD • MoMo • VNPay' },
+  { icon: Truck, title: 'Giao nhanh 2H', desc: 'Nội thành TP.HCM & Hà Nội' },
+  { icon: ShieldCheck, title: 'Chuẩn VietGAP', desc: 'Truy xuất nguồn gốc 100%' },
+  { icon: RefreshCw, title: 'Đổi trả 24H', desc: 'Bảo hành tươi ngon tận bàn' },
+  { icon: CreditCard, title: 'Thanh toán linh hoạt', desc: 'COD • MoMo • VNPay' },
 ];
 
-// Khớp với mã voucher thật ở backend (PromotionService::validateVoucher)
 const VOUCHERS = [
-  { code: 'GREEN10', title: 'Giảm 10%', desc: 'Tối đa 50K cho đơn từ 100K', color: 'from-emerald-500 to-teal-500' },
-  { code: 'FREESHIP', title: 'Miễn phí ship', desc: 'Giảm đến 30K cho đơn từ 150K', color: 'from-sky-500 to-indigo-500' },
-  { code: 'CHAOBANMOI', title: 'Giảm 20K', desc: 'Cho đơn đầu tiên từ 50K', color: 'from-orange-500 to-rose-500' },
+  { code: 'GREEN10', title: 'Giảm 10%', desc: 'Tối đa 50K cho đơn từ 100K', color: 'from-emerald-600 to-teal-600' },
+  { code: 'FREESHIP', title: 'Miễn phí ship', desc: 'Giảm đến 30K cho đơn từ 150K', color: 'from-sky-600 to-indigo-600' },
+  { code: 'CHAOBANMOI', title: 'Giảm 20K', desc: 'Cho đơn đầu tiên từ 50K', color: 'from-amber-500 to-rose-500' },
 ];
 
 const CERTIFICATIONS = ['VietGAP', 'GlobalGAP', 'OCOP 4 Sao', 'HACCP', 'ISO 22000'];
 
 type TabKey = 'popular' | 'newest' | 'deal';
 const TABS: { key: TabKey; label: string; icon: typeof Flame }[] = [
-  { key: 'popular', label: 'Bán chạy', icon: Flame },
-  { key: 'newest', label: 'Mới về', icon: Sparkles },
-  { key: 'deal', label: 'Giá tốt', icon: Tag },
+  { key: 'popular', label: 'Bán chạy nhất', icon: Flame },
+  { key: 'newest', label: 'Mới thu hoạch', icon: Sparkles },
+  { key: 'deal', label: 'Giá ưu đãi', icon: Tag },
 ];
 
 /* ------------------------------ Tiện ích ------------------------------ */
@@ -133,20 +132,44 @@ function getTimeUntilMidnight() {
 
 /* ------------------------------ Component ------------------------------ */
 
-function SectionHeader({ title, accent = 'bg-emerald-500', href, linkLabel = 'Xem tất cả', children }: {
-  title: string; accent?: string; href?: string; linkLabel?: string; children?: React.ReactNode;
+function SectionHeader({ 
+  title, 
+  subtitle,
+  accent = 'bg-emerald-500', 
+  href, 
+  linkLabel = 'Xem tất cả', 
+  children 
+}: {
+  title: string; 
+  subtitle?: string;
+  accent?: string; 
+  href?: string; 
+  linkLabel?: string; 
+  children?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-      <h2 className="text-lg md:text-2xl font-bold text-gray-900 flex items-center gap-2.5">
-        <span className={`w-1.5 h-6 md:h-7 ${accent} rounded-full`} />
-        {title}
-      </h2>
+    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
+      <div>
+        <div className="flex items-center gap-2.5 mb-1">
+          <span className={`w-2 h-6 md:h-7 ${accent} rounded-full shadow-xs`} />
+          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+            {title}
+          </h2>
+        </div>
+        {subtitle && (
+          <p className="text-xs md:text-sm text-gray-500 ml-4 font-normal">
+            {subtitle}
+          </p>
+        )}
+      </div>
       <div className="flex items-center gap-3">
         {children}
         {href && (
-          <Link href={href} className="hidden sm:flex items-center gap-0.5 text-sm font-medium text-emerald-700 hover:text-emerald-800 whitespace-nowrap">
-            {linkLabel} <ChevronRight size={16} />
+          <Link 
+            href={href} 
+            className="hidden sm:inline-flex items-center gap-1 text-xs md:text-sm font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50/80 hover:bg-emerald-100 px-3.5 py-1.5 rounded-full transition-all border border-emerald-200/60 shadow-xs"
+          >
+            {linkLabel} <ChevronRight size={14} />
           </Link>
         )}
       </div>
@@ -158,7 +181,7 @@ function ProductGridSkeleton({ count = 5 }: { count?: number }) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
+        <div key={i} className="bg-white/80 rounded-2xl border border-gray-100 overflow-hidden animate-pulse shadow-sm">
           <div className="aspect-square bg-gray-100" />
           <div className="p-3.5 space-y-2">
             <div className="h-3 bg-gray-100 rounded w-2/3" />
@@ -196,7 +219,6 @@ export default function Home() {
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
-  // Đếm ngược Flash Sale tới 0h hôm nay (chỉ chạy trên client để tránh lỗi hydration mismatch)
   useEffect(() => {
     setMounted(true);
     setTimeLeft(getTimeUntilMidnight());
@@ -204,7 +226,6 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // Lấy sản phẩm từ API (tự fallback sang dữ liệu mẫu nếu backend tắt)
   useEffect(() => {
     let cancelled = false;
     getProducts({ limit: 50 })
@@ -223,7 +244,6 @@ export default function Home() {
     const list = [...products];
     if (activeTab === 'popular') list.sort((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0));
     if (activeTab === 'deal') list.sort((a, b) => (a.variants?.[0]?.price ?? 0) - (b.variants?.[0]?.price ?? 0));
-    // 'newest': giữ nguyên thứ tự API (đã sắp xếp mới nhất)
     return list.slice(0, 10);
   }, [products, activeTab]);
 
@@ -238,7 +258,14 @@ export default function Home() {
     try {
       await navigator.clipboard.writeText(code);
       setCopiedCode(code);
-      toast.success(`Đã sao chép mã ${code}`);
+      toast.success(`Đã sao chép mã ưu đãi ${code}!`, {
+        icon: '🎟️',
+        style: {
+          borderRadius: '12px',
+          background: '#064e3b',
+          color: '#fff',
+        }
+      });
       setTimeout(() => setCopiedCode(null), 2000);
     } catch {
       toast(`Mã của bạn: ${code}`, { icon: '🎟️' });
@@ -248,58 +275,71 @@ export default function Home() {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className="bg-gray-50 pb-16">
-      <h1 className="sr-only">GreenFood - Chợ nông sản sạch trực tuyến Việt Nam</h1>
+    <div className="min-h-screen bg-watermark-pattern pb-20 relative overflow-hidden">
+      <h1 className="sr-only">GreenFood - Chợ Nông Sản Sạch Việt Nam</h1>
+
+      {/* Vùng hào quang ánh sáng quang hợp tự nhiên (Ambient Depth) */}
+      <div className="absolute top-0 right-10 w-[500px] h-[500px] bg-emerald-400/8 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-96 left-0 w-[450px] h-[450px] bg-amber-400/6 rounded-full blur-3xl pointer-events-none" />
 
       {/* ============================ HERO ============================ */}
-      <section className="container mx-auto px-4 lg:px-8 pt-5">
+      <section className="container mx-auto px-4 lg:px-8 pt-5 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* Sidebar danh mục (desktop lớn) */}
-          <aside className="hidden xl:flex xl:col-span-3 flex-col bg-white rounded-2xl border border-gray-100 overflow-hidden h-[400px]">
-            <div className="px-5 py-3.5 bg-emerald-700 text-white font-semibold text-sm flex items-center gap-2">
-              <Leaf size={16} /> Danh mục sản phẩm
+          
+          {/* Sidebar danh mục sản phẩm (Desktop) */}
+          <aside className="hidden xl:flex xl:col-span-3 flex-col bg-white/95 backdrop-blur-md rounded-2xl border border-emerald-900/10 shadow-elevated-card overflow-hidden h-[410px]">
+            <div className="px-5 py-3.5 bg-gradient-to-r from-emerald-800 to-emerald-700 text-white font-bold text-sm flex items-center justify-between shadow-xs">
+              <span className="flex items-center gap-2">
+                <Leaf size={16} className="text-emerald-300" /> Danh mục nông sản
+              </span>
+              <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-normal">VietGAP</span>
             </div>
-            <nav className="flex-1 py-1.5 overflow-y-auto">
+            <ul className="flex-1 divide-y divide-gray-50 text-sm overflow-y-auto">
               {SIDEBAR_CATEGORIES.map((c) => (
-                <Link
-                  key={c.name}
-                  href={c.href}
-                  className="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors group"
-                >
-                  <span className="text-lg w-6 text-center">{c.icon}</span>
-                  <span className="flex-1 font-medium">{c.name}</span>
-                  <ChevronRight size={14} className="text-gray-300 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
-                </Link>
+                <li key={c.name}>
+                  <Link
+                    href={c.href}
+                    className="flex items-center justify-between px-5 py-2.5 text-gray-700 hover:text-emerald-700 hover:bg-emerald-50/70 hover:pl-6 transition-all duration-200 group font-medium"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="text-base group-hover:scale-110 transition-transform">{c.icon}</span>
+                      <span>{c.name}</span>
+                    </span>
+                    <ChevronRight size={14} className="text-gray-300 group-hover:text-emerald-600 transition-colors" />
+                  </Link>
+                </li>
               ))}
-            </nav>
+            </ul>
           </aside>
 
-          {/* Carousel chính */}
-          <div className="lg:col-span-8 xl:col-span-6 relative rounded-2xl overflow-hidden group h-[260px] sm:h-[340px] lg:h-[400px]">
-            <div className="h-full" ref={emblaRef}>
+          {/* Carousel Banner chính */}
+          <div className="lg:col-span-8 xl:col-span-6 relative rounded-3xl overflow-hidden shadow-elevated-card border border-emerald-950/10 group h-[280px] sm:h-[350px] lg:h-[410px]">
+            <div ref={emblaRef} className="overflow-hidden h-full">
               <div className="flex h-full">
-                {BANNERS.map((b, idx) => (
-                  <div key={b.id} className="flex-[0_0_100%] min-w-0 relative h-full">
+                {BANNERS.map((b) => (
+                  <div key={b.id} className="relative flex-[0_0_100%] min-w-0 h-full">
                     <img
                       src={b.image}
                       alt={b.title.replace('\n', ' ')}
                       className="absolute inset-0 w-full h-full object-cover"
-                      loading={idx === 0 ? 'eager' : 'lazy'}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
-                    <div className="relative h-full flex flex-col justify-center px-6 sm:px-10 max-w-md">
-                      <span className="inline-flex w-fit items-center gap-1.5 bg-amber-400 text-amber-950 text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full mb-3">
-                        <Sparkles size={12} /> {b.tag}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 text-white max-w-lg">
+                      <span className="glass-pill text-[11px] font-bold text-emerald-900 px-3 py-1 rounded-full uppercase tracking-wider mb-2.5 inline-flex items-center gap-1.5 self-start shadow-sm">
+                        <Sparkles size={13} className="text-amber-500 fill-amber-500" />
+                        {b.tag}
                       </span>
-                      <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight whitespace-pre-line drop-shadow">
+                      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-tight whitespace-pre-line drop-shadow-md">
                         {b.title}
+                      </h2>
+                      <p className="text-xs sm:text-sm text-gray-200 mt-2 line-clamp-2 drop-shadow">
+                        {b.desc}
                       </p>
-                      <p className="hidden sm:block text-sm text-white/85 mt-3 leading-relaxed">{b.desc}</p>
                       <Link
                         href={b.href}
-                        className="mt-5 inline-flex w-fit items-center gap-2 bg-white text-emerald-800 hover:bg-emerald-50 font-semibold text-sm px-5 py-2.5 rounded-full shadow-lg transition-colors"
+                        className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full self-start shadow-lg shadow-emerald-950/30 hover:gap-3 transition-all duration-300"
                       >
-                        {b.cta} <ArrowRight size={16} />
+                        {b.cta} <ArrowRight size={15} />
                       </Link>
                     </div>
                   </div>
@@ -307,95 +347,99 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Navigation Buttons */}
             <button
               type="button"
               onClick={scrollPrev}
               aria-label="Banner trước"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/85 hover:bg-white text-gray-800 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={20} />
             </button>
             <button
               type="button"
               onClick={scrollNext}
               aria-label="Banner tiếp theo"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/85 hover:bg-white text-gray-800 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={20} />
             </button>
 
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {/* Indicator Dots */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
               {BANNERS.map((b, i) => (
                 <button
                   key={b.id}
                   type="button"
                   aria-label={`Chuyển tới banner ${i + 1}`}
                   onClick={() => emblaApi?.scrollTo(i)}
-                  className={`h-2 rounded-full transition-all ${selectedSlide === i ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${selectedSlide === i ? 'w-7 bg-amber-400' : 'w-2 bg-white/60 hover:bg-white'}`}
                 />
               ))}
             </div>
           </div>
 
-          {/* Banner phụ */}
-          <div className="hidden lg:grid lg:col-span-4 xl:col-span-3 grid-rows-2 gap-4 h-[400px]">
-            <Link href="/category/trai-cay" className="relative rounded-2xl overflow-hidden group">
+          {/* 2 Banner phụ (Desktop) */}
+          <div className="hidden lg:grid lg:col-span-4 xl:col-span-3 grid-rows-2 gap-4 h-[410px]">
+            <Link href="/category/trai-cay" className="relative rounded-3xl overflow-hidden group shadow-elevated-card border border-emerald-950/10">
               <img
                 src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop"
                 alt="Trái cây tươi"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-orange-900/80 via-orange-900/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-orange-950/85 via-orange-950/30 to-transparent" />
               <div className="absolute bottom-0 p-5 text-white">
-                <p className="text-xs font-semibold uppercase tracking-wider text-orange-200">Trái cây chín cây</p>
-                <p className="text-lg font-bold mt-0.5">Giảm đến 25%</p>
-                <span className="text-xs inline-flex items-center gap-1 mt-1 opacity-90 group-hover:gap-2 transition-all">Mua ngay <ArrowRight size={12} /></span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-2 py-0.5 rounded-md">Trái cây chín cây</span>
+                <p className="text-xl font-extrabold mt-1">Giảm đến 25%</p>
+                <span className="text-xs inline-flex items-center gap-1 mt-1 font-medium text-orange-200 group-hover:gap-2 transition-all">Mua ngay <ArrowRight size={13} /></span>
               </div>
             </Link>
-            <Link href="/category/tra-ca-phe" className="relative rounded-2xl overflow-hidden group">
+
+            <Link href="/category/tra-ca-phe" className="relative rounded-3xl overflow-hidden group shadow-elevated-card border border-emerald-950/10">
               <img
                 src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=800&auto=format&fit=crop"
                 alt="Trà và cà phê"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/85 via-stone-900/25 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/30 to-transparent" />
               <div className="absolute bottom-0 p-5 text-white">
-                <p className="text-xs font-semibold uppercase tracking-wider text-amber-200">Trà - Cà phê đặc sản</p>
-                <p className="text-lg font-bold mt-0.5">Rang mộc 100%</p>
-                <span className="text-xs inline-flex items-center gap-1 mt-1 opacity-90 group-hover:gap-2 transition-all">Khám phá <ArrowRight size={12} /></span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-black/40 px-2 py-0.5 rounded-md">Trà & Cà phê Mộc</span>
+                <p className="text-xl font-extrabold mt-1">Rang mộc 100%</p>
+                <span className="text-xs inline-flex items-center gap-1 mt-1 font-medium text-amber-200 group-hover:gap-2 transition-all">Khám phá <ArrowRight size={13} /></span>
               </div>
             </Link>
           </div>
+
         </div>
       </section>
 
-      {/* ============================ USP ============================ */}
-      <section className="container mx-auto px-4 lg:px-8 mt-4">
-        <div className="grid grid-cols-2 lg:grid-cols-4 bg-white rounded-2xl border border-gray-100 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
+      {/* ============================ USPS (LỢI ÍCH DỊCH VỤ) ============================ */}
+      <section className="container mx-auto px-4 lg:px-8 mt-6 relative z-10">
+        <div className="glass-frosted rounded-3xl shadow-elevated-card border border-white/80 p-3 md:p-4 grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-emerald-900/5">
           {USPS.map(({ icon: Icon, title, desc }, i) => (
-            <div key={title} className={`flex items-center gap-3 p-4 lg:px-6 ${i % 2 === 1 ? 'border-l lg:border-l-0 border-gray-100' : ''}`}>
-              <div className="w-11 h-11 shrink-0 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div key={title} className={`flex items-center gap-3.5 p-3 lg:px-6 ${i % 2 === 1 ? 'border-l lg:border-l-0 border-emerald-900/5' : ''}`}>
+              <div className="w-12 h-12 shrink-0 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-100/70 text-emerald-700 flex items-center justify-center shadow-xs">
                 <Icon size={22} />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900">{title}</p>
-                <p className="text-xs text-gray-500 truncate">{desc}</p>
+                <p className="text-sm font-bold text-gray-900 leading-tight">{title}</p>
+                <p className="text-xs text-gray-500 truncate mt-0.5">{desc}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ========================= QUICK LINKS ========================= */}
-      <section className="container mx-auto px-4 lg:px-8 mt-4">
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-6">
+      {/* ========================= QUICK LINKS (DANH MỤC TRUY CẬP NHANH) ========================= */}
+      <section className="container mx-auto px-4 lg:px-8 mt-6 relative z-10">
+        <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-emerald-900/10 p-5 md:p-6 shadow-elevated-card">
           <div className="grid grid-cols-5 md:grid-cols-10 gap-y-5 gap-x-2">
             {QUICK_LINKS.map((c) => (
               <Link key={c.name} href={c.href} className="flex flex-col items-center gap-2 group">
-                <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl ${c.bg} flex items-center justify-center text-2xl group-hover:-translate-y-1 group-hover:shadow-md transition-all duration-300`}>
+                <div className={`w-13 h-13 md:w-15 md:h-15 rounded-2xl ${c.bg} flex items-center justify-center text-2xl md:text-3xl border shadow-xs group-hover:-translate-y-1.5 group-hover:shadow-md transition-all duration-300`}>
                   {c.icon}
                 </div>
-                <span className="text-[11px] md:text-xs font-medium text-gray-700 text-center leading-tight group-hover:text-emerald-700 transition-colors">
+                <span className="text-[11px] md:text-xs font-semibold text-gray-700 text-center leading-tight group-hover:text-emerald-700 transition-colors">
                   {c.name}
                 </span>
               </Link>
@@ -405,39 +449,42 @@ export default function Home() {
       </section>
 
       {/* ========================== FLASH SALE ========================== */}
-      <section id="flash-sale" className="container mx-auto px-4 lg:px-8 mt-8 scroll-mt-28">
-        <div className="rounded-2xl overflow-hidden border border-rose-100 bg-white">
-          <div className="bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 md:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-3 md:gap-5">
-              <h2 className="text-xl md:text-2xl font-extrabold text-white italic tracking-tight flex items-center gap-2">
-                <Zap size={24} className="fill-yellow-300 text-yellow-300" /> FLASH SALE
+      <section id="flash-sale" className="container mx-auto px-4 lg:px-8 mt-10 scroll-mt-28 relative z-10">
+        <div className="rounded-3xl overflow-hidden border border-rose-200/80 bg-white/95 backdrop-blur-md shadow-elevated-card">
+          <div className="bg-gradient-to-r from-rose-600 via-red-500 to-amber-500 px-5 md:px-8 py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex flex-wrap items-center gap-3 md:gap-6">
+              <h2 className="text-xl md:text-2xl font-black text-white italic tracking-tight flex items-center gap-2">
+                <Zap size={24} className="fill-yellow-300 text-yellow-300 animate-bounce" /> FLASH SALE NÔNG SẢN
               </h2>
               <div className="flex items-center gap-2 text-white">
-                <span className="text-xs md:text-sm text-white/90">Kết thúc sau</span>
-                <div className="flex items-center gap-1 font-mono" suppressHydrationWarning>
+                <span className="text-xs md:text-sm font-medium text-white/90">Kết thúc trong:</span>
+                <div className="flex items-center gap-1.5 font-mono" suppressHydrationWarning>
                   {[
                     mounted ? timeLeft.hours : 0,
                     mounted ? timeLeft.minutes : 0,
                     mounted ? timeLeft.seconds : 0,
                   ].map((n, i) => (
-                    <span key={i} className="flex items-center gap-1" suppressHydrationWarning>
+                    <span key={i} className="flex items-center gap-1.5" suppressHydrationWarning>
                       <span
-                        className="bg-gray-900 text-white font-bold text-sm min-w-[2rem] text-center px-1.5 py-1 rounded-md"
+                        className="bg-black/60 text-white font-extrabold text-sm min-w-[2.2rem] text-center px-1.5 py-1 rounded-lg border border-white/20 shadow-inner"
                         suppressHydrationWarning
                       >
                         {mounted ? pad(n) : '00'}
                       </span>
-                      {i < 2 && <span className="font-bold">:</span>}
+                      {i < 2 && <span className="font-bold text-amber-300">:</span>}
                     </span>
                   ))}
                 </div>
               </div>
             </div>
-            <Link href="/category/di-cho-online" className="self-start sm:self-auto inline-flex items-center gap-1 text-sm font-medium text-white bg-white/15 hover:bg-white/25 px-4 py-1.5 rounded-full transition-colors">
-              Xem tất cả <ChevronRight size={16} />
+            <Link 
+              href="/category/di-cho-online" 
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 text-xs md:text-sm font-bold text-rose-950 bg-white hover:bg-amber-100 px-4 py-2 rounded-full transition-all shadow-sm"
+            >
+              Xem tất cả deal <ChevronRight size={16} />
             </Link>
           </div>
-          <div className={`p-3 md:p-5 ${GRID}`}>
+          <div className={`p-4 md:p-6 ${GRID}`}>
             {loading ? <ProductGridSkeleton /> : flashSale.map((p) => (
               <ProductCard key={`flash-${p.id}`} {...toCardProps(p)} showSoldProgress />
             ))}
@@ -446,29 +493,42 @@ export default function Home() {
       </section>
 
       {/* =========================== VOUCHERS =========================== */}
-      <section id="vouchers" className="container mx-auto px-4 lg:px-8 mt-8 scroll-mt-28">
-        <SectionHeader title="Mã giảm giá hôm nay" accent="bg-pink-500" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+      <section id="vouchers" className="container mx-auto px-4 lg:px-8 mt-10 scroll-mt-28 relative z-10">
+        <SectionHeader 
+          title="Mã giảm giá hôm nay" 
+          subtitle="Áp dụng ngay khi thanh toán đơn hàng nông sản"
+          accent="bg-pink-500" 
+        />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {VOUCHERS.map((v) => (
-            <div key={v.code} className="relative flex bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-              <div className={`w-24 shrink-0 bg-gradient-to-br ${v.color} text-white flex flex-col items-center justify-center p-3`}>
-                <Tag size={22} />
-                <span className="text-[10px] font-semibold uppercase mt-1 tracking-wide">Voucher</span>
+            <div 
+              key={v.code} 
+              className="relative flex bg-white/95 backdrop-blur-md rounded-2xl border border-emerald-900/10 overflow-hidden shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300"
+            >
+              <div className={`w-24 shrink-0 bg-gradient-to-br ${v.color} text-white flex flex-col items-center justify-center p-3 shadow-inner`}>
+                <Tag size={24} className="text-white/90" />
+                <span className="text-[10px] font-bold uppercase mt-1 tracking-wider">Voucher</span>
               </div>
-              {/* răng cưa vé */}
-              <span className="absolute left-[5.5rem] -top-2 w-4 h-4 rounded-full bg-gray-50 border border-gray-100" />
-              <span className="absolute left-[5.5rem] -bottom-2 w-4 h-4 rounded-full bg-gray-50 border border-gray-100" />
-              <div className="flex-1 flex items-center justify-between gap-3 p-4 pl-5 border-l-2 border-dashed border-gray-200">
+              
+              {/* Răng cưa vé giảm giá */}
+              <span className="absolute left-[5.5rem] -top-2 w-4 h-4 rounded-full bg-emerald-50 border border-emerald-200/50" />
+              <span className="absolute left-[5.5rem] -bottom-2 w-4 h-4 rounded-full bg-emerald-50 border border-emerald-200/50" />
+              
+              <div className="flex-1 flex items-center justify-between gap-3 p-4 pl-6 border-l-2 border-dashed border-gray-200">
                 <div className="min-w-0">
-                  <p className="font-bold text-gray-900">{v.title}</p>
+                  <p className="font-extrabold text-gray-900 text-sm md:text-base">{v.title}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{v.desc}</p>
-                  <p className="text-xs font-mono font-semibold text-emerald-700 mt-1.5">{v.code}</p>
+                  <span className="inline-block text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60 mt-1.5">
+                    {v.code}
+                  </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleCopyVoucher(v.code)}
-                  className={`shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-lg transition-colors ${
-                    copiedCode === v.code ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                  className={`shrink-0 inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-xs ${
+                    copiedCode === v.code 
+                      ? 'bg-emerald-700 text-white' 
+                      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95'
                   }`}
                 >
                   {copiedCode === v.code ? <><Check size={14} /> Đã chép</> : <><Copy size={14} /> Sao chép</>}
@@ -480,17 +540,23 @@ export default function Home() {
       </section>
 
       {/* ======================= GỢI Ý HÔM NAY (TABS) ======================= */}
-      <section className="container mx-auto px-4 lg:px-8 mt-10">
-        <SectionHeader title="Gợi ý hôm nay" href="/category/di-cho-online">
-          <div className="flex bg-white border border-gray-200 rounded-full p-1">
+      <section className="container mx-auto px-4 lg:px-8 mt-12 relative z-10">
+        <SectionHeader 
+          title="Gợi ý hôm nay" 
+          subtitle="Sản phẩm tươi thu hoạch trực tiếp từ các nhà vườn chuẩn VietGAP"
+          href="/category/di-cho-online"
+        >
+          <div className="flex bg-white/90 backdrop-blur border border-emerald-200/60 rounded-full p-1 shadow-xs">
             {TABS.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
                 type="button"
                 id={`home-tab-${key}`}
                 onClick={() => setActiveTab(key)}
-                className={`inline-flex items-center gap-1.5 text-xs md:text-sm font-medium px-3 md:px-4 py-1.5 rounded-full transition-colors ${
-                  activeTab === key ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-600 hover:text-emerald-700'
+                className={`inline-flex items-center gap-1.5 text-xs md:text-sm font-semibold px-3.5 md:px-4 py-1.5 rounded-full transition-all duration-300 ${
+                  activeTab === key 
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm' 
+                    : 'text-gray-600 hover:text-emerald-700'
                 }`}
               >
                 <Icon size={14} /> {label}
@@ -505,49 +571,61 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===================== DANH MỤC NỔI BẬT (banner + 4 SP) ===================== */}
+      {/* ===================== DANH MỤC NỔI BẬT (Trái cây + Đặc sản) ===================== */}
       {[
         {
           key: 'fruits',
           title: 'Trái cây Việt Nam',
+          subtitle: 'Đặc sản nhiệt đới chín cây tự nhiên, mọng nước ngọt thanh',
           accent: 'bg-orange-500',
           href: '/category/trai-cay',
           items: fruits,
           banner: {
             image: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?q=80&w=800&auto=format&fit=crop',
-            overlay: 'from-orange-600/90 to-orange-500/40',
+            overlay: 'from-orange-950/90 via-orange-900/40 to-transparent',
             kicker: 'Chín cây tự nhiên',
             title: 'Trái cây\nmiệt vườn',
           },
         },
         {
           key: 'specialties',
-          title: 'Đặc sản quà tặng',
+          title: 'Đặc sản quà tặng 3 miền',
+          subtitle: 'Hương vị truyền thống trứ danh từ các hợp tác xã làng nghề',
           accent: 'bg-amber-500',
           href: '/category/dac-san',
           items: specialties,
           banner: {
             image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800&auto=format&fit=crop',
-            overlay: 'from-emerald-900/90 to-emerald-700/40',
+            overlay: 'from-emerald-950/90 via-emerald-900/40 to-transparent',
             kicker: 'Hộp quà sang trọng',
             title: 'Đặc sản\nba miền',
           },
         },
       ].map((section) =>
         !loading && section.items.length === 0 ? null : (
-          <section key={section.key} className="container mx-auto px-4 lg:px-8 mt-10">
-            <SectionHeader title={section.title} accent={section.accent} href={section.href} linkLabel="Xem thêm" />
+          <section key={section.key} className="container mx-auto px-4 lg:px-8 mt-12 relative z-10">
+            <SectionHeader 
+              title={section.title} 
+              subtitle={section.subtitle}
+              accent={section.accent} 
+              href={section.href} 
+              linkLabel="Xem thêm" 
+            />
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
               <Link
                 href={section.href}
-                className="hidden xl:flex relative rounded-2xl overflow-hidden group min-h-[360px]"
+                className="hidden xl:flex relative rounded-2xl overflow-hidden group min-h-[360px] shadow-elevated-card border border-emerald-950/10"
               >
-                <img src={section.banner.image} alt={section.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <img 
+                  src={section.banner.image} 
+                  alt={section.title} 
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-108 transition-transform duration-700" 
+                />
                 <div className={`absolute inset-0 bg-gradient-to-t ${section.banner.overlay}`} />
                 <div className="relative mt-auto p-6 text-white">
-                  <p className="text-xs font-semibold uppercase tracking-wider opacity-90">{section.banner.kicker}</p>
-                  <p className="text-2xl font-extrabold leading-tight mt-1 whitespace-pre-line">{section.banner.title}</p>
-                  <span className="mt-4 inline-flex items-center gap-1.5 bg-white text-gray-900 text-sm font-semibold px-4 py-2 rounded-full group-hover:gap-2.5 transition-all">
+                  <p className="text-xs font-bold uppercase tracking-wider text-amber-300">{section.banner.kicker}</p>
+                  <p className="text-2xl font-extrabold leading-tight mt-1 whitespace-pre-line drop-shadow-md">{section.banner.title}</p>
+                  <span className="mt-4 inline-flex items-center gap-1.5 bg-white text-gray-900 text-xs font-bold px-4 py-2 rounded-full group-hover:gap-2.5 transition-all shadow-md">
                     Xem thêm <ArrowRight size={14} />
                   </span>
                 </div>
@@ -556,45 +634,60 @@ export default function Home() {
                 <ProductCard key={`${section.key}-${p.id}`} {...toCardProps(p)} />
               ))}
             </div>
-            <Link href={section.href} className="sm:hidden mt-4 flex items-center justify-center gap-1 text-sm font-medium text-emerald-700 bg-white border border-gray-200 rounded-full py-2.5">
+            <Link 
+              href={section.href} 
+              className="sm:hidden mt-4 flex items-center justify-center gap-1 text-sm font-semibold text-emerald-800 bg-white border border-emerald-200 rounded-full py-2.5 shadow-xs"
+            >
               Xem thêm {section.title.toLowerCase()} <ChevronRight size={16} />
             </Link>
           </section>
         )
       )}
 
-      {/* ========================= VÌ SAO CHỌN ========================= */}
-      <section className="container mx-auto px-4 lg:px-8 mt-12">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-700 text-white p-6 md:p-10">
-          <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/5" />
-          <div className="absolute -left-10 -bottom-20 w-56 h-56 rounded-full bg-white/5" />
+      {/* ========================= VÌ SAO CHỌN GREENFOOD ========================= */}
+      <section className="container mx-auto px-4 lg:px-8 mt-14 relative z-10">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white p-6 md:p-12 shadow-2xl bg-dark-watermark border border-emerald-500/20">
+          <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
+          <div className="absolute -left-10 -bottom-20 w-80 h-80 rounded-full bg-amber-400/10 blur-2xl pointer-events-none" />
+          
           <div className="relative grid lg:grid-cols-5 gap-8 items-center">
             <div className="lg:col-span-2">
-              <p className="text-emerald-200 text-sm font-semibold uppercase tracking-wider">Vì sao chọn GreenFood?</p>
-              <h2 className="text-2xl md:text-3xl font-extrabold mt-2 leading-tight">Kết nối trực tiếp nông hộ với bữa cơm gia đình Việt</h2>
-              <p className="text-emerald-100/90 text-sm mt-3 leading-relaxed">
-                Không qua trung gian, mỗi sản phẩm đều có nguồn gốc rõ ràng trên bản đồ vùng trồng — giá tốt cho người mua, công bằng cho người trồng.
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-300 bg-white/10 px-3 py-1 rounded-full border border-white/15 mb-3">
+                <Leaf size={14} /> Giá trị cốt lõi
+              </span>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-black leading-tight drop-shadow-sm">
+                Kết nối trực tiếp nông hộ với bữa cơm gia đình Việt
+              </h2>
+              <p className="text-emerald-100/90 text-xs md:text-sm mt-3.5 leading-relaxed font-normal">
+                Không qua trung gian thương lái, mỗi trái cây và mớ rau đều được truy xuất nguồn gốc minh bạch trên bản đồ vùng trồng GIS — giữ trọn giá trị tươi nguyên và sự công bằng cho người nông dân.
               </p>
               <div className="flex flex-wrap gap-3 mt-6">
-                <Link href="/map" className="inline-flex items-center gap-2 bg-white text-emerald-800 font-semibold text-sm px-5 py-2.5 rounded-full hover:bg-emerald-50 transition-colors">
-                  <MapPin size={16} /> Xem bản đồ vùng trồng
+                <Link 
+                  href="/map" 
+                  className="inline-flex items-center gap-2 bg-white text-emerald-950 font-bold text-xs md:text-sm px-5 py-2.5 rounded-full hover:bg-emerald-50 transition-all shadow-md"
+                >
+                  <MapPin size={16} className="text-emerald-600" /> Xem bản đồ vùng trồng
                 </Link>
-                <Link href="/partners" className="inline-flex items-center gap-2 border border-white/40 text-white font-semibold text-sm px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors">
+                <Link 
+                  href="/partners" 
+                  className="inline-flex items-center gap-2 border border-white/40 text-white font-semibold text-xs md:text-sm px-5 py-2.5 rounded-full hover:bg-white/10 transition-all"
+                >
                   Trở thành nông hộ đối tác
                 </Link>
               </div>
             </div>
-            <div className="lg:col-span-3 grid grid-cols-2 gap-3 md:gap-4">
+
+            <div className="lg:col-span-3 grid grid-cols-2 gap-3.5 md:gap-4">
               {[
-                { icon: Leaf, value: '500+', label: 'Nông hộ đạt chuẩn' },
-                { icon: Package, value: '120K+', label: 'Đơn hàng đã giao' },
-                { icon: Award, value: '63', label: 'Tỉnh thành phủ sóng' },
-                { icon: ShieldCheck, value: '4.9/5', label: 'Đánh giá hài lòng' },
+                { icon: Leaf, value: '500+', label: 'Nông hộ đạt chuẩn VietGAP' },
+                { icon: Package, value: '120K+', label: 'Đơn hàng giao thành công' },
+                { icon: Award, value: '63', label: 'Tỉnh thành phủ sóng liên kết' },
+                { icon: ShieldCheck, value: '4.9/5', label: 'Khách hàng đánh giá hài lòng' },
               ].map(({ icon: Icon, value, label }) => (
-                <div key={label} className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-4 md:p-5">
-                  <Icon size={22} className="text-emerald-200" />
-                  <p className="text-2xl md:text-3xl font-extrabold mt-2">{value}</p>
-                  <p className="text-xs md:text-sm text-emerald-100/90">{label}</p>
+                <div key={label} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 md:p-6 hover:bg-white/15 transition-all shadow-sm">
+                  <Icon size={24} className="text-amber-300" />
+                  <p className="text-2xl md:text-3xl font-black mt-2 text-white">{value}</p>
+                  <p className="text-xs md:text-sm text-emerald-100/80 mt-0.5">{label}</p>
                 </div>
               ))}
             </div>
@@ -602,14 +695,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ======================== CHỨNG NHẬN ======================== */}
-      <section className="container mx-auto px-4 lg:px-8 mt-12">
-        <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mb-5">Tiêu chuẩn chất lượng đồng hành</p>
+      {/* ======================== CHỨNG NHẬN ĐỒNG HÀNH ======================== */}
+      <section className="container mx-auto px-4 lg:px-8 mt-12 relative z-10">
+        <p className="text-center text-xs font-bold uppercase tracking-[0.25em] text-emerald-800/80 mb-5">
+          Tiêu chuẩn chất lượng kiểm định nông sản
+        </p>
         <div className="flex flex-wrap justify-center gap-3 md:gap-4">
           {CERTIFICATIONS.map((c) => (
-            <div key={c} className="flex items-center gap-2 bg-white border border-gray-100 rounded-full px-5 py-2.5 text-gray-600 hover:text-emerald-700 hover:border-emerald-200 transition-colors">
-              <Award size={16} className="text-emerald-500" />
-              <span className="font-bold text-sm md:text-base">{c}</span>
+            <div 
+              key={c} 
+              className="flex items-center gap-2 bg-white/90 backdrop-blur border border-emerald-200/60 rounded-full px-5 py-2.5 text-gray-700 hover:text-emerald-800 hover:border-emerald-400 hover:shadow-md transition-all duration-300 shadow-xs"
+            >
+              <Award size={17} className="text-emerald-600" />
+              <span className="font-extrabold text-sm md:text-base tracking-tight">{c}</span>
             </div>
           ))}
         </div>

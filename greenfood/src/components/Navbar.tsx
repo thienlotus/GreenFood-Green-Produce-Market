@@ -7,6 +7,7 @@ import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import BrandLogo from '@/components/BrandLogo';
 
 export default function Navbar() {
   const router = useRouter();
@@ -65,25 +66,8 @@ export default function Navbar() {
       {/* 2. MAIN HEADER */}
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between py-3.5 sm:py-4 lg:py-5 min-h-[5.5rem] lg:min-h-[6.5rem] gap-4 lg:gap-8">
-          {/* Logo (Shopee-style: To, hoành tráng, cân đối chuẩn nhận diện thương hiệu) */}
-          <Link href="/" className="flex items-center gap-3.5 sm:gap-4 shrink-0 group py-1">
-            <div className="relative flex items-center justify-center shrink-0">
-              <img 
-                src="/logo.png" 
-                alt="GreenFood Logo" 
-                className="h-16 w-auto sm:h-20 sm:w-auto md:h-[5.25rem] md:w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-sm" 
-                style={{ maxHeight: '84px', width: 'auto' }}
-              />
-            </div>
-            <div className="flex flex-col justify-center">
-              <span className="text-3xl sm:text-4xl md:text-[2.85rem] font-bold text-emerald-600 tracking-tight font-pacifico leading-none pb-1.5 select-none group-hover:text-emerald-700 transition-colors">
-                GreenFood
-              </span>
-              <span className="text-[10px] sm:text-[11px] font-bold text-emerald-800 tracking-[0.25em] uppercase mt-4 hidden sm:block select-none">
-                Nông sản sạch từ tâm
-              </span>
-            </div>
-          </Link>
+          {/* Brand Logo Đồng Bộ Chuẩn */}
+          <BrandLogo variant="light" size="md" href="/" />
 
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl relative">
@@ -288,15 +272,9 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 top-20 bg-black/40 backdrop-blur-xs z-40" onClick={() => setIsMobileMenuOpen(false)}>
           <div className="bg-white w-4/5 max-w-sm h-full shadow-2xl p-6 space-y-5 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            {/* Brand Logo in Drawer */}
-            <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-              <div className="shrink-0">
-                <img src="/logo.png" alt="GreenFood Logo" className="h-14 w-auto object-contain" />
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-emerald-600 font-pacifico leading-none block">GreenFood</span>
-                <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider mt-2.5 block">Nông sản sạch từ tâm</span>
-              </div>
+            {/* Brand Logo in Drawer Đồng Bộ */}
+            <div className="pb-3 border-b border-gray-100">
+              <BrandLogo variant="light" size="sm" href="/" />
             </div>
 
             {/* User Info Header in Drawer */}

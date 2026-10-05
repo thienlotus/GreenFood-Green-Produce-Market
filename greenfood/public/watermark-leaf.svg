@@ -1,0 +1,26 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Subtle Organic Botanical Leaves Pattern -->
+  <g opacity="0.6">
+    <!-- Big graceful monstera/banana leaf silhouette -->
+    <path d="M 60,340 C 40,240 100,140 220,100 C 260,86 310,80 340,90 C 330,130 300,180 240,220 C 180,260 110,320 60,340 Z" stroke="#059669" stroke-width="1.5" stroke-dasharray="4 2" fill="none"/>
+    <!-- Central leaf vein -->
+    <path d="M 80,320 C 140,240 220,170 320,100" stroke="#059669" stroke-width="1.5" fill="none"/>
+    <!-- Side leaf veins -->
+    <path d="M 140,250 C 170,220 200,215 230,220" stroke="#059669" stroke-width="1" fill="none"/>
+    <path d="M 180,210 C 210,180 240,175 270,180" stroke="#059669" stroke-width="1" fill="none"/>
+    <path d="M 220,170 C 250,140 280,135 300,140" stroke="#059669" stroke-width="1" fill="none"/>
+    <path d="M 160,230 C 140,210 120,200 100,210" stroke="#059669" stroke-width="1" fill="none"/>
+    <path d="M 200,190 C 180,170 160,160 140,170" stroke="#059669" stroke-width="1" fill="none"/>
+    <path d="M 240,150 C 220,130 200,120 180,130" stroke="#059669" stroke-width="1" fill="none"/>
+
+    <!-- Small accent sprout in opposite corner -->
+    <path d="M 320,320 C 310,280 280,260 250,270 C 260,290 280,310 320,320 Z" stroke="#10b981" stroke-width="1.2" fill="none"/>
+    <path d="M 320,320 C 340,290 350,260 330,240 C 310,250 310,280 320,320 Z" stroke="#10b981" stroke-width="1.2" fill="none"/>
+    <path d="M 320,320 C 330,345 340,370 345,390" stroke="#10b981" stroke-width="1.2" fill="none"/>
+
+    <!-- Top-left coffee branch motif -->
+    <path d="M 40,40 Q 90,80 120,140" stroke="#047857" stroke-width="1.2" fill="none"/>
+    <path d="M 60,60 C 80,45 100,50 105,70 C 95,85 75,80 60,60 Z" stroke="#047857" stroke-width="1" fill="none"/>
+    <path d="M 90,95 C 110,80 130,85 135,105 C 125,120 105,115 90,95 Z" stroke="#047857" stroke-width="1" fill="none"/>
+  </g>
+</svg>

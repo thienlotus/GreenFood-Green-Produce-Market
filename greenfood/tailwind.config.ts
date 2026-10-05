@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         pacifico: ['Pacifico', 'cursive', 'sans-serif'],
-        sans: ['Plus Jakarta Sans', 'Arial', 'Helvetica', 'sans-serif'],
+        sans: ['var(--font-sans)', 'Be Vietnam Pro', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
       },
       colors: {
         primary: {

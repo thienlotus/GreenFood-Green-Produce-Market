@@ -67,21 +67,24 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="container mx-auto px-4 lg:px-8 py-6">
+    <div className="min-h-screen bg-watermark-pattern pb-20 relative overflow-hidden">
+      {/* Vùng hào quang quang hợp */}
+      <div className="absolute top-0 right-10 w-[500px] h-[500px] bg-emerald-400/8 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="container mx-auto px-4 lg:px-8 py-6 relative z-10">
         {/* Breadcrumb */}
         <div className="flex items-center flex-wrap text-xs md:text-sm text-gray-500 mb-6 gap-1">
-          <Link href="/" className="hover:text-emerald-600 transition-colors">Trang chủ</Link>
+          <Link href="/" className="hover:text-emerald-700 font-medium transition-colors">Trang chủ</Link>
           <ChevronRight size={14} className="text-gray-400" />
-          <Link href={`/category/${product.categorySlug}`} className="hover:text-emerald-600 transition-colors">
+          <Link href={`/category/${product.categorySlug}`} className="hover:text-emerald-700 font-medium transition-colors">
             {product.categoryName}
           </Link>
           <ChevronRight size={14} className="text-gray-400" />
-          <span className="text-gray-800 font-semibold truncate max-w-xs">{product.name}</span>
+          <span className="text-gray-900 font-bold truncate max-w-xs">{product.name}</span>
         </div>
 
         {/* Main Product Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-12">
+        <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-elevated-card border border-emerald-900/10 overflow-hidden mb-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 p-6 lg:p-10">
             
             {/* Left: Product Images (5 cols) */}
@@ -219,10 +222,10 @@ export default function ProductDetailPage() {
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <button 
                     onClick={handleAddToCart}
-                    className={`flex-1 font-bold h-13 py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-sm ${
+                    className={`flex-1 font-bold h-13 py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 ${
                       isAdded 
-                        ? 'bg-emerald-700 text-white' 
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-md'
+                        ? 'bg-emerald-800 text-white' 
+                        : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-emerald-950/20'
                     }`}
                   >
                     <ShoppingCart size={20} />
@@ -231,7 +234,7 @@ export default function ProductDetailPage() {
 
                   <button 
                     onClick={handleBuyNow}
-                    className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold h-13 py-3.5 px-6 rounded-2xl transition-all shadow-sm hover:shadow-md text-center"
+                    className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold h-13 py-3.5 px-6 rounded-2xl transition-all shadow-lg shadow-amber-950/20 active:scale-98 text-center"
                   >
                     Mua ngay
                   </button>

@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import EmailOtpModal from '@/components/EmailOtpModal';
 
+import BrandLogo from '@/components/BrandLogo';
+
 export default function LoginPage() {
   const { authenticate, register, verifyEmailApi, resendOtpApi } = useAuthStore();
   const router = useRouter();
@@ -146,14 +148,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="p-8 text-center bg-emerald-600">
-          <Link href="/">
-            <h1 className="text-4xl text-white font-medium mb-2 font-pacifico cursor-pointer">GreenFood</h1>
-          </Link>
-          <p className="text-emerald-100">
-            {isRegister ? 'Đăng ký tài khoản hệ thống' : 'Đăng nhập vào hệ thống'}
+    <div className="min-h-[85vh] flex items-center justify-center bg-watermark-pattern px-4 py-12 relative">
+      <div className="max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl shadow-elevated-card border border-emerald-900/10 overflow-hidden">
+        <div className="p-8 text-center bg-gradient-to-br from-emerald-800 to-teal-800 text-white shadow-inner flex flex-col items-center justify-center">
+          <BrandLogo variant="dark" size="md" href="/" className="justify-center mb-3" />
+          <p className="text-emerald-100/90 text-sm font-medium">
+            {isRegister ? 'Đăng ký tài khoản GreenFood' : 'Đăng nhập vào tài khoản'}
           </p>
         </div>
         

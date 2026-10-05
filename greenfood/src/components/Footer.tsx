@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from 'react';
-import { MapPin, Phone, Mail, ChevronRight, Facebook, Youtube, Instagram } from 'lucide-react';
+import { MapPin, Phone, Mail, ChevronRight, Facebook, Youtube, Instagram, ShieldCheck, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
+import BrandLogo from '@/components/BrandLogo';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
@@ -14,7 +15,14 @@ export default function Footer() {
       toast.error('Vui lòng nhập email của bạn!');
       return;
     }
-    toast.success('Đăng ký nhận ưu đãi thành công! Mã giảm giá 50.000đ đã được gửi tới ' + email);
+    toast.success('Đăng ký nhận ưu đãi thành công! Mã giảm giá 50.000đ đã được gửi tới ' + email, {
+      icon: '🎁',
+      style: {
+        borderRadius: '12px',
+        background: '#064e3b',
+        color: '#fff',
+      }
+    });
     setEmail('');
   };
 
@@ -22,173 +30,221 @@ export default function Footer() {
     { title: "Câu chuyện GreenFood", href: "/about" },
     { title: "Nông hộ & Hợp tác xã liên kết", href: "/farmers" },
     { title: "Tiêu chuẩn chất lượng VietGAP", href: "/quality-standards" },
-    { title: "Điều khoản và Điều kiện sử dụng", href: "/terms" },
+    { title: "Điều khoản & Điều kiện sử dụng", href: "/terms" },
     { title: "Chính sách bảo mật thông tin", href: "/privacy" },
     { title: "Dành cho Đối tác & CTV", href: "/partners" },
     { title: "Tuyển dụng nhân sự", href: "/careers" }
   ];
 
   const supportLinks = [
-    { title: "Chính sách giao hàng", href: "/shipping" },
+    { title: "Chính sách giao hàng 2H", href: "/shipping" },
     { title: "Chính sách đổi trả & hoàn tiền", href: "/returns" },
     { title: "Hướng dẫn mua hàng online", href: "/how-to-buy" },
     { title: "Câu hỏi thường gặp (FAQs)", href: "/faqs" },
     { title: "Liên hệ & Góp ý", href: "/contact" },
-    { title: "Tiếp nhận khiếu nại", href: "/complaints" }
+    { title: "Tiếp nhận khiếu nại dịch vụ", href: "/complaints" }
   ];
 
   return (
-    <footer className="bg-emerald-900 text-emerald-50 pt-16 pb-8 border-t-[6px] border-emerald-600">
-      <div className="container mx-auto px-4 lg:px-8">
+    <footer className="relative bg-gradient-to-b from-[#063a22] via-[#042817] to-[#01170d] text-emerald-100 pt-16 pb-10 border-t-2 border-emerald-500/30 overflow-hidden bg-dark-watermark">
+      {/* Lớp hào quang ánh sáng thực vật huyền ảo tạo chiều sâu */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="container mx-auto px-4 lg:px-8 relative z-10">
         
-        {/* Newsletter & Social */}
-        <div className="flex flex-col md:flex-row justify-between items-center pb-10 border-b border-emerald-800 mb-10 gap-6">
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-white mb-2">Đăng ký nhận tin từ GreenFood</h3>
-            <p className="text-emerald-200 text-sm">Nhận ngay mã giảm giá 50.000đ cho đơn hàng đầu tiên</p>
-          </div>
-          <form onSubmit={handleSubscribe} className="flex-1 flex max-w-md w-full">
-            <input 
-              type="email" 
-              placeholder="Nhập email của bạn..." 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="px-4 py-3 rounded-l-lg w-full text-gray-800 focus:outline-none text-sm"
-            />
-            <button 
-              type="submit" 
-              className="bg-amber-500 hover:bg-amber-600 px-6 py-3 rounded-r-lg font-bold text-white transition-colors whitespace-nowrap text-sm"
-            >
-              Đăng ký
-            </button>
-          </form>
-          <div className="flex gap-4">
-            <a 
-              href="https://facebook.com" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center hover:bg-blue-600 transition-colors"
-            >
-              <Facebook size={20} />
-            </a>
-            <a 
-              href="https://youtube.com" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center hover:bg-red-600 transition-colors"
-            >
-              <Youtube size={20} />
-            </a>
-            <a 
-              href="https://instagram.com" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center hover:bg-pink-600 transition-colors"
-            >
-              <Instagram size={20} />
-            </a>
+        {/* Newsletter & Social Header Card (Frosted Glassmorphism) */}
+        <div className="rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 p-6 md:p-8 mb-12 shadow-2xl">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
+            <div className="text-center lg:text-left max-w-xl">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-300 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-300/20 mb-2">
+                <ShieldCheck size={14} /> Ưu đãi thành viên mới
+              </span>
+              <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight">Đăng ký nhận thông tin nông sản tươi & mã giảm giá</h3>
+              <p className="text-emerald-200/80 text-xs md:text-sm mt-1">Tặng ngay voucher giảm giá 50.000đ áp dụng cho đơn hàng đầu tiên của bạn.</p>
+            </div>
+
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 w-full lg:max-w-md">
+              <input 
+                type="email" 
+                placeholder="Nhập email của bạn (vd: ban@gmail.com)..." 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="px-4 py-3 rounded-xl bg-white/10 border border-emerald-400/30 text-white placeholder-emerald-300/50 focus:outline-none focus:bg-white/15 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all text-sm w-full"
+              />
+              <button 
+                type="submit" 
+                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 px-6 py-3 rounded-xl font-bold text-emerald-950 transition-all duration-300 whitespace-nowrap text-sm shadow-lg shadow-amber-950/20 hover:scale-102 active:scale-98"
+              >
+                Nhận quà ngay
+              </button>
+            </form>
+
+            {/* Social Links */}
+            <div className="flex items-center gap-3">
+              <a 
+                href="https://facebook.com" 
+                target="_blank" 
+                rel="noreferrer" 
+                aria-label="Facebook"
+                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-blue-600 border border-white/10 hover:border-blue-400 flex items-center justify-center text-white transition-all duration-300 hover:-translate-y-1 shadow-sm"
+              >
+                <Facebook size={18} />
+              </a>
+              <a 
+                href="https://youtube.com" 
+                target="_blank" 
+                rel="noreferrer" 
+                aria-label="Youtube"
+                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-red-600 border border-white/10 hover:border-red-400 flex items-center justify-center text-white transition-all duration-300 hover:-translate-y-1 shadow-sm"
+              >
+                <Youtube size={18} />
+              </a>
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noreferrer" 
+                aria-label="Instagram"
+                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-pink-600 border border-white/10 hover:border-pink-400 flex items-center justify-center text-white transition-all duration-300 hover:-translate-y-1 shadow-sm"
+              >
+                <Instagram size={18} />
+              </a>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        {/* 4 Cột Nội dung Footer */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 mb-12">
           
-          {/* Cột 1 */}
-          <div>
-            <div className="flex items-center gap-3.5 mb-5">
-              <div className="p-2 bg-white rounded-2xl shadow-sm shrink-0 flex items-center justify-center">
-                <img src="/logo.png" alt="GreenFood" className="h-14 w-auto object-contain" style={{ maxHeight: '56px', width: 'auto' }} />
-              </div>
-              <div className="flex flex-col justify-center">
-                <span className="text-3xl sm:text-4xl font-bold text-white font-pacifico leading-none pb-1 block select-none">GreenFood</span>
-                <span className="text-[10px] sm:text-[11px] text-emerald-200 font-bold tracking-[0.22em] uppercase mt-3.5 block select-none">Nông sản sạch từ tâm</span>
-              </div>
-            </div>
-            <h4 className="text-emerald-200 font-bold mb-4 text-xs uppercase tracking-wider">CÔNG TY CỔ PHẦN GREENFOOD</h4>
-            <ul className="space-y-4 text-sm text-emerald-100">
-              <li className="flex gap-3">
-                <MapPin className="shrink-0 mt-0.5 text-emerald-400" size={18} />
+          {/* Cột 1: Thông tin thương hiệu & Trụ sở (4 cols) */}
+          <div className="lg:col-span-4">
+            {/* Logo đồng bộ chuẩn - Không có khung trắng vuông lỗi thời */}
+            <BrandLogo variant="dark" size="md" className="mb-4" />
+            
+            <p className="text-xs md:text-sm text-emerald-200/90 leading-relaxed mb-5 font-normal">
+              Sàn thương mại điện tử kết nối trực tiếp các Hợp tác xã, Nông hộ canh tác tự nhiên đạt tiêu chuẩn VietGAP đến bàn ăn của mọi gia đình Việt.
+            </p>
+
+            <ul className="space-y-3.5 text-xs md:text-sm text-emerald-100/90">
+              <li className="flex items-start gap-3">
+                <MapPin className="shrink-0 mt-0.5 text-emerald-400" size={17} />
                 <span>Số 123 Đường Nông Nghiệp, Phường 14, Quận 10, TP. Hồ Chí Minh</span>
               </li>
-              <li className="flex gap-3">
-                <Phone className="shrink-0 mt-0.5 text-emerald-400" size={18} />
-                <div>
-                  <a href="tel:02877702614" className="hover:text-amber-400 font-bold transition-colors">028 7770 2614</a>
-                  <p className="text-xs text-emerald-300 mt-0.5">Thứ 2 - Chủ Nhật (7:00 - 21:00)</p>
+              <li className="flex items-center gap-3">
+                <Phone className="shrink-0 text-amber-400" size={17} />
+                <div className="flex items-center gap-2">
+                  <a href="tel:02877702614" className="hover:text-amber-300 font-bold transition-colors">028 7770 2614</a>
+                  <span className="text-[11px] text-emerald-300/80 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/20">7:00 - 21:00</span>
                 </div>
               </li>
-              <li className="flex gap-3">
-                <Mail className="shrink-0 mt-0.5 text-emerald-400" size={18} />
-                <a href="mailto:info@greenfood.vn" className="hover:text-amber-400 transition-colors">info@greenfood.vn</a>
+              <li className="flex items-center gap-3">
+                <Mail className="shrink-0 text-emerald-400" size={17} />
+                <a href="mailto:info@greenfood.vn" className="hover:text-amber-300 transition-colors">info@greenfood.vn</a>
               </li>
-              <li className="pt-2 text-xs text-emerald-300">
+              <li className="pt-2 text-xs text-emerald-300/70">
                 Mã số thuế: 0123456789 do Sở KH&ĐT TP.HCM cấp
               </li>
             </ul>
           </div>
 
-          {/* Cột 2 */}
-          <div>
-            <h4 className="text-white font-bold mb-6 text-lg uppercase tracking-wider">VỀ GREENFOOD</h4>
-            <ul className="space-y-3 text-sm">
+          {/* Cột 2: Về GreenFood (3 cols) */}
+          <div className="lg:col-span-3">
+            <h4 className="text-white font-bold mb-5 text-sm uppercase tracking-wider flex items-center gap-2">
+              <span className="w-1.5 h-4 bg-emerald-400 rounded-full" /> Về GreenFood
+            </h4>
+            <ul className="space-y-2.5 text-xs md:text-sm">
               {aboutLinks.map((item, idx) => (
                 <li key={idx}>
-                  <Link href={item.href} className="flex items-center gap-2 hover:text-amber-400 transition-colors group">
-                    <ChevronRight size={14} className="text-emerald-500 group-hover:text-amber-400" />
-                    {item.title}
+                  <Link 
+                    href={item.href} 
+                    className="inline-flex items-center gap-1.5 text-emerald-200/80 hover:text-amber-300 hover:translate-x-1 transition-all duration-200 group"
+                  >
+                    <ChevronRight size={13} className="text-emerald-500 group-hover:text-amber-300 transition-colors" />
+                    <span>{item.title}</span>
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Cột 3 */}
-          <div>
-            <h4 className="text-white font-bold mb-6 text-lg uppercase tracking-wider">HỖ TRỢ KHÁCH HÀNG</h4>
-            <ul className="space-y-3 text-sm">
+          {/* Cột 3: Hỗ trợ khách hàng (2 cols) */}
+          <div className="lg:col-span-2">
+            <h4 className="text-white font-bold mb-5 text-sm uppercase tracking-wider flex items-center gap-2">
+              <span className="w-1.5 h-4 bg-amber-400 rounded-full" /> Hỗ trợ khách hàng
+            </h4>
+            <ul className="space-y-2.5 text-xs md:text-sm">
               {supportLinks.map((item, idx) => (
                 <li key={idx}>
-                  <Link href={item.href} className="flex items-center gap-2 hover:text-amber-400 transition-colors group">
-                    <ChevronRight size={14} className="text-emerald-500 group-hover:text-amber-400" />
-                    {item.title}
+                  <Link 
+                    href={item.href} 
+                    className="inline-flex items-center gap-1.5 text-emerald-200/80 hover:text-amber-300 hover:translate-x-1 transition-all duration-200 group"
+                  >
+                    <ChevronRight size={13} className="text-emerald-500 group-hover:text-amber-300 transition-colors" />
+                    <span>{item.title}</span>
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Cột 4 */}
-          <div>
-            <h4 className="text-white font-bold mb-6 text-lg uppercase tracking-wider">TẢI ỨNG DỤNG MUA SẮM</h4>
-            <p className="text-sm mb-4 text-emerald-200">Mua sắm tiện lợi và nhận nhiều ưu đãi độc quyền trên App GreenFood.</p>
-            <div className="flex gap-4 mb-8">
-              <div className="w-24 h-24 bg-white rounded-lg p-2 shrink-0">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QR Code" className="w-full h-full object-contain" />
+          {/* Cột 4: Ứng dụng & Thanh toán (3 cols) */}
+          <div className="lg:col-span-3">
+            <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider flex items-center gap-2">
+              <span className="w-1.5 h-4 bg-teal-400 rounded-full" /> Tải ứng dụng mua sắm
+            </h4>
+            <p className="text-xs text-emerald-200/80 mb-4">
+              Mua sắm tiện lợi và nhận nhiều ưu đãi độc quyền trên App GreenFood.
+            </p>
+
+            <div className="flex items-center gap-3 bg-white/5 p-3 rounded-2xl border border-white/10 mb-6">
+              <div className="bg-white p-1.5 rounded-xl shrink-0 shadow-sm">
+                <img 
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=72x72&data=https://greenfood.asia" 
+                  alt="QR Tải App GreenFood" 
+                  className="w-16 h-16 rounded" 
+                />
               </div>
-              <div className="flex flex-col gap-2 justify-center">
-                <div onClick={() => toast('Ứng dụng iOS sắp ra mắt trên App Store!')} className="h-10 cursor-pointer">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store" className="h-full object-contain" />
-                </div>
-                <div onClick={() => toast('Ứng dụng Android sắp ra mắt trên Google Play!')} className="h-10 cursor-pointer">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" className="h-full object-contain" />
-                </div>
+              <div className="flex flex-col gap-2">
+                <a 
+                  href="#" 
+                  className="bg-black/60 hover:bg-black text-white px-3 py-1.5 rounded-lg text-[10px] font-medium border border-white/10 transition-colors flex items-center gap-1.5"
+                >
+                  <span>App Store</span>
+                </a>
+                <a 
+                  href="#" 
+                  className="bg-black/60 hover:bg-black text-white px-3 py-1.5 rounded-lg text-[10px] font-medium border border-white/10 transition-colors flex items-center gap-1.5"
+                >
+                  <span>Google Play</span>
+                </a>
               </div>
             </div>
 
-            <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">PHƯƠNG THỨC THANH TOÁN</h4>
-            <div className="flex gap-2 flex-wrap">
-              {['VNPay', 'Momo', 'Visa', 'MasterCard', 'COD'].map(method => (
-                <div key={method} className="bg-white text-gray-800 text-xs font-bold px-3 py-1.5 rounded">
+            <h4 className="text-white font-bold mb-3 text-xs uppercase tracking-wider">Phương thức thanh toán</h4>
+            <div className="flex flex-wrap gap-2">
+              {['VNPay', 'MoMo', 'Visa', 'MasterCard', 'COD'].map((method) => (
+                <span 
+                  key={method} 
+                  className="px-2.5 py-1 bg-white/10 hover:bg-white/15 border border-white/10 rounded-lg text-[11px] font-semibold text-white transition-colors"
+                >
                   {method}
-                </div>
+                </span>
               ))}
             </div>
           </div>
 
         </div>
 
-        <div className="border-t border-emerald-800 pt-8 text-center text-xs text-emerald-400/80 flex flex-col md:flex-row justify-between items-center gap-4">
+        {/* Bản quyền & Cam kết cuối trang */}
+        <div className="pt-6 border-t border-emerald-800/60 flex flex-col sm:flex-row items-center justify-between text-xs text-emerald-300/70 gap-3">
           <p>© 2026 Bản quyền thuộc về Công ty Cổ phần GreenFood - Nông Sản Chuẩn Sạch Cho Mọi Nhà.</p>
+          <div className="flex items-center gap-1 text-emerald-300/80">
+            <span>Canh tác bằng cả trái tim</span>
+            <Heart size={13} className="text-rose-400 fill-rose-400" />
+            <span>vì sức khỏe cộng đồng</span>
+          </div>
         </div>
+
       </div>
     </footer>
   );
