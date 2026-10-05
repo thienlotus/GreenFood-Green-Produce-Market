@@ -287,6 +287,26 @@ class MomoService
         $order->payment_method = 'MOMO';
         $order->status = 'CONFIRMED';
         $order->payment_status = 'paid';
+
+        // Đảm bảo đơn hàng được đẩy lên GHN nếu chưa có mã GHN
+        if (empty($order->ghn_order_code)) {
+            try {
+                $ghnOrderService = app(\App\Services\GHNOrderService::class);
+                $toDistrictId = (int)($order->to_district_id ?: config('services.ghn.from_district_id', 3440));
+                $toWardCode = (string)($order->to_ward_code ?: '13010');
+                $ghnRes = $ghnOrderService->create($order, $toWardCode, $toDistrictId, true);
+                if (($ghnRes['code'] ?? 0) === 200 && !empty($ghnRes['data']['order_code'])) {
+                    $order->ghn_order_code = $ghnRes['data']['order_code'];
+                    $order->tracking_number = $ghnRes['data']['order_code'];
+                    $order->to_district_id = $toDistrictId;
+                    $order->to_ward_code = $toWardCode;
+                    Log::info("MoMo IPN: Đã đẩy đơn hàng #{$order->id} lên GHN thành công với mã: {$order->ghn_order_code}");
+                }
+            } catch (\Throwable $e) {
+                Log::error("MoMo IPN: Lỗi khi đẩy đơn lên GHN: " . $e->getMessage());
+            }
+        }
+
         $order->save();
 
         // Update PaymentTransaction

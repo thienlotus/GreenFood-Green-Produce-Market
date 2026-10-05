@@ -72,15 +72,13 @@ class SepayService
         // Find Order if exists
         $order = Order::where('id', $orderId)
             ->orWhere('tracking_number', $orderId)
+            ->orWhere('ghn_order_code', $orderId)
             ->first();
 
-        $trackingNumber = $order ? $order->tracking_number : $orderId;
+        $trackingNumber = $order ? ($order->ghn_order_code ?: $order->tracking_number) : $orderId;
 
-        // Clean description code for VietQR (alphanumeric, e.g. GF20261001)
-        $cleanCode = preg_replace('/[^0-9A-Za-z]/', '', $trackingNumber);
-        if (!str_starts_with(strtoupper($cleanCode), 'GF')) {
-            $cleanCode = 'GF' . $cleanCode;
-        }
+        // Clean description code for VietQR (use GHN order code directly, no arbitrary GF prefix)
+        $cleanCode = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $trackingNumber));
         $description = $cleanCode;
 
         // Generate VietQR URL through SePay QR endpoint
@@ -173,10 +171,9 @@ class SepayService
         $content = (string)($payload['content'] ?? ($payload['description'] ?? ''));
 
         // Locate order from code or content
-        $order = null;
-
-        if (!empty($code)) {
+                if (!empty($code)) {
             $order = Order::where('tracking_number', $code)
+                ->orWhere('ghn_order_code', $code)
                 ->orWhere('id', $code)
                 ->first();
 
@@ -184,28 +181,54 @@ class SepayService
                 // Try alphanumeric normalization
                 $cleanedCode = preg_replace('/[^0-9A-Za-z]/', '', $code);
                 $order = Order::all()->first(function ($item) use ($cleanedCode) {
-                    $itemClean = preg_replace('/[^0-9A-Za-z]/', '', $item->tracking_number);
+                    $itemClean = preg_replace('/[^0-9A-Za-z]/', '', $item->tracking_number ?? '');
+                    $itemGhn = preg_replace('/[^0-9A-Za-z]/', '', $item->ghn_order_code ?? '');
                     return strcasecmp($itemClean, $cleanedCode) === 0 ||
+                           ($itemGhn && strcasecmp($itemGhn, $cleanedCode) === 0) ||
                            str_ends_with(strtoupper($cleanedCode), strtoupper($itemClean));
                 });
             }
         }
 
-        // Regex scan content for GF pattern if order not found by code
+        // Scan content against order tracking_number and ghn_order_code if order not found by code
         if (!$order && !empty($content)) {
-            if (preg_match('/GF[0-9A-Za-z_-]+/i', $content, $matches)) {
-                $matchedCode = $matches[0];
-                $cleanedMatch = preg_replace('/[^0-9A-Za-z]/', '', $matchedCode);
-                $order = Order::where('tracking_number', $matchedCode)
-                    ->orWhere('id', $matchedCode)
-                    ->first();
+            $cleanContent = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $content));
 
-                if (!$order) {
-                    $order = Order::all()->first(function ($item) use ($cleanedMatch) {
-                        $itemClean = preg_replace('/[^0-9A-Za-z]/', '', $item->tracking_number);
-                        return strcasecmp($itemClean, $cleanedMatch) === 0 ||
-                               str_contains(strtoupper($cleanedMatch), strtoupper($itemClean));
-                    });
+            // Check recent unpaid or latest orders first (within last 7 days)
+            $candidateOrders = Order::where('payment_status', 'unpaid')
+                ->orWhere('created_at', '>=', now()->subDays(7))
+                ->orderByDesc('created_at')
+                ->limit(50)
+                ->get();
+
+            foreach ($candidateOrders as $candidate) {
+                $candGhn = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $candidate->ghn_order_code ?? ''));
+                $candTrack = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $candidate->tracking_number ?? ''));
+
+                if (!empty($candGhn) && str_contains($cleanContent, $candGhn)) {
+                    $order = $candidate;
+                    break;
+                }
+                if (!empty($candTrack) && strlen($candTrack) >= 4 && str_contains($cleanContent, $candTrack)) {
+                    $order = $candidate;
+                    break;
+                }
+                $candNote = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $candidate->note ?? ''));
+                if (!empty($candNote) && strlen($candNote) >= 4 && str_contains($cleanContent, $candNote)) {
+                    $order = $candidate;
+                    break;
+                }
+            }
+
+            if (!$order) {
+                // Regex word search in content
+                if (preg_match_all('/[A-Za-z0-9]{4,15}/', $content, $matches)) {
+                    foreach ($matches[0] as $matchWord) {
+                        $order = Order::where('tracking_number', $matchWord)
+                            ->orWhere('ghn_order_code', $matchWord)
+                            ->first();
+                        if ($order) break;
+                    }
                 }
             }
         }
@@ -227,6 +250,26 @@ class SepayService
         $order->payment_method = 'BANK_TRANSFER';
         $order->status = 'CONFIRMED';
         $order->payment_status = 'paid';
+
+        // Đảm bảo đơn hàng được đẩy lên GHN nếu chưa có mã GHN
+        if (empty($order->ghn_order_code)) {
+            try {
+                $ghnOrderService = app(\App\Services\GHNOrderService::class);
+                $toDistrictId = (int)($order->to_district_id ?: config('services.ghn.from_district_id', 3440));
+                $toWardCode = (string)($order->to_ward_code ?: '13010');
+                $ghnRes = $ghnOrderService->create($order, $toWardCode, $toDistrictId, true);
+                if (($ghnRes['code'] ?? 0) === 200 && !empty($ghnRes['data']['order_code'])) {
+                    $order->ghn_order_code = $ghnRes['data']['order_code'];
+                    $order->tracking_number = $ghnRes['data']['order_code'];
+                    $order->to_district_id = $toDistrictId;
+                    $order->to_ward_code = $toWardCode;
+                    Log::info("SePay Webhook: Đã đẩy đơn hàng #{$order->id} lên GHN thành công với mã: {$order->ghn_order_code}");
+                }
+            } catch (\Throwable $e) {
+                Log::error("SePay Webhook: Lỗi khi đẩy đơn lên GHN: " . $e->getMessage());
+            }
+        }
+
         $order->save();
 
         // Update or create payment transaction

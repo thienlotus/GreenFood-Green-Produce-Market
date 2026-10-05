@@ -223,8 +223,8 @@ export default function CheckoutPage() {
       }))
     });
 
-    if (res.success && (res.trackingNumber || effectiveTrackingNumber)) {
-      const finalCode = res.trackingNumber || effectiveTrackingNumber || '';
+    if (res.success && (res.trackingNumber || res.ghnOrderCode || effectiveTrackingNumber)) {
+      const finalCode = res.trackingNumber || res.ghnOrderCode || effectiveTrackingNumber || '';
       setOrderId(finalCode);
       
       // Save to local storage for tracking page
@@ -731,7 +731,7 @@ export default function CheckoutPage() {
                 className="flex-1 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors border border-gray-200">
                 Hủy
               </button>
-              <button onClick={() => processOrder()}
+              <button onClick={() => processOrder(undefined, true)}
                 className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors">
                 Xác nhận đã thanh toán
               </button>

@@ -447,7 +447,7 @@ export async function createOrder(payload: {
   status?: string;
   note?: string;
   items: OrderItemPayload[];
-}): Promise<{ success: boolean; message: string; trackingNumber?: string; orderId?: string }> {
+}): Promise<{ success: boolean; message: string; trackingNumber?: string; ghnOrderCode?: string; orderId?: string }> {
   try {
     const url = `${API_BASE_URL}/orders`;
     const res = await fetch(url, {
@@ -488,6 +488,7 @@ export async function createOrder(payload: {
         success: true,
         message: data.message || 'Đặt hàng thành công!',
         trackingNumber: data.data.tracking_number,
+        ghnOrderCode: data.data.ghn_order_code,
         orderId: data.data.order_id
       };
     }

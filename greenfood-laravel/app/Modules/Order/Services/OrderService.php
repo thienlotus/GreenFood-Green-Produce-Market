@@ -33,7 +33,13 @@ class OrderService
                 $shippingFee = ($zone && $itemsTotal >= $zone->free_ship_minimum) ? 0 : ($zone ? (float)$zone->base_fee : 0);
             }
             $totalAmount = $itemsTotal + $shippingFee;
-            $trackingNumber = !empty($data['tracking_number']) ? $data['tracking_number'] : ('GF' . mt_rand(100000, 999999));
+            $rawTracking = !empty($data['tracking_number']) ? trim($data['tracking_number']) : null;
+            if (!empty($rawTracking)) {
+                $exists = $this->orderRepository->findByIdOrTracking($rawTracking);
+                $trackingNumber = $exists ? ('GF' . mt_rand(100000, 999999)) : $rawTracking;
+            } else {
+                $trackingNumber = 'GF' . mt_rand(100000, 999999);
+            }
 
             $order = $this->orderRepository->createOrder([
                 'id' => (string) Str::uuid(),
@@ -77,36 +83,41 @@ class OrderService
 
             DB::commit();
 
-            // Tự động đẩy đơn hàng sang Giao Hàng Nhanh (GHN) nếu có thông tin quận/huyện và phường/xã
+            // Tự động đẩy đơn hàng sang Giao Hàng Nhanh (GHN) cho TẤT CẢ các phương thức thanh toán
             $ghnOrderCode = null;
-            if (!empty($data['to_district_id']) && !empty($data['to_ward_code'])) {
-                try {
-                    $isPaid = ($order->payment_status === 'paid' || in_array($data['payment_method'], ['BANK_TRANSFER', 'MOMO', 'VNPAY']));
-                    $ghnRes = $this->ghnOrderService->create(
-                        $order,
-                        (string)$data['to_ward_code'],
-                        (int)$data['to_district_id'],
-                        $isPaid
-                    );
+            $toDistrictId = !empty($data['to_district_id']) ? (int)$data['to_district_id'] : (int)config('services.ghn.from_district_id', 3440);
+            $toWardCode = !empty($data['to_ward_code']) ? (string)$data['to_ward_code'] : '13010';
 
-                    if (($ghnRes['code'] ?? 0) === 200 && !empty($ghnRes['data']['order_code'])) {
-                        $ghnOrderCode = $ghnRes['data']['order_code'];
-                        $order->ghn_order_code = $ghnOrderCode;
+            try {
+                $isPaid = ($order->payment_status === 'paid' || in_array($data['payment_method'], ['BANK_TRANSFER', 'MOMO', 'VNPAY']));
+                $ghnRes = $this->ghnOrderService->create(
+                    $order,
+                    $toWardCode,
+                    $toDistrictId,
+                    $isPaid
+                );
 
-                        // Nếu khách không có mã tracking tùy chỉnh (như COD), lấy mã vận đơn GHN làm tracking_number
-                        if (empty($data['tracking_number'])) {
-                            $order->tracking_number = $ghnOrderCode;
-                            $trackingNumber = $ghnOrderCode;
-                        }
-                        $order->save();
+                if (($ghnRes['code'] ?? 0) === 200 && !empty($ghnRes['data']['order_code'])) {
+                    $ghnOrderCode = $ghnRes['data']['order_code'];
+                    $order->ghn_order_code = $ghnOrderCode;
+                    $order->to_district_id = $toDistrictId;
+                    $order->to_ward_code = $toWardCode;
 
-                        Log::info("GHN Push Success: Đơn #{$order->id} đã đẩy lên GHN với mã: {$ghnOrderCode}");
-                    } else {
-                        Log::warning("GHN Push Failed cho đơn #{$order->id}: " . json_encode($ghnRes, JSON_UNESCAPED_UNICODE));
+                    // Dù thanh toán bằng phương thức nào (COD, Chuyển khoản SePay, MoMo, VNPay), luôn đồng bộ mã GHN làm mã vận đơn chính
+                    $originalCode = $order->tracking_number;
+                    $order->tracking_number = $ghnOrderCode;
+                    $trackingNumber = $ghnOrderCode;
+                    if (!empty($originalCode) && $originalCode !== $ghnOrderCode) {
+                        $order->note = trim(($order->note ? $order->note . ' | ' : '') . "Mã ref: {$originalCode}");
                     }
-                } catch (\Throwable $e) {
-                    Log::error("GHN Push Exception cho đơn #{$order->id}: " . $e->getMessage());
+                    $order->save();
+
+                    Log::info("GHN Push Success: Đơn #{$order->id} ({$data['payment_method']}) đã đẩy lên GHN với mã: {$ghnOrderCode}");
+                } else {
+                    Log::warning("GHN Push Failed cho đơn #{$order->id} ({$data['payment_method']}): " . json_encode($ghnRes, JSON_UNESCAPED_UNICODE));
                 }
+            } catch (\Throwable $e) {
+                Log::error("GHN Push Exception cho đơn #{$order->id}: " . $e->getMessage());
             }
 
             return [
@@ -369,15 +380,8 @@ class OrderService
             ];
         }
 
-        $districtId = $toDistrictId ?: (int)$order->to_district_id;
-        $wardCode = $toWardCode ?: (string)$order->to_ward_code;
-
-        if (empty($districtId) || empty($wardCode)) {
-            return [
-                'success' => false,
-                'message' => 'Đơn hàng chưa có thông tin Quận/Huyện hoặc Phường/Xã GHN hợp lệ.'
-            ];
-        }
+        $districtId = $toDistrictId ?: ((int)$order->to_district_id ?: (int)config('services.ghn.from_district_id', 3440));
+        $wardCode = $toWardCode ?: ((string)$order->to_ward_code ?: '13010');
 
         $isPaid = ($order->payment_status === 'paid' || in_array($order->payment_method, ['BANK_TRANSFER', 'MOMO', 'VNPAY']));
         $ghnRes = $this->ghnOrderService->create(
