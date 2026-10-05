@@ -39,6 +39,7 @@ import { useAuthStore, AVAILABLE_VOUCHERS, SavedAddress, VoucherItem } from '@/s
 import { useCartStore } from '@/store/useCartStore';
 import VietnamAddressSelect from '@/components/VietnamAddressSelect';
 import { parseVietnamAddress } from '@/data/vietnamLocations';
+import { getApiBaseUrl } from '@/lib/api';
 
 type ProfileTab = 'overview' | 'orders' | 'addresses' | 'vouchers' | 'security';
 
@@ -160,7 +161,7 @@ export default function ProfilePage() {
       setIsLoadingOrders(true);
       try {
         const queryParam = user.phone ? `?customer_phone=${encodeURIComponent(user.phone)}` : '';
-        const res = await fetch(`http://127.0.0.1:8000/api/orders${queryParam}`);
+        const res = await fetch(`${getApiBaseUrl()}/orders${queryParam}`);
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
           setOrders(json.data);

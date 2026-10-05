@@ -24,6 +24,10 @@ class VerificationCodeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
+            from: new Address(
+                (string) config('mail.from.address', '0912lethieuhung@gmail.com'),
+                (string) config('mail.from.name', 'GreenFood - Chợ Nông Sản Sạch')
+            ),
             subject: "[GreenFood] Mã xác thực đăng ký tài khoản: {$this->otpCode}",
         );
     }

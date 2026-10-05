@@ -10,12 +10,29 @@ import {
 
 export type { ProductItem, CategoryInfo };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (
+      host === 'greenfood.asia' || 
+      host === 'www.greenfood.asia' || 
+      host.endsWith('.asia') || 
+      (!host.includes('localhost') && !host.includes('127.0.0.1'))
+    ) {
+      return '/api';
+    }
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Generic Fetch Wrapper
 async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {
   try {
-    const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    const baseUrl = getApiBaseUrl();
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${baseUrl}${cleanEndpoint}`;
     const res = await fetch(url, {
       ...options,
       headers: {
@@ -451,7 +468,7 @@ export async function createOrder(payload: {
   items: OrderItemPayload[];
 }): Promise<{ success: boolean; message: string; trackingNumber?: string; ghnOrderCode?: string; orderId?: string }> {
   try {
-    const url = `${API_BASE_URL}/orders`;
+    const url = `${getApiBaseUrl()}/orders`;
     const res = await fetch(url, {
       method: 'POST',
       headers: {

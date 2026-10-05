@@ -17,6 +17,7 @@ export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
   const { user, userVouchers, markVoucherAsUsed } = useAuthStore();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
@@ -67,6 +68,10 @@ export default function CheckoutPage() {
     toast.success(`Đã sao chép ${field}!`);
     setTimeout(() => setCopiedField(null), 2000);
   };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -396,6 +401,15 @@ export default function CheckoutPage() {
             Tiếp tục mua sắm
           </Link>
         </div>
+      </div>
+    );
+  }
+
+  if (!mounted) {
+    return (
+      <div className="container mx-auto px-4 py-24 text-center">
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent mb-4"></div>
+        <p className="text-gray-500 font-medium">Đang tải thông tin đơn hàng...</p>
       </div>
     );
   }

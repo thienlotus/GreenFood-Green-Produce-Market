@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getApiBaseUrl } from '@/lib/api';
 
 export type Role = 'guest' | 'customer' | 'vendor' | 'admin';
 export type Tier = 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND';
@@ -141,7 +142,7 @@ export const INITIAL_DEMO_ACCOUNTS: RegisteredAccount[] = [
   },
 ];
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+
 
 /**
  * Lấy danh sách sổ địa chỉ bảo mật thuộc riêng quyền sở hữu của User (Data Isolation)
@@ -308,7 +309,7 @@ export const useAuthStore = create<AuthState>()(
 
         // 1. Thử gọi xác thực trực tiếp từ CSDL Backend Laravel
         try {
-          const res = await fetch(`${API_BASE_URL}/login`, {
+          const res = await fetch(`${getApiBaseUrl()}/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -461,7 +462,7 @@ export const useAuthStore = create<AuthState>()(
 
         // 1. Gửi request trực tiếp đến Backend Laravel API để ghi vào Database SQLite/MySQL
         try {
-          const res = await fetch(`${API_BASE_URL}/register`, {
+          const res = await fetch(`${getApiBaseUrl()}/register`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -530,7 +531,13 @@ export const useAuthStore = create<AuthState>()(
             };
           }
         } catch (netErr) {
-          console.warn('Backend API register network fallback:', netErr);
+          console.warn('Backend API register network error:', netErr);
+          if (typeof window !== 'undefined' && (window.location.hostname === 'greenfood.asia' || window.location.hostname.endsWith('.asia') || (!window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')))) {
+            return {
+              success: false,
+              message: 'Không thể kết nối đến máy chủ GreenFood. Vui lòng kiểm tra kết nối mạng và thử lại sau ít phút!'
+            };
+          }
         }
 
         // 2. Fallback lưu local store nếu Backend tạm gián đoạn kết nối
@@ -582,7 +589,7 @@ export const useAuthStore = create<AuthState>()(
         const cleanOtp = otpCode.trim();
 
         try {
-          const res = await fetch(`${API_BASE_URL}/verify-email`, {
+          const res = await fetch(`${getApiBaseUrl()}/verify-email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -677,7 +684,7 @@ export const useAuthStore = create<AuthState>()(
       resendOtpApi: async (email: string) => {
         const cleanEmail = email.trim().toLowerCase();
         try {
-          const res = await fetch(`${API_BASE_URL}/resend-otp`, {
+          const res = await fetch(`${getApiBaseUrl()}/resend-otp`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -723,7 +730,7 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          const res = await fetch(`${API_BASE_URL}/users/${currentUser.id}/profile`, {
+          const res = await fetch(`${getApiBaseUrl()}/users/${currentUser.id}/profile`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -781,7 +788,7 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          const res = await fetch(`${API_BASE_URL}/users/${currentUser.id}/change-password`, {
+          const res = await fetch(`${getApiBaseUrl()}/users/${currentUser.id}/change-password`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -948,7 +955,7 @@ export const useAuthStore = create<AuthState>()(
        */
       syncUsersFromDb: async () => {
         try {
-          const res = await fetch(`${API_BASE_URL}/users`, {
+          const res = await fetch(`${getApiBaseUrl()}/users`, {
             headers: { 'Accept': 'application/json' },
           });
           const json = await res.json().catch(() => null);
@@ -1050,7 +1057,7 @@ export const useAuthStore = create<AuthState>()(
 
         // Gửi cập nhật trực tiếp vào cơ sở dữ liệu Backend Laravel
         try {
-          await fetch(`${API_BASE_URL}/users/${userId}/role`, {
+          await fetch(`${getApiBaseUrl()}/users/${userId}/role`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -1108,7 +1115,7 @@ export const useAuthStore = create<AuthState>()(
 
         // Gửi xóa trực tiếp khỏi cơ sở dữ liệu Backend Laravel
         try {
-          await fetch(`${API_BASE_URL}/users/${userId}`, {
+          await fetch(`${getApiBaseUrl()}/users/${userId}`, {
             method: 'DELETE',
             headers: { 'Accept': 'application/json' },
           });

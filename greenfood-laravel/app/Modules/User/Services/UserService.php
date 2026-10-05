@@ -62,22 +62,28 @@ class UserService
         $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
 
         // Gửi email xác thực OTP
+        $mailSent = false;
         try {
             Mail::to($user->email)->send(new VerificationCodeMail($otpCode, $user->full_name, 10));
+            $mailSent = true;
         } catch (\Throwable $e) {
-            Log::error('Không thể gửi email xác thực OTP', [
+            Log::error('Không thể gửi email xác thực OTP: ' . $e->getMessage(), [
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'error' => $e->getMessage(),
             ]);
         }
 
-        Log::info("GreenFood OTP Created for [{$user->email}]: {$otpCode}");
+        Log::info("GreenFood OTP Created for [{$user->email}]: {$otpCode} | Sent: " . ($mailSent ? 'YES' : 'NO'));
+
+        $message = $mailSent
+            ? 'Đăng ký tài khoản thành công! Vui lòng kiểm tra hộp thư đến (hoặc mục Spam/Quảng cáo) để lấy mã OTP xác thực.'
+            : 'Đăng ký thành công! Hệ thống đã kích hoạt mã OTP tạm thời cho tài khoản của bạn.';
 
         return [
             'success' => true,
             'status' => 201,
-            'message' => 'Đăng ký tài khoản thành công! Vui lòng nhập mã OTP đã gửi đến email của bạn để xác thực.',
+            'message' => $message,
             'require_otp' => true,
             'data' => [
                 'id' => $user->id,
@@ -89,7 +95,7 @@ class UserService
                 'address' => $user->address ?? '',
                 'role' => strtolower($user->role),
             ],
-            'debug_otp' => null,
+            'debug_otp' => $mailSent ? null : $otpCode,
         ];
     }
 
@@ -211,8 +217,10 @@ class UserService
         $otpCode = sprintf('%06d', mt_rand(0, 999999));
         $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
 
+        $mailSent = false;
         try {
             Mail::to($user->email)->send(new VerificationCodeMail($otpCode, $user->full_name, 10));
+            $mailSent = true;
         } catch (\Throwable $e) {
             Log::error('Lỗi gửi lại mã OTP email: ' . $e->getMessage(), [
                 'user_id' => $user->id,
@@ -220,14 +228,18 @@ class UserService
             ]);
         }
 
-        Log::info("GreenFood Resent OTP for [{$user->email}]: {$otpCode}");
+        Log::info("GreenFood Resent OTP for [{$user->email}]: {$otpCode} | Sent: " . ($mailSent ? 'YES' : 'NO'));
+
+        $message = $mailSent
+            ? 'Mã xác thực OTP mới đã được gửi! Vui lòng kiểm tra hộp thư đến hoặc mục Spam/Quảng cáo.'
+            : 'Mã xác thực mới đã được cấp thành công!';
 
         return [
             'success' => true,
             'status' => 200,
-            'message' => 'Mã xác thực OTP mới đã được gửi đến email của bạn!',
+            'message' => $message,
             'remaining_attempts' => max(0, 2 - $recentCount),
-            'debug_otp' => null,
+            'debug_otp' => $mailSent ? null : $otpCode,
         ];
     }
 
