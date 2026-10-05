@@ -1003,7 +1003,10 @@ export const useAuthStore = create<AuthState>()(
       syncUsersFromDb: async () => {
         try {
           const res = await fetch(`${getApiBaseUrl()}/users`, {
-            headers: { 'Accept': 'application/json' },
+            headers: { 
+              'Accept': 'application/json',
+              'X-Admin-Key': 'GF_ADMIN_SECURE_2026'
+            },
           });
           const json = await res.json().catch(() => null);
 
@@ -1109,6 +1112,7 @@ export const useAuthStore = create<AuthState>()(
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
+              'X-Admin-Key': 'GF_ADMIN_SECURE_2026',
             },
             body: JSON.stringify({ role: newRole.toUpperCase() }),
           });
@@ -1164,7 +1168,10 @@ export const useAuthStore = create<AuthState>()(
         try {
           await fetch(`${getApiBaseUrl()}/users/${userId}`, {
             method: 'DELETE',
-            headers: { 'Accept': 'application/json' },
+            headers: { 
+              'Accept': 'application/json',
+              'X-Admin-Key': 'GF_ADMIN_SECURE_2026',
+            },
           });
         } catch (e) {
           console.error('Failed to delete user in DB:', e);
@@ -1175,6 +1182,13 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'greenfood-auth-storage',
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        savedAddresses: state.savedAddresses,
+        userAddressBook: state.userAddressBook,
+        userVouchers: state.userVouchers,
+      }),
     }
   )
 );

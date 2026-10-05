@@ -42,5 +42,10 @@ greenfood-laravel/*.csv
 greenfood-laravel/*.py
 greenfood/generate_*.js
 greenfood/*.xlsx
-greenfood/scripts/generate-admin-testcases.js
+greenfood/scripts/
+driver_extracted/
+Katalon_BusinessUnit_Project/bin/
+Katalon_BusinessUnit_Project/Libs/
+Katalon_BusinessUnit_Project/Reports/
+Smart_Thermometer_MLX90614/.pio/
 

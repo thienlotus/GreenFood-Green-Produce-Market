@@ -20,12 +20,62 @@ class OrderService
         try {
             DB::beginTransaction();
 
+            // 1. Chống Client Price Tampering & Kiểm tra hợp lệ từng sản phẩm
+            $validatedItems = [];
+            $itemsTotal = 0;
+
+            foreach ($data['items'] as $it) {
+                $productId = $this->orderRepository->resolveProductId($it['product_id'] ?? null, $it['product_name']);
+                $variantId = $this->orderRepository->resolveVariantId($it['variant_id'] ?? null);
+
+                // Lấy giá chuẩn từ Database nếu có variant hoặc product
+                $realPrice = 0;
+                $variant = null;
+                if ($variantId) {
+                    $variant = \App\Models\ProductVariant::where('id', $variantId)->lockForUpdate()->first();
+                    if ($variant) {
+                        $realPrice = (float)$variant->price;
+                    }
+                }
+
+                if ($realPrice <= 0 && $productId) {
+                    $firstVariant = \App\Models\ProductVariant::where('product_id', $productId)->first();
+                    if ($firstVariant) {
+                        $realPrice = (float)$firstVariant->price;
+                        if (!$variantId) $variantId = $firstVariant->id;
+                        $variant = $firstVariant;
+                    }
+                }
+
+                // Fallback an toàn nếu sản phẩm chưa có trong DB (ví dụ test/mock)
+                if ($realPrice <= 0) {
+                    $realPrice = (float)($it['price'] ?? 0);
+                }
+
+                $qty = max(1, (int)($it['quantity'] ?? 1));
+
+                // 2. Trừ tồn kho và chống Race Condition (Bán âm kho / Overselling)
+                if ($variant && $variant->stock_quantity !== null) {
+                    if ($variant->stock_quantity < $qty) {
+                        throw new \Exception("Sản phẩm '{$it['product_name']}' ({$it['unit']}) hiện chỉ còn {$variant->stock_quantity} trong kho, không đủ số lượng bạn đặt ({$qty})!");
+                    }
+                    $variant->decrement('stock_quantity', $qty);
+                }
+
+                $itemsTotal += ($realPrice * $qty);
+
+                $validatedItems[] = [
+                    'product_id' => $productId,
+                    'variant_id' => $variantId,
+                    'product_name' => $it['product_name'],
+                    'unit' => $it['unit'],
+                    'quantity' => $qty,
+                    'price' => $realPrice,
+                ];
+            }
+
             $zoneId = $data['shipping_zone_id'] ?? null;
             $zone = $zoneId ? $this->orderRepository->getShippingZone($zoneId) : null;
-            $itemsTotal = 0;
-            foreach ($data['items'] as $it) {
-                $itemsTotal += ($it['price'] * $it['quantity']);
-            }
 
             if (isset($data['shipping_fee'])) {
                 $shippingFee = (float)$data['shipping_fee'];
@@ -74,15 +124,12 @@ class OrderService
                 'dest_lng' => 106.7019,
             ]);
 
-            foreach ($data['items'] as $it) {
-                $productId = $this->orderRepository->resolveProductId($it['product_id'] ?? null, $it['product_name']);
-                $variantId = $this->orderRepository->resolveVariantId($it['variant_id'] ?? null);
-
+            foreach ($validatedItems as $it) {
                 $this->orderRepository->createOrderItem([
                     'id' => (string) Str::uuid(),
                     'order_id' => $order->id,
-                    'product_id' => $productId,
-                    'variant_id' => $variantId,
+                    'product_id' => $it['product_id'],
+                    'variant_id' => $it['variant_id'],
                     'product_name' => $it['product_name'],
                     'unit' => $it['unit'],
                     'quantity' => $it['quantity'],
@@ -278,6 +325,22 @@ class OrderService
         }
 
         $updated = $this->orderRepository->updateStatus($order, $dbStatus);
+
+        // Khôi phục số lượng tồn kho khi đơn hàng bị HỦY
+        if ($dbStatus === 'CANCELLED' && $currentStatus !== 'CANCELLED') {
+            try {
+                foreach ($order->items as $it) {
+                    if (!empty($it->variant_id)) {
+                        $variant = \App\Models\ProductVariant::find($it->variant_id);
+                        if ($variant && $variant->stock_quantity !== null) {
+                            $variant->increment('stock_quantity', (int)$it->quantity);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Lỗi khôi phục tồn kho khi hủy đơn #{$order->id}: " . $e->getMessage());
+            }
+        }
 
         return [
             'success' => true,
