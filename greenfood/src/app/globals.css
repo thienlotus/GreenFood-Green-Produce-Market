@@ -46,41 +46,24 @@ body {
    HIỆU ỨNG CUỘN LĂN CHUỘT MƯỢT MÀ (SMOOTH SCROLL REVEAL & DIRECTION REACTIVITY)
    Lăn xuống thì các mục lướt nổi lên, lăn lên thì phản hồi mượt mà
    ========================================================================= */
-.reveal-on-scroll {
+/* Hiệu ứng trồi dần lên khi cuộn chuột (Scroll Reveal phong cách ipkeyvn.com) */
+.reveal-on-scroll,
+.product-reveal-item {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform: translateY(42px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
-.reveal-on-scroll.is-revealed {
+.reveal-on-scroll.is-revealed,
+.product-reveal-item.is-revealed {
   opacity: 1;
   transform: translateY(0);
 }
 
-.product-reveal-item {
-  opacity: 0;
-  transform: translateY(32px) scale(0.97);
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform, opacity;
-}
-
-.product-reveal-item.is-revealed {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
 .scroll-reactive-item {
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
-}
-
-.scroll-direction-down .scroll-reactive-item {
-  transform: translateY(-2.5px);
-}
-
-.scroll-direction-up .scroll-reactive-item {
-  transform: translateY(2px);
 }
 
 /* ==========================================================================

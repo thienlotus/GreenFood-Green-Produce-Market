@@ -242,6 +242,7 @@ export default function Home() {
   const flashSaleScrollerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [isFlashHovered, setIsFlashHovered] = useState(false);
 
   const checkScrollPosition = useCallback(() => {
     const el = flashSaleScrollerRef.current;
@@ -253,13 +254,33 @@ export default function Home() {
   const scrollFlashSale = (direction: 'left' | 'right') => {
     const el = flashSaleScrollerRef.current;
     if (!el) return;
-    const scrollStep = 320;
+    const scrollStep = 300;
     el.scrollBy({
       left: direction === 'left' ? -scrollStep : scrollStep,
       behavior: 'smooth',
     });
     setTimeout(checkScrollPosition, 320);
   };
+
+  // Tự động cuộn qua trái nhẹ nhàng cho dải Flash Sale (Auto-scroll Carousel)
+  useEffect(() => {
+    if (isFlashHovered) return;
+    const interval = setInterval(() => {
+      const el = flashSaleScrollerRef.current;
+      if (!el) return;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (el.scrollLeft >= maxScroll - 25) {
+        // Khi cuộn hết danh sách -> lướt êm về đầu
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        // Tự động cuộn sang trái (lướt sang sản phẩm kế tiếp ~ 280px)
+        el.scrollBy({ left: 280, behavior: 'smooth' });
+      }
+      checkScrollPosition();
+    }, 2800);
+
+    return () => clearInterval(interval);
+  }, [isFlashHovered, checkScrollPosition]);
 
   // Cuộn ngang êm ái khi dùng con lăn chuột trên dải Flash Sale
   useEffect(() => {
@@ -276,7 +297,7 @@ export default function Home() {
     return () => el.removeEventListener('wheel', handleWheel);
   }, [checkScrollPosition]);
 
-  // Hiệu ứng cuộn chuột: theo dõi hướng cuộn và reveal các mục sản phẩm / icon mượt mà
+  // Hiệu ứng cuộn chuột: khi lăn chuột xuống thì các mục sản phẩm / icon hiện dần lên như ipkeyvn.com
   useEffect(() => {
     let lastScrollY = window.scrollY;
     const handleScroll = () => {
@@ -296,15 +317,18 @@ export default function Home() {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               entry.target.classList.add('is-revealed');
+            } else if (entry.boundingClientRect.top > window.innerHeight * 0.75) {
+              // Khi người dùng cuộn ngược lên khiến phần tử trôi xuống dưới viewport, ẩn đi để khi cuộn xuống lại sẽ trồi lên tiếp mượt mà
+              entry.target.classList.remove('is-revealed');
             }
           });
         },
-        { threshold: 0.04, rootMargin: '0px 0px -10px 0px' }
+        { threshold: 0.08, rootMargin: '0px 0px -60px 0px' }
       );
 
       const elements = document.querySelectorAll('.reveal-on-scroll, .product-reveal-item');
       elements.forEach((el) => observer?.observe(el));
-    }, 80);
+    }, 100);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -681,8 +705,14 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Vùng sản phẩm cuộn ngang nhẹ nhàng & siêu mượt */}
-          <div className="relative group/flash-scroller">
+          {/* Vùng sản phẩm cuộn ngang nhẹ nhàng & siêu mượt (Tự động cuộn qua trái, dừng khi hover) */}
+          <div 
+            className="relative group/flash-scroller"
+            onMouseEnter={() => setIsFlashHovered(true)}
+            onMouseLeave={() => setIsFlashHovered(false)}
+            onTouchStart={() => setIsFlashHovered(true)}
+            onTouchEnd={() => setIsFlashHovered(false)}
+          >
             {/* Nút cuộn trái nổi hai bên mép container (không đè lên quả) */}
             <button
               type="button"
@@ -750,10 +780,11 @@ export default function Home() {
           accent="bg-pink-500" 
         />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {VOUCHERS.map((v) => (
+          {VOUCHERS.map((v, i) => (
             <div 
               key={v.code} 
-              className="relative flex bg-white/95 backdrop-blur-md rounded-2xl border border-emerald-900/10 overflow-hidden shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 scroll-reactive-item"
+              className="relative flex bg-white/95 backdrop-blur-md rounded-2xl border border-emerald-900/10 overflow-hidden shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 product-reveal-item"
+              style={{ transitionDelay: `${i * 120}ms` }}
             >
               <div className={`w-24 shrink-0 bg-gradient-to-br ${v.color} text-white flex flex-col items-center justify-center p-3 shadow-inner`}>
                 <Tag size={24} className="text-white/90" />
@@ -907,7 +938,7 @@ export default function Home() {
       )}
 
       {/* ========================= VÌ SAO CHỌN GREENFOOD ========================= */}
-      <section className="container mx-auto px-4 lg:px-8 mt-14 relative z-10">
+      <section className="container mx-auto px-4 lg:px-8 mt-14 relative z-10 reveal-on-scroll">
         <div 
           className="relative overflow-hidden rounded-3xl text-white p-6 md:p-12 shadow-xl border border-emerald-500/30"
           style={{ backgroundColor: '#064e3b' }}
@@ -952,8 +983,12 @@ export default function Home() {
                 { icon: Package, value: '120K+', label: 'Đơn hàng giao thành công' },
                 { icon: Award, value: '63', label: 'Tỉnh thành phủ sóng liên kết' },
                 { icon: ShieldCheck, value: '4.9/5', label: 'Khách hàng đánh giá hài lòng' },
-              ].map(({ icon: Icon, value, label }) => (
-                <div key={label} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 md:p-6 hover:bg-white/15 transition-all shadow-sm">
+              ].map(({ icon: Icon, value, label }, idx) => (
+                <div 
+                  key={label} 
+                  className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 md:p-6 hover:bg-white/15 transition-all shadow-sm product-reveal-item"
+                  style={{ transitionDelay: `${idx * 80}ms` }}
+                >
                   <Icon size={24} className="text-amber-300" />
                   <p className="text-2xl md:text-3xl font-black mt-2 text-white">{value}</p>
                   <p className="text-xs md:text-sm text-emerald-100/80 mt-0.5">{label}</p>
@@ -965,7 +1000,7 @@ export default function Home() {
       </section>
 
       {/* ======================== CHỨNG NHẬN ĐỒNG HÀNH ======================== */}
-      <section className="container mx-auto px-4 lg:px-8 mt-12 relative z-10">
+      <section className="container mx-auto px-4 lg:px-8 mt-12 relative z-10 reveal-on-scroll">
         <p className="text-center text-xs font-bold uppercase tracking-[0.25em] text-emerald-800/80 mb-5">
           Tiêu chuẩn chất lượng kiểm định nông sản
         </p>

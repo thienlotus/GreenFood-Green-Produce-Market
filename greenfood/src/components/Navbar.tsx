@@ -79,25 +79,27 @@ export default function Navbar() {
 
       {/* 2. MAIN HEADER - Modern Glassmorphic Elevation */}
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex items-center justify-between py-3 sm:py-3.5 lg:py-4 min-h-[5rem] lg:min-h-[5.5rem] gap-4 lg:gap-8">
+        <div className="flex items-center justify-between py-3 sm:py-3.5 lg:py-4 min-h-[5rem] lg:min-h-[5.5rem] gap-2.5 sm:gap-3 lg:gap-5">
           {/* Brand Logo Đồng Bộ Chuẩn */}
-          <BrandLogo variant="light" size="md" href="/" />
+          <div className="shrink-0">
+            <BrandLogo variant="light" size="md" href="/" />
+          </div>
 
-          {/* Search Bar - Modern Floating Pill Design */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl relative">
+          {/* Search Bar - Mở rộng tối đa chiều ngang, không bao giờ bị cắt chữ */}
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 min-w-[280px] max-w-4xl mx-1 sm:mx-2 lg:mx-3 relative">
             <div className="w-full relative flex items-center bg-slate-100/80 hover:bg-slate-100 border border-slate-200/90 focus-within:bg-white focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10 rounded-full transition-all duration-300 shadow-inner pl-4 pr-1.5 py-1.5">
               <Search size={18} className="text-emerald-600/70 mr-2.5 shrink-0" />
               <input 
                 type="text" 
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder="Tìm nông sản tươi ngon (vd: sầu riêng Ri6, bưởi da xanh, dưa lưới...)" 
-                className="w-full bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:outline-none"
+                placeholder="Tìm nông sản tươi ngon, bưởi da xanh, sầu riêng, rau củ..." 
+                className="w-full bg-transparent text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none min-w-0"
               />
               <button 
                 type="submit" 
                 title="Tìm kiếm"
-                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-4 py-2 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer shrink-0 ml-2"
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer shrink-0 ml-2 whitespace-nowrap"
               >
                 Tìm kiếm
               </button>
@@ -105,23 +107,25 @@ export default function Navbar() {
           </form>
 
           {/* Actions */}
-          <div className="flex items-center gap-3.5 lg:gap-4 shrink-0">
-            {/* Notification */}
+          <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 shrink-0">
+            {/* Notification Icon - Thu gọn thành icon tròn nhỏ tinh tế (không còn chữ Thông báo) */}
             <button 
               onClick={() => toast('Tính năng thông báo đang phát triển', { icon: '🔔' })}
-              className="hidden lg:flex items-center gap-1.5 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/80 px-3 py-2 rounded-full font-medium text-xs transition-all cursor-pointer border border-transparent hover:border-emerald-200/60"
+              className="relative p-2.5 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-full transition-all cursor-pointer border border-slate-200/80 hover:border-emerald-300 shrink-0 group"
+              aria-label="Thông báo"
+              title="Thông báo"
             >
-              <Bell size={18} className="text-emerald-600" />
-              <span>Thông báo</span>
+              <Bell size={19} className="text-emerald-700 group-hover:scale-110 transition-transform" />
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </button>
 
             {/* Auth Button / Profile Badge */}
             {mounted && isAuthenticated && user ? (
-              <div className="hidden md:flex items-center gap-2.5 border-l pl-3.5 border-slate-200">
+              <div className="hidden md:flex items-center gap-2 border-l pl-2.5 sm:pl-3 border-slate-200">
                 {/* Clickable Profile Badge */}
                 <Link
                   href="/profile"
-                  className="flex items-center gap-2.5 bg-slate-100/90 hover:bg-emerald-50/90 text-slate-900 px-3.5 py-1.5 rounded-full border border-slate-200/90 hover:border-emerald-300 transition-all shadow-xs group"
+                  className="flex items-center gap-2 bg-slate-100/90 hover:bg-emerald-50/90 text-slate-900 px-2.5 sm:px-3 py-1.5 rounded-full border border-slate-200/90 hover:border-emerald-300 transition-all shadow-xs group"
                   title="Xem và chỉnh sửa hồ sơ tài khoản"
                 >
                   <img
@@ -129,13 +133,13 @@ export default function Navbar() {
                     alt={user.name}
                     className="w-7 h-7 rounded-full border border-emerald-500 object-cover bg-white shrink-0 shadow-xs"
                   />
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1 max-w-[120px]">
+                  <div className="hidden lg:flex flex-col text-left">
+                    <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1 max-w-[110px]">
                       {user.name}
                     </span>
                     <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
                       <User size={10} />
-                      <span>Hồ sơ cá nhân</span>
+                      <span>Hồ sơ</span>
                     </span>
                   </div>
                 </Link>
@@ -143,10 +147,10 @@ export default function Navbar() {
                 {user.role === 'admin' && (
                   <Link 
                     href="/admin" 
-                    className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm hover:shadow-purple-500/20 hover:scale-105 active:scale-95 flex items-center gap-1.5"
+                    className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm hover:shadow-purple-500/20 hover:scale-105 active:scale-95 flex items-center gap-1.5 whitespace-nowrap"
                   >
                     <ShieldCheck size={14} />
-                    <span>Quản Trị</span>
+                    <span className="hidden sm:inline">Quản Trị</span>
                   </Link>
                 )}
 
@@ -155,7 +159,7 @@ export default function Navbar() {
                     logout();
                     toast.success('Đã đăng xuất!');
                   }}
-                  className="text-slate-400 hover:text-rose-600 p-2 rounded-full hover:bg-rose-50 transition-colors cursor-pointer"
+                  className="text-slate-400 hover:text-rose-600 p-1.5 rounded-full hover:bg-rose-50 transition-colors cursor-pointer"
                   title="Đăng xuất"
                 >
                   <LogOut size={16} />
@@ -164,22 +168,22 @@ export default function Navbar() {
             ) : (
               <Link 
                 href="/login"
-                className="hidden md:flex items-center gap-1.5 text-slate-700 hover:text-emerald-700 font-bold text-xs bg-slate-100/80 hover:bg-emerald-50 px-4 py-2 rounded-full border border-slate-200 transition-all"
+                className="hidden md:flex items-center gap-1.5 text-slate-700 hover:text-emerald-700 font-bold text-xs bg-slate-100/80 hover:bg-emerald-50 px-4 py-2 rounded-full border border-slate-200 transition-all whitespace-nowrap"
               >
                 <User size={16} />
                 <span>Đăng nhập</span>
               </Link>
             )}
 
-            {/* Warehouse Pickup */}
+            {/* Warehouse Pickup (Chỉ hiện trên màn hình siêu rộng 2XL để ưu tiên không gian tìm kiếm) */}
             <div 
               onClick={() => toast.success('Đã cập nhật kho: TP. Hồ Chí Minh')}
-              className="hidden xl:flex items-center gap-2 bg-emerald-50/90 text-emerald-950 px-3.5 py-1.5 rounded-full border border-emerald-200/80 cursor-pointer hover:bg-emerald-100/90 transition-all shadow-xs"
+              className="hidden 2xl:flex items-center gap-2 bg-emerald-50/90 text-emerald-950 px-3 py-1.5 rounded-full border border-emerald-200/80 cursor-pointer hover:bg-emerald-100/90 transition-all shadow-xs shrink-0"
             >
-              <MapPin size={16} className="text-emerald-600 shrink-0" />
+              <MapPin size={15} className="text-emerald-600 shrink-0" />
               <div className="flex flex-col text-[11px] leading-tight">
                 <span className="text-slate-500">Kho hàng:</span>
-                <b className="text-emerald-800 font-bold">TP. Hồ Chí Minh</b>
+                <b className="text-emerald-800 font-bold">TP. HCM</b>
               </div>
             </div>
 
