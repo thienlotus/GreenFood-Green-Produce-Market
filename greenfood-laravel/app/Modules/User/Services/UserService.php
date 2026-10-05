@@ -214,10 +214,7 @@ class UserService
             ];
         }
 
-        // Vô hiệu hóa mã pending cũ
-        $this->emailVerificationRepository->invalidatePreviousPending($email);
-
-        // Sinh mã mới
+        // Sinh mã mới (giữ các mã còn hạn để người dùng nhập mã nào trong email cũng hợp lệ)
         $otpCode = sprintf('%06d', mt_rand(0, 999999));
         $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
 
@@ -277,7 +274,6 @@ class UserService
             if ($pending && !$pending->isExpired()) {
                 $otpCode = $pending->otp_code;
             } else {
-                $this->emailVerificationRepository->invalidatePreviousPending($user->email);
                 $otpCode = sprintf('%06d', mt_rand(0, 999999));
                 $this->emailVerificationRepository->createVerification($user->id, $user->email, $otpCode, 10);
             }
