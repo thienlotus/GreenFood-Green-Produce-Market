@@ -4,6 +4,7 @@ namespace App\Modules\Product\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Product\Services\ProductService;
+use App\Modules\Product\Requests\StoreProductRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -50,35 +51,9 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'category_id' => 'required|integer|exists:categories,id',
-            'farmer_id' => 'nullable|string|exists:farmers,id',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'nullable|integer|min:0',
-            'unit' => 'nullable|string|max:50',
-            'image_url' => 'nullable|string',
-        ], [
-            'name.required' => 'Tên sản phẩm không được để trống!',
-            'price.required' => 'Giá sản phẩm không được để trống!',
-            'price.min' => 'Giá sản phẩm không được âm!',
-            'category_id.required' => 'Danh mục không được để trống!',
-            'category_id.exists' => 'Danh mục không tồn tại!',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'status' => 400,
-                'message' => $validator->errors()->first(),
-                'errors' => $validator->errors()
-            ], 400);
-        }
-
-        $result = $this->productService->createProduct($request->all());
+        $result = $this->productService->createProduct($request->validated());
 
         return response()->json([
             'success' => true,

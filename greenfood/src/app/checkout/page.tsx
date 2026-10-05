@@ -5,7 +5,7 @@ import { useCartStore } from '@/store/useCartStore';
 import { ChevronLeft, CheckCircle, ChevronRight, MapPin, CreditCard, Smartphone, Building2, Banknote, ShieldCheck, Truck, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getGhnProvinces, getGhnDistricts, getGhnWards, calculateGhnShippingFee, createOrder } from '@/lib/api';
+import { getGhnProvinces, getGhnDistricts, getGhnWards, calculateGhnShippingFee, createOrder, createMomoPayment } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 
 // Fallback zones logic removed since we use GHN directly
@@ -37,6 +37,8 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [momoData, setMomoData] = useState<{ payUrl?: string; qrCodeUrl?: string } | null>(null);
+  const [isGeneratingMomo, setIsGeneratingMomo] = useState(false);
 
   useEffect(() => {
     async function loadProvinces() {
@@ -110,7 +112,23 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    if (paymentMethod === 'BANK_TRANSFER' || paymentMethod === 'MOMO' || paymentMethod === 'VNPAY') {
+    if (paymentMethod === 'MOMO') {
+      setShowPaymentPopup(true);
+      if (!momoData) {
+        setIsGeneratingMomo(true);
+        const tempOrderId = 'GF' + Math.floor(100000 + Math.random() * 900000);
+        createMomoPayment(tempOrderId, finalTotal, `Thanh toán đơn hàng GreenFood #${tempOrderId}`)
+          .then((res) => {
+            if (res && res.success) {
+              setMomoData(res);
+            }
+          })
+          .finally(() => setIsGeneratingMomo(false));
+      }
+      return;
+    }
+
+    if (paymentMethod === 'BANK_TRANSFER' || paymentMethod === 'VNPAY') {
       setShowPaymentPopup(true);
       return;
     }
@@ -476,12 +494,47 @@ export default function CheckoutPage() {
             {paymentMethod === 'MOMO' && (
               <div className="space-y-4 text-center">
                 <div className="bg-pink-50 border border-pink-200 rounded-xl p-4">
-                  <p className="text-pink-700 text-sm">Quét mã QR bằng ứng dụng MoMo để thanh toán</p>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <span className="w-2.5 h-2.5 rounded-full bg-pink-500 animate-pulse"></span>
+                    <p className="text-pink-800 font-semibold text-sm">Cổng thanh toán Ví MoMo</p>
+                  </div>
+                  <p className="text-xs text-pink-600">Quét mã QR bằng App MoMo hoặc click mở link bên dưới</p>
                   <p className="text-2xl font-bold text-pink-600 mt-2">{finalTotal.toLocaleString('vi-VN')}đ</p>
                 </div>
-                <div className="bg-pink-100 rounded-xl h-40 flex items-center justify-center text-pink-400 text-sm">
-                  [ QR MoMo ]
+
+                <div className="bg-white border-2 border-pink-100 rounded-2xl p-4 flex flex-col items-center justify-center min-h-[180px] shadow-sm">
+                  {isGeneratingMomo ? (
+                    <div className="flex flex-col items-center gap-2 text-pink-600">
+                      <div className="w-8 h-8 border-3 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-xs font-medium">Đang tạo mã thanh toán MoMo...</span>
+                    </div>
+                  ) : momoData?.qrCodeUrl ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <img
+                        src={momoData.qrCodeUrl}
+                        alt="MoMo QR Code"
+                        className="w-44 h-44 object-contain rounded-lg border border-pink-100 shadow-inner"
+                      />
+                      <span className="text-xs text-gray-500">Mã QR MoMo cho đơn hàng này</span>
+                    </div>
+                  ) : (
+                    <div className="w-44 h-44 bg-pink-50 rounded-xl flex flex-col items-center justify-center p-3 text-pink-600">
+                      <Smartphone size={36} className="mb-2" />
+                      <span className="text-xs font-medium text-center">Sẵn sàng mở Cổng MoMo</span>
+                    </div>
+                  )}
                 </div>
+
+                {momoData?.payUrl && (
+                  <a
+                    href={momoData.payUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md transition-all text-center"
+                  >
+                    🔗 Mở Cổng MoMo / Thanh toán ngay
+                  </a>
+                )}
               </div>
             )}
 

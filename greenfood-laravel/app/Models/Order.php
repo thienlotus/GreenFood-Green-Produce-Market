@@ -22,6 +22,7 @@ class Order extends Model
         'total_amount',
         'status',
         'payment_method',
+        'payment_status',
         'note',
         'shipper_name',
         'shipper_phone',
@@ -53,5 +54,10 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function paymentTransactions()
+    {
+        return $this->hasMany(PaymentTransaction::class);
     }
 }

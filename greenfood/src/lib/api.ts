@@ -602,3 +602,87 @@ export async function calculateGhnShippingFee(districtId: number, wardCode: stri
   }
 }
 
+// 7. CART & PROMOTION API (Phụ trách: Lương Văn Quý)
+export async function calculateCartApi(items: any[], shippingZoneId?: string, voucherCode?: string): Promise<any | null> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: any }>('/cart/calculate', {
+      method: 'POST',
+      body: JSON.stringify({
+        items,
+        shipping_zone_id: shippingZoneId || null,
+        voucher_code: voucherCode || null
+      })
+    });
+    return res?.success ? res.data : null;
+  } catch (error) {
+    console.error('[API] calculateCartApi error:', error);
+    return null;
+  }
+}
+
+export async function checkVoucherApi(code: string, orderTotal: number): Promise<{ valid: boolean; discount?: number; message?: string }> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: any }>('/promotions/check-voucher', {
+      method: 'POST',
+      body: JSON.stringify({
+        code,
+        order_total: orderTotal
+      })
+    });
+    return res?.data || { valid: false, message: 'Không thể kiểm tra mã khuyến mãi' };
+  } catch (error) {
+    console.error('[API] checkVoucherApi error:', error);
+    return { valid: false, message: 'Lỗi kết nối máy chủ' };
+  }
+}
+
+// 8. MOMO PAYMENT GATEWAY API (Sprint 2 - Lương Văn Quý)
+export interface MomoPaymentResponse {
+  success: boolean;
+  payUrl?: string;
+  qrCodeUrl?: string;
+  deeplink?: string;
+  requestId?: string;
+  orderId?: string;
+  amount?: number;
+  message?: string;
+}
+
+export async function createMomoPayment(
+  orderId: string,
+  amount: number,
+  orderInfo?: string
+): Promise<MomoPaymentResponse> {
+  try {
+    const cleanId = orderId.replace('#', '');
+    const res = await fetchApi<MomoPaymentResponse>('/payment/momo/create', {
+      method: 'POST',
+      body: JSON.stringify({
+        order_id: cleanId,
+        amount: Math.round(amount),
+        order_info: orderInfo || `Thanh toán đơn hàng GreenFood #${cleanId}`
+      })
+    });
+
+    return res || { success: false, message: 'Không thể kết nối đến cổng thanh toán MoMo' };
+  } catch (error) {
+    console.error('[API] createMomoPayment error:', error);
+    return { success: false, message: 'Lỗi khi gọi API MoMo' };
+  }
+}
+
+export async function checkMomoPaymentStatus(orderId: string): Promise<any> {
+  try {
+    const cleanId = orderId.replace('#', '');
+    const res = await fetchApi<{ success: boolean; data: any }>('/payment/momo/check-status', {
+      method: 'POST',
+      body: JSON.stringify({ order_id: cleanId })
+    });
+    return res?.data || null;
+  } catch (error) {
+    console.error('[API] checkMomoPaymentStatus error:', error);
+    return null;
+  }
+}
+
+

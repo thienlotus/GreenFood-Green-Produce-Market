@@ -44,20 +44,26 @@ class ProductRepository
         if ($sort === 'popular') {
             $query->orderBy('sold_count', 'desc');
         } elseif ($sort === 'price-asc') {
-            $query->join('product_variants', 'products.id', '=', 'product_variants.product_id')
-                  ->select('products.*')
-                  ->groupBy('products.id')
-                  ->orderByRaw('MIN(product_variants.price) asc');
+            $query->orderBy(
+                ProductVariant::select('price')
+                    ->whereColumn('product_variants.product_id', 'products.id')
+                    ->orderBy('price', 'asc')
+                    ->limit(1),
+                'asc'
+            );
         } elseif ($sort === 'price-desc') {
-            $query->join('product_variants', 'products.id', '=', 'product_variants.product_id')
-                  ->select('products.*')
-                  ->groupBy('products.id')
-                  ->orderByRaw('MAX(product_variants.price) desc');
+            $query->orderBy(
+                ProductVariant::select('price')
+                    ->whereColumn('product_variants.product_id', 'products.id')
+                    ->orderBy('price', 'desc')
+                    ->limit(1),
+                'desc'
+            );
         } else {
             $query->latest();
         }
 
-        return $query->distinct()->take($limit)->get();
+        return $query->take($limit)->get();
     }
 
     public function findByIdOrSlug(string|int $id)

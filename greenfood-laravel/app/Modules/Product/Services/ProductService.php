@@ -4,6 +4,7 @@ namespace App\Modules\Product\Services;
 
 use App\Modules\Product\Repositories\ProductRepository;
 use App\Models\Farmer;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ProductService
@@ -24,7 +25,7 @@ class ProductService
 
     public function createProduct(array $data): array
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data) {
             $slug = Str::slug($data['name']) . '-' . time();
             $farmerId = $data['farmer_id'] ?? null;
             if (!$farmerId) {
@@ -42,7 +43,7 @@ class ProductService
                 'badge' => $data['badge'] ?? 'Mới',
                 'sold_count' => 0,
                 'rating' => 5.0,
-                'is_seasonal' => false
+                'is_seasonal' => $data['is_seasonal'] ?? false
             ]);
 
             $variant = $this->productRepository->createVariant([

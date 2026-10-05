@@ -9,6 +9,7 @@ use App\Modules\Product\Controllers\CategoryController;
 use App\Modules\Cart\Controllers\CartController;
 use App\Modules\Order\Controllers\OrderController;
 use App\Modules\Payment\Controllers\PaymentController;
+use App\Modules\Payment\Controllers\MomoController;
 use App\Modules\Promotion\Controllers\PromotionController;
 use App\Modules\Promotion\Controllers\ShippingZoneController;
 use App\Modules\Farmer\Controllers\FarmerController;
@@ -63,9 +64,13 @@ Route::prefix('v1')->group(function () {
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
     Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 
-    // 5. Payment Module
+    // 5. Payment Module & MoMo Gateway
     Route::get('/payment/methods', [PaymentController::class, 'methods']);
     Route::post('/payment/process', [PaymentController::class, 'process']);
+    Route::post('/payment/momo/create', [MomoController::class, 'create']);
+    Route::post('/payment/momo/callback', [MomoController::class, 'callback']);
+    Route::get('/payment/momo/return', [MomoController::class, 'return']);
+    Route::post('/payment/momo/check-status', [MomoController::class, 'checkStatus']);
 
     // 6. Promotion & Shipping Zone Module
     Route::post('/promotions/check-voucher', [PromotionController::class, 'checkVoucher']);
@@ -124,6 +129,10 @@ Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 
 Route::get('/payment/methods', [PaymentController::class, 'methods']);
 Route::post('/payment/process', [PaymentController::class, 'process']);
+Route::post('/payment/momo/create', [MomoController::class, 'create']);
+Route::post('/payment/momo/callback', [MomoController::class, 'callback']);
+Route::get('/payment/momo/return', [MomoController::class, 'return']);
+Route::post('/payment/momo/check-status', [MomoController::class, 'checkStatus']);
 
 Route::post('/promotions/check-voucher', [PromotionController::class, 'checkVoucher']);
 Route::get('/shipping-zones', [ShippingZoneController::class, 'index']);
