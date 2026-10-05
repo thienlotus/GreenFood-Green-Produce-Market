@@ -6,8 +6,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #fbfdfc;
-  --foreground: #1c2e24;
+  --background: #f8faf8;
+  --foreground: #111827;
   --emerald-rich: #064e3b;
   --amber-warm: #f59e0b;
 }
@@ -26,77 +26,57 @@ body {
 }
 
 /* ==========================================================================
-   ORGANIC WATERMARKS & DEPTH TEXTURES (Ảnh chìm & Hiệu ứng chiều sâu)
+   ORGANIC WATERMARKS & DEPTH TEXTURES (Họa tiết chìm tinh tế & hài hòa)
    ========================================================================== */
 
-/* Nền chìm hoa văn lá tự nhiên thanh lịch cho Light Mode */
+/* Nền chìm quang hợp tự nhiên, dịu mắt, làm nổi bật sản phẩm */
 .bg-watermark-pattern {
+  background-color: #f8faf8;
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.035) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.03) 0%, transparent 40%),
-    url('/watermark-leaf.svg');
-  background-repeat: repeat;
-  background-size: auto, auto, 380px 380px;
+    radial-gradient(circle at 5% 10%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 95% 45%, rgba(245, 158, 11, 0.025) 0%, transparent 45%),
+    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
 }
 
-/* Nền chìm hoa văn thực vật sang trọng cho Dark Mode / Footer */
-.bg-dark-watermark {
-  background-image: 
-    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 20% 90%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
-    url('/watermark-botanical-dark.svg');
-  background-repeat: repeat;
-  background-size: auto, auto, 520px 520px;
-}
-
-/* Hiệu ứng hào quang ánh sáng mặt trời tự nhiên */
+/* Hiệu ứng hào quang ánh sáng quang hợp */
 .ambient-glow-emerald {
-  background: radial-gradient(ellipse at 50% -20%, rgba(16, 185, 129, 0.15), transparent 70%);
+  background: radial-gradient(ellipse at 50% -20%, rgba(16, 185, 129, 0.08), transparent 70%);
 }
 
 .ambient-glow-warm {
-  background: radial-gradient(ellipse at 80% 0%, rgba(245, 158, 11, 0.12), transparent 60%);
+  background: radial-gradient(ellipse at 80% 0%, rgba(245, 158, 11, 0.06), transparent 60%);
 }
 
 /* ==========================================================================
-   GLASSMORPHISM & ELEVATED CARDS (Hiệu ứng kính mờ & Đổ bóng tầng)
+   GLASSMORPHISM & ELEVATED CARDS (Hiệu ứng kính mờ & Đổ bóng tầng thanh lịch)
    ========================================================================== */
 
 .glass-frosted {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-}
-
-.glass-frosted-dark {
-  background: rgba(6, 78, 59, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(52, 211, 153, 0.2);
+  border: 1px solid rgba(229, 231, 235, 0.8);
 }
 
 .glass-pill {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(16, 185, 129, 0.15);
-  box-shadow: 0 4px 12px rgba(6, 78, 59, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 2px 8px rgba(6, 78, 59, 0.05);
 }
 
-/* Đổ bóng đa tầng cao cấp chống cảm giác "AI phẳng lì" */
+/* Đổ bóng đa tầng nhẹ nhàng, tôn dáng thẻ sản phẩm không gây rối mắt */
 .shadow-elevated-card {
   box-shadow: 
-    0 1px 3px rgba(6, 78, 59, 0.04),
-    0 6px 16px -2px rgba(6, 78, 59, 0.06),
-    0 12px 24px -4px rgba(6, 78, 59, 0.03);
+    0 1px 3px rgba(0, 0, 0, 0.03),
+    0 4px 12px -2px rgba(6, 78, 59, 0.05);
 }
 
 .shadow-elevated-hover {
   box-shadow: 
-    0 4px 6px -1px rgba(6, 78, 59, 0.05),
-    0 12px 28px -4px rgba(6, 78, 59, 0.12),
-    0 24px 36px -6px rgba(6, 78, 59, 0.08);
+    0 4px 6px -1px rgba(0, 0, 0, 0.04),
+    0 12px 24px -4px rgba(6, 78, 59, 0.09);
 }
 
 /* Keyframe hiệu ứng nhịp thở nhẹ nhàng */
@@ -105,26 +85,10 @@ body {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
   }
 }
 
 .animate-soft-float {
   animation: soft-float 4s ease-in-out infinite;
-}
-
-/* Shimmer ánh sáng lướt qua badge */
-@keyframes shimmer-sweep {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
-  background-size: 200% 100%;
-  animation: shimmer-sweep 3s infinite;
 }

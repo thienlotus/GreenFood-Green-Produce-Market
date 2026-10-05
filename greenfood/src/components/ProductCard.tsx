@@ -80,10 +80,10 @@ export default function ProductCard({
     <Link
       href={`/product/${slug}`}
       id={`product-card-${id}`}
-      className="group flex flex-col h-full bg-white/95 rounded-2xl border border-emerald-900/10 overflow-hidden relative transition-all duration-300 hover:-translate-y-1.5 shadow-elevated-card hover:shadow-elevated-hover hover:border-emerald-300"
+      className="group flex flex-col h-full bg-white rounded-2xl border border-gray-100/90 overflow-hidden relative transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-900/5 hover:border-emerald-200"
     >
-      {/* Ảnh sản phẩm với lớp đổ bóng viền tinh tế */}
-      <div className="relative aspect-square overflow-hidden bg-gradient-to-b from-gray-50 to-emerald-50/20">
+      {/* Ảnh sản phẩm */}
+      <div className="relative aspect-square overflow-hidden bg-gray-50/80">
         <img
           src={image || FALLBACK_IMAGE}
           alt={name}

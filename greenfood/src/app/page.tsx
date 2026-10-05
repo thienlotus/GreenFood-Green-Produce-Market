@@ -278,16 +278,16 @@ export default function Home() {
     <div className="min-h-screen bg-watermark-pattern pb-20 relative overflow-hidden">
       <h1 className="sr-only">GreenFood - Chợ Nông Sản Sạch Việt Nam</h1>
 
-      {/* Vùng hào quang ánh sáng quang hợp tự nhiên (Ambient Depth) */}
-      <div className="absolute top-0 right-10 w-[500px] h-[500px] bg-emerald-400/8 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-96 left-0 w-[450px] h-[450px] bg-amber-400/6 rounded-full blur-3xl pointer-events-none" />
+      {/* Vùng hào quang ánh sáng tự nhiên dịu mắt */}
+      <div className="absolute top-0 right-10 w-[500px] h-[500px] bg-emerald-500/[0.02] rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-96 left-0 w-[450px] h-[450px] bg-amber-500/[0.015] rounded-full blur-3xl pointer-events-none" />
 
       {/* ============================ HERO ============================ */}
       <section className="container mx-auto px-4 lg:px-8 pt-5 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           
           {/* Sidebar danh mục sản phẩm (Desktop) */}
-          <aside className="hidden xl:flex xl:col-span-3 flex-col bg-white/95 backdrop-blur-md rounded-2xl border border-emerald-900/10 shadow-elevated-card overflow-hidden h-[410px]">
+          <aside className="hidden xl:flex xl:col-span-3 flex-col bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-[410px]">
             <div className="px-5 py-3.5 bg-gradient-to-r from-emerald-800 to-emerald-700 text-white font-bold text-sm flex items-center justify-between shadow-xs">
               <span className="flex items-center gap-2">
                 <Leaf size={16} className="text-emerald-300" /> Danh mục nông sản
@@ -415,10 +415,10 @@ export default function Home() {
 
       {/* ============================ USPS (LỢI ÍCH DỊCH VỤ) ============================ */}
       <section className="container mx-auto px-4 lg:px-8 mt-6 relative z-10">
-        <div className="glass-frosted rounded-3xl shadow-elevated-card border border-white/80 p-3 md:p-4 grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-emerald-900/5">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 md:p-4 grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
           {USPS.map(({ icon: Icon, title, desc }, i) => (
-            <div key={title} className={`flex items-center gap-3.5 p-3 lg:px-6 ${i % 2 === 1 ? 'border-l lg:border-l-0 border-emerald-900/5' : ''}`}>
-              <div className="w-12 h-12 shrink-0 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-100/70 text-emerald-700 flex items-center justify-center shadow-xs">
+            <div key={title} className={`flex items-center gap-3.5 p-3 lg:px-6 ${i % 2 === 1 ? 'border-l lg:border-l-0 border-gray-100' : ''}`}>
+              <div className="w-12 h-12 shrink-0 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center shadow-xs">
                 <Icon size={22} />
               </div>
               <div className="min-w-0">
@@ -432,7 +432,7 @@ export default function Home() {
 
       {/* ========================= QUICK LINKS (DANH MỤC TRUY CẬP NHANH) ========================= */}
       <section className="container mx-auto px-4 lg:px-8 mt-6 relative z-10">
-        <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-emerald-900/10 p-5 md:p-6 shadow-elevated-card">
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-sm">
           <div className="grid grid-cols-5 md:grid-cols-10 gap-y-5 gap-x-2">
             {QUICK_LINKS.map((c) => (
               <Link key={c.name} href={c.href} className="flex flex-col items-center gap-2 group">
@@ -646,7 +646,14 @@ export default function Home() {
 
       {/* ========================= VÌ SAO CHỌN GREENFOOD ========================= */}
       <section className="container mx-auto px-4 lg:px-8 mt-14 relative z-10">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white p-6 md:p-12 shadow-2xl bg-dark-watermark border border-emerald-500/20">
+        <div 
+          className="relative overflow-hidden rounded-3xl text-white p-6 md:p-12 shadow-xl border border-emerald-500/30"
+          style={{ backgroundColor: '#064e3b' }}
+        >
+          {/* Họa tiết lá chìm vừa phải, tinh tế góc phải dưới */}
+          <div className="absolute -right-8 -bottom-8 w-72 h-72 opacity-[0.07] pointer-events-none select-none">
+            <img src="/watermark-leaf.svg" alt="" className="w-full h-full object-contain filter invert" />
+          </div>
           <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
           <div className="absolute -left-10 -bottom-20 w-80 h-80 rounded-full bg-amber-400/10 blur-2xl pointer-events-none" />
           

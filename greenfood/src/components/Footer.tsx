@@ -46,8 +46,16 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="relative bg-gradient-to-b from-[#063a22] via-[#042817] to-[#01170d] text-emerald-100 pt-16 pb-10 border-t-2 border-emerald-500/30 overflow-hidden bg-dark-watermark">
-      {/* Lớp hào quang ánh sáng thực vật huyền ảo tạo chiều sâu */}
+    <footer 
+      className="relative text-emerald-100 pt-16 pb-10 border-t-4 border-emerald-600 overflow-hidden" 
+      style={{ backgroundColor: '#052e16' }}
+    >
+      {/* Họa tiết mầm lá chìm thanh lịch góc phải nền (vừa phải, không rối mắt) */}
+      <div className="absolute -right-10 -bottom-10 w-96 h-96 opacity-[0.06] pointer-events-none select-none">
+        <img src="/watermark-leaf.svg" alt="" className="w-full h-full object-contain filter invert" />
+      </div>
+
+      {/* Lớp hào quang ánh sáng quang hợp tự nhiên */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
