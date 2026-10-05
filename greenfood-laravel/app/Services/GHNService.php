@@ -51,23 +51,43 @@ class GHNService
     }
 
     /**
-     * Lấy danh sách Quận/Huyện theo ID Tỉnh
+     * Lấy danh sách Quận/Huyện theo ID Tỉnh (chỉ lấy các quận/huyện đang hoạt động và nhận giao hàng)
      */
     public function getDistricts(int $provinceId): array
     {
-        return $this->get('/master-data/district', [
+        $response = $this->get('/master-data/district', [
             'province_id' => $provinceId,
         ]);
+
+        if (!empty($response['data']) && is_array($response['data'])) {
+            $response['data'] = array_values(array_filter($response['data'], function ($item) {
+                $status = (int) ($item['Status'] ?? 1);
+                $supportType = (int) ($item['SupportType'] ?? 1);
+                return $status === 1 && $supportType > 0;
+            }));
+        }
+
+        return $response;
     }
 
     /**
-     * Lấy danh sách Phường/Xã theo ID Huyện
+     * Lấy danh sách Phường/Xã theo ID Huyện (chỉ lấy các phường/xã đang hoạt động)
      */
     public function getWards(int $districtId): array
     {
-        return $this->get('/master-data/ward', [
+        $response = $this->get('/master-data/ward', [
             'district_id' => $districtId,
         ]);
+
+        if (!empty($response['data']) && is_array($response['data'])) {
+            $response['data'] = array_values(array_filter($response['data'], function ($item) {
+                $status = (int) ($item['Status'] ?? 1);
+                $supportType = (int) ($item['SupportType'] ?? 1);
+                return $status === 1 && $supportType > 0;
+            }));
+        }
+
+        return $response;
     }
 
     /**

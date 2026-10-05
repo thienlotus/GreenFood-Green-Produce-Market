@@ -18,6 +18,8 @@ class Order extends Model
         'customer_phone',
         'customer_email',
         'shipping_address',
+        'to_district_id',
+        'to_ward_code',
         'shipping_zone_id',
         'shipping_fee',
         'total_amount',

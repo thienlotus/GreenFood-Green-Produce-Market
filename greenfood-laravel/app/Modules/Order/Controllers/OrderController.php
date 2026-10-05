@@ -171,4 +171,19 @@ class OrderController extends Controller
             'message' => 'Đã xóa đơn hàng thành công!'
         ]);
     }
+
+    public function pushToGhn(Request $request, $id)
+    {
+        $cleanId = strtoupper(trim(str_replace(['#', '{', '}', ' '], '', $id)));
+        $toDistrictId = $request->input('to_district_id');
+        $toWardCode = $request->input('to_ward_code');
+
+        $result = $this->orderService->retryPushGhn($cleanId, $toDistrictId ? (int)$toDistrictId : null, $toWardCode ? (string)$toWardCode : null);
+
+        if (!$result['success']) {
+            return response()->json($result, 400);
+        }
+
+        return response()->json($result, 200);
+    }
 }

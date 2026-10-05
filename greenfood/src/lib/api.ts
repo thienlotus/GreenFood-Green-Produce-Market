@@ -338,6 +338,9 @@ export interface AdminOrder {
   id: string; // #GF284910
   order_uuid: string;
   tracking_number: string;
+  ghn_order_code?: string;
+  to_district_id?: number;
+  to_ward_code?: string;
   customer: string;
   phone: string;
   email?: string;
@@ -521,6 +524,24 @@ export async function updateOrderStatus(orderId: string, status: string): Promis
   });
 
   return { success: res?.success || false, message: res?.message || 'Cập nhật thất bại' };
+}
+
+export async function pushOrderToGhn(orderId: string, toDistrictId?: number, toWardCode?: string): Promise<{ success: boolean; message: string; ghn_order_code?: string; tracking_number?: string }> {
+  const cleanId = orderId.replace('#', '');
+  const res = await fetchApi<{ success: boolean; message: string; data?: { ghn_order_code: string; tracking_number: string } }>(`/orders/${cleanId}/push-ghn`, {
+    method: 'POST',
+    body: JSON.stringify({
+      to_district_id: toDistrictId,
+      to_ward_code: toWardCode,
+    })
+  });
+
+  return {
+    success: res?.success || false,
+    message: res?.message || 'Không thể kết nối đến máy chủ hoặc GHN từ chối',
+    ghn_order_code: res?.data?.ghn_order_code,
+    tracking_number: res?.data?.tracking_number,
+  };
 }
 
 export async function getDashboardStats(): Promise<DashboardStats | null> {

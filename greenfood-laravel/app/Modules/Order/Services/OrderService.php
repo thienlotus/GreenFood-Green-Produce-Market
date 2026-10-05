@@ -42,6 +42,8 @@ class OrderService
                 'customer_phone' => $data['customer_phone'],
                 'customer_email' => $data['customer_email'] ?? null,
                 'shipping_address' => $data['shipping_address'],
+                'to_district_id' => $data['to_district_id'] ?? null,
+                'to_ward_code' => !empty($data['to_ward_code']) ? (string)$data['to_ward_code'] : null,
                 'shipping_zone_id' => $zoneId,
                 'shipping_fee' => $shippingFee,
                 'total_amount' => $totalAmount,
@@ -150,6 +152,8 @@ class OrderService
                 'phone' => $order->customer_phone,
                 'email' => $order->customer_email,
                 'address' => $order->shipping_address,
+                'to_district_id' => $order->to_district_id,
+                'to_ward_code' => $order->to_ward_code,
                 'shipping_zone' => $order->shippingZone?->name ?? 'Mặc định',
                 'shipping_fee' => (float)$order->shipping_fee,
                 'date' => $order->created_at->format('Y-m-d H:i'),
@@ -345,5 +349,69 @@ class OrderService
             return false;
         }
         return $this->orderRepository->delete($order);
+    }
+
+    public function retryPushGhn(string $id, ?int $toDistrictId = null, ?string $toWardCode = null): array
+    {
+        $order = $this->orderRepository->findByIdOrTracking($id);
+        if (!$order) {
+            return ['success' => false, 'message' => 'Không tìm thấy đơn hàng'];
+        }
+
+        if (!empty($order->ghn_order_code)) {
+            return [
+                'success' => true,
+                'message' => 'Đơn hàng đã được đẩy sang GHN với mã: ' . $order->ghn_order_code,
+                'data' => [
+                    'ghn_order_code' => $order->ghn_order_code,
+                    'tracking_number' => $order->tracking_number,
+                ]
+            ];
+        }
+
+        $districtId = $toDistrictId ?: (int)$order->to_district_id;
+        $wardCode = $toWardCode ?: (string)$order->to_ward_code;
+
+        if (empty($districtId) || empty($wardCode)) {
+            return [
+                'success' => false,
+                'message' => 'Đơn hàng chưa có thông tin Quận/Huyện hoặc Phường/Xã GHN hợp lệ.'
+            ];
+        }
+
+        $isPaid = ($order->payment_status === 'paid' || in_array($order->payment_method, ['BANK_TRANSFER', 'MOMO', 'VNPAY']));
+        $ghnRes = $this->ghnOrderService->create(
+            $order,
+            (string)$wardCode,
+            (int)$districtId,
+            $isPaid
+        );
+
+        if (($ghnRes['code'] ?? 0) === 200 && !empty($ghnRes['data']['order_code'])) {
+            $ghnOrderCode = $ghnRes['data']['order_code'];
+            $order->ghn_order_code = $ghnOrderCode;
+            $order->to_district_id = $districtId;
+            $order->to_ward_code = $wardCode;
+            $order->tracking_number = $ghnOrderCode;
+            $order->save();
+
+            Log::info("Admin Push GHN Thành Công: Đơn #{$order->id} -> {$ghnOrderCode}");
+
+            return [
+                'success' => true,
+                'message' => 'Đã đẩy đơn sang GHN thành công! Mã vận đơn: ' . $ghnOrderCode,
+                'data' => [
+                    'ghn_order_code' => $ghnOrderCode,
+                    'tracking_number' => $ghnOrderCode,
+                ]
+            ];
+        }
+
+        $errMsg = $ghnRes['message'] ?? $ghnRes['code_message_value'] ?? 'GHN từ chối tạo đơn';
+        return [
+            'success' => false,
+            'message' => 'Lỗi từ GHN: ' . $errMsg,
+            'raw' => $ghnRes
+        ];
     }
 }

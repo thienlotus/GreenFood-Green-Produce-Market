@@ -3,7 +3,7 @@
 import { Search, Eye, CheckCircle2, XCircle, Clock, X, Save, Package, RefreshCw, MapPin, Phone, Mail, CreditCard, Printer, Download } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
-import { getAdminOrders, updateOrderStatus, AdminOrder } from '@/lib/api';
+import { getAdminOrders, updateOrderStatus, pushOrderToGhn, AdminOrder } from '@/lib/api';
 
 export default function AdminOrders() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -81,6 +81,40 @@ export default function AdminOrders() {
       toast.error(res.message || 'Cập nhật trạng thái thất bại');
     }
     setIsSubmitting(false);
+  };
+
+  const [isPushingGhn, setIsPushingGhn] = useState(false);
+
+  const handlePushGhn = async () => {
+    if (!selectedOrder || isPushingGhn) return;
+    setIsPushingGhn(true);
+    try {
+      const res = await pushOrderToGhn(selectedOrder.tracking_number, selectedOrder.to_district_id, selectedOrder.to_ward_code);
+      if (res.success) {
+        toast.success(res.message);
+        if (res.ghn_order_code) {
+          const newCode = res.ghn_order_code;
+          setSelectedOrder({
+            ...selectedOrder,
+            ghn_order_code: newCode,
+            id: '#' + newCode,
+            tracking_number: newCode,
+          });
+          setOrders(orders.map(o => o.id === selectedOrder.id ? {
+            ...o,
+            ghn_order_code: newCode,
+            id: '#' + newCode,
+            tracking_number: newCode,
+          } : o));
+        }
+      } else {
+        toast.error(res.message || 'Đẩy sang GHN thất bại');
+      }
+    } catch (e: any) {
+      toast.error('Lỗi khi đẩy đơn sang GHN: ' + (e?.message || ''));
+    } finally {
+      setIsPushingGhn(false);
+    }
   };
 
   const exportToCsv = () => {
@@ -279,6 +313,30 @@ export default function AdminOrders() {
                       <strong>Ghi chú:</strong> {selectedOrder.note}
                     </div>
                   )}
+                  <div className="flex items-center justify-between md:col-span-2 p-3 rounded-xl bg-white border border-gray-200 mt-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-500">Cổng vận chuyển GHN:</span>
+                      {selectedOrder.ghn_order_code ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">
+                          <CheckCircle2 size={13} /> Đã đẩy GHN (#{selectedOrder.ghn_order_code})
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">
+                          <Clock size={13} /> Chưa đồng bộ GHN
+                        </span>
+                      )}
+                    </div>
+                    {!selectedOrder.ghn_order_code && (
+                      <button
+                        onClick={handlePushGhn}
+                        disabled={isPushingGhn}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                      >
+                        {isPushingGhn ? <RefreshCw size={13} className="animate-spin" /> : null}
+                        Đẩy sang GHN
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 

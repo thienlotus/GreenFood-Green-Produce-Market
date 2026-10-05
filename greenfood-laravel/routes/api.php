@@ -64,6 +64,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/orders/tracking/{trackingNumber}', [OrderController::class, 'track']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+    Route::post('/orders/{id}/push-ghn', [OrderController::class, 'pushToGhn']);
     Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 
     // 5. Payment Module & MoMo & SePay Gateways
@@ -136,6 +137,7 @@ Route::get('/orders/tracking/{trackingNumber}', [OrderController::class, 'track'
 Route::get('/orders/{id}', [OrderController::class, 'show']);
 Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 Route::put('/orders/{id}', [OrderController::class, 'updateStatus']);
+Route::post('/orders/{id}/push-ghn', [OrderController::class, 'pushToGhn']);
 Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 
 Route::get('/payment/methods', [PaymentController::class, 'methods']);
