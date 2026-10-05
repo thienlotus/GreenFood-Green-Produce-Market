@@ -203,11 +203,11 @@ body {
   0%, 100% {
     transform: rotate(0deg) skewX(0deg);
   }
-  28% {
-    transform: rotate(2.4deg) skewX(1deg);
+  30% {
+    transform: rotate(4.2deg) skewX(1.8deg);
   }
-  68% {
-    transform: rotate(-1.8deg) skewX(-0.8deg);
+  70% {
+    transform: rotate(-3.5deg) skewX(-1.5deg);
   }
 }
 
@@ -215,22 +215,22 @@ body {
   0%, 100% {
     transform: rotate(0deg) skewX(0deg);
   }
-  32% {
-    transform: rotate(-2.6deg) skewX(-1.2deg);
+  35% {
+    transform: rotate(-4.5deg) skewX(-2deg);
   }
-  72% {
-    transform: rotate(2deg) skewX(0.9deg);
+  75% {
+    transform: rotate(3.8deg) skewX(1.6deg);
   }
 }
 
 .animate-bamboo-sway {
   transform-origin: bottom center;
-  animation: bambooSwayGentle 9s ease-in-out infinite;
+  animation: bambooSwayGentle 7.5s ease-in-out infinite;
 }
 
 .animate-bamboo-sway-delayed {
   transform-origin: bottom center;
-  animation: bambooSwayGentleAlt 11s ease-in-out 1.2s infinite;
+  animation: bambooSwayGentleAlt 9s ease-in-out 1s infinite;
 }
 
 /* =========================================================================

@@ -269,46 +269,46 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Horizontal Links - Cân bằng, nhỏ gọn, tuyệt đối 1 dòng không bao giờ xuống dòng */}
-            <nav className="flex items-center justify-between flex-1 gap-1 xl:gap-2.5 min-w-0">
+            {/* Horizontal Links - Khoảng cách vừa phải, tinh tế, không xa nhau quá và không dính sát */}
+            <nav className="flex items-center gap-2 xl:gap-3 min-w-0 ml-3 xl:ml-5">
               <Link 
                 href="/category/di-cho-online/" 
-                className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                className="px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
               >
                 <ShoppingBag size={15} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
                 <span>Đi chợ online</span>
               </Link>
               <Link 
                 href="/category/trai-cay/" 
-                className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                className="px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
               >
                 <Apple size={15} className="text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
                 <span>Trái cây tươi</span>
               </Link>
               <Link 
                 href="/category/tra-ca-phe/" 
-                className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                className="px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
               >
                 <Coffee size={15} className="text-amber-700 group-hover:scale-110 transition-transform shrink-0" />
                 <span>Trà & Cà phê</span>
               </Link>
               <Link 
                 href="/category/dac-san/" 
-                className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                className="px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
               >
                 <Gift size={15} className="text-purple-600 group-hover:scale-110 transition-transform shrink-0" />
                 <span>Đặc sản</span>
               </Link>
               <Link 
                 href="/map/" 
-                className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
+                className="px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
               >
                 <Map size={15} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
                 <span>Bản đồ nhà vườn</span>
               </Link>
               <Link 
                 href="/tracking/" 
-                className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-amber-900 hover:text-amber-950 bg-amber-50/90 hover:bg-amber-100 border border-amber-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
+                className="px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-amber-900 hover:text-amber-950 bg-amber-50/90 hover:bg-amber-100 border border-amber-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
               >
                 <Package size={15} className="text-amber-600 group-hover:scale-110 transition-transform shrink-0" />
                 <span>Theo dõi đơn</span>
@@ -316,7 +316,7 @@ export default function Navbar() {
               {mounted && isAuthenticated && user && (
                 <Link 
                   href="/profile/" 
-                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-teal-900 hover:text-teal-950 bg-teal-50/90 hover:bg-teal-100 border border-teal-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
+                  className="px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-teal-900 hover:text-teal-950 bg-teal-50/90 hover:bg-teal-100 border border-teal-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
                 >
                   <User size={15} className="text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Hồ sơ của tôi</span>

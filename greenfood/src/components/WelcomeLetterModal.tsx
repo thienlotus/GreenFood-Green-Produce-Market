@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { X, Sparkles, Copy, Check, ArrowRight, Heart, Gift, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -14,21 +14,38 @@ export default function WelcomeLetterModal({ forceOpen = false, onClose }: Welco
   const [isShrinking, setIsShrinking] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
+  // Đảm bảo chỉ tự động hiện 1 lần duy nhất khi vào trang, một khi đã nhấn Đã đọc thì không bao giờ tự hiện lại
+  const hasAutoOpenedRef = useRef(false);
+  const isDismissedRef = useRef(false);
+
   useEffect(() => {
+    // Nếu người dùng chủ động bấm icon lá thư tròn ở góc trái màn hình
     if (forceOpen) {
+      isDismissedRef.current = false;
       setIsOpen(true);
       return;
     }
 
-    // Tự động hiện thư sau 600ms mỗi khi khách vào trang
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-    }, 600);
+    // Nếu người dùng đã nhấn Đã đọc / Thu gọn rồi thì KHÔNG tự động hiện lại nữa
+    if (isDismissedRef.current) {
+      return;
+    }
 
-    return () => clearTimeout(timer);
+    // Tự động mở đúng 1 lần duy nhất khi khách vừa vào trang
+    if (!hasAutoOpenedRef.current) {
+      hasAutoOpenedRef.current = true;
+      const timer = setTimeout(() => {
+        if (!isDismissedRef.current) {
+          setIsOpen(true);
+        }
+      }, 700);
+
+      return () => clearTimeout(timer);
+    }
   }, [forceOpen]);
 
   const handleClose = () => {
+    isDismissedRef.current = true;
     setIsShrinking(true);
     setTimeout(() => {
       setIsOpen(false);

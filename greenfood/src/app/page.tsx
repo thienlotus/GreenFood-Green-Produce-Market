@@ -289,9 +289,9 @@ export default function Home() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Kích hoạt quan sát sau khi DOM đã render
+    let observer: IntersectionObserver | null = null;
     const timer = setTimeout(() => {
-      const observer = new IntersectionObserver(
+      observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
@@ -299,16 +299,17 @@ export default function Home() {
             }
           });
         },
-        { threshold: 0.05, rootMargin: '0px 0px -15px 0px' }
+        { threshold: 0.04, rootMargin: '0px 0px -10px 0px' }
       );
 
       const elements = document.querySelectorAll('.reveal-on-scroll, .product-reveal-item');
-      elements.forEach((el) => observer.observe(el));
-    }, 60);
+      elements.forEach((el) => observer?.observe(el));
+    }, 80);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(timer);
+      observer?.disconnect();
     };
   }, [products, activeTab, loading]);
 
@@ -365,20 +366,20 @@ export default function Home() {
 
       {/* Họa tiết chìm Lũy Tre Xanh Việt Nam đung đưa trong gió nhẹ (Bamboo Grove Gentle Sway) */}
       {/* Vị trí 1: Góc trên phải khu vực Hero */}
-      <div className="absolute top-6 -right-6 md:right-0 w-80 md:w-[460px] h-[640px] opacity-[0.11] md:opacity-[0.14] pointer-events-none select-none -z-10 animate-bamboo-sway">
-        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom" />
+      <div className="absolute top-4 -right-4 md:right-2 w-80 md:w-[480px] h-[660px] opacity-40 md:opacity-50 pointer-events-none select-none z-0 animate-bamboo-sway">
+        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom filter drop-shadow-sm" />
       </div>
       {/* Vị trí 2: Phía bên trái khu vực Flash Sale & Vouchers */}
-      <div className="absolute top-[760px] -left-10 md:-left-4 w-72 md:w-[430px] h-[620px] opacity-[0.10] md:opacity-[0.13] pointer-events-none select-none -z-10 animate-bamboo-sway-delayed -scale-x-100">
-        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom" />
+      <div className="absolute top-[750px] -left-8 md:left-0 w-72 md:w-[450px] h-[640px] opacity-35 md:opacity-45 pointer-events-none select-none z-0 animate-bamboo-sway-delayed -scale-x-100">
+        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom filter drop-shadow-sm" />
       </div>
       {/* Vị trí 3: Phía bên phải khu vực Gợi ý hôm nay */}
-      <div className="absolute top-[1650px] -right-8 md:right-2 w-80 md:w-[460px] h-[640px] opacity-[0.10] md:opacity-[0.13] pointer-events-none select-none -z-10 animate-bamboo-sway">
-        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom" />
+      <div className="absolute top-[1620px] -right-6 md:right-4 w-80 md:w-[480px] h-[660px] opacity-35 md:opacity-45 pointer-events-none select-none z-0 animate-bamboo-sway">
+        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom filter drop-shadow-sm" />
       </div>
       {/* Vị trí 4: Phía bên trái khu vực Nông sản miệt vườn */}
-      <div className="absolute top-[2550px] -left-10 md:left-0 w-72 md:w-[420px] h-[600px] opacity-[0.09] md:opacity-[0.12] pointer-events-none select-none -z-10 animate-bamboo-sway-delayed -scale-x-100">
-        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom" />
+      <div className="absolute top-[2520px] -left-8 md:left-2 w-72 md:w-[440px] h-[620px] opacity-30 md:opacity-40 pointer-events-none select-none z-0 animate-bamboo-sway-delayed -scale-x-100">
+        <img src="/watermark-bamboo.svg" alt="" className="w-full h-full object-contain origin-bottom filter drop-shadow-sm" />
       </div>
 
       {/* ============================ HERO ============================ */}
