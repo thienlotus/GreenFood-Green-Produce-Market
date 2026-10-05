@@ -54,24 +54,41 @@ class PromotionService
     public function validateVoucher(string $code, float $orderTotal): array
     {
         $vouchers = [
-            'GREEN10' => ['type' => 'percent', 'value' => 10, 'min' => 100000, 'max_discount' => 50000],
-            'FREESHIP' => ['type' => 'shipping', 'value' => 100, 'min' => 150000, 'max_discount' => 30000],
-            'CHAOBANMOI' => ['type' => 'fixed', 'value' => 20000, 'min' => 50000, 'max_discount' => 20000],
+            'GREEN10' => ['type' => 'percent', 'value' => 10, 'min' => 100000, 'max_discount' => 50000, 'title' => 'Giảm 10% tối đa 50k'],
+            'FREESHIP' => ['type' => 'shipping', 'value' => 100, 'min' => 150000, 'max_discount' => 30000, 'title' => 'Freeship tối đa 30k'],
+            'CHAOBANMOI' => ['type' => 'fixed', 'value' => 20000, 'min' => 50000, 'max_discount' => 20000, 'title' => 'Giảm 20.000đ cho đơn đầu tiên'],
+            'GF-WELCOME50' => ['type' => 'fixed', 'value' => 50000, 'min' => 250000, 'max_discount' => 50000, 'title' => 'Voucher Thành Viên Mới 50k'],
         ];
 
         $code = strtoupper(trim($code));
-        if (!isset($vouchers[$code])) {
+        $v = $vouchers[$code] ?? null;
+
+        // Tự động nhận diện các mã voucher đổi từ điểm loyalty points (Dynamic Loyalty Vouchers)
+        if (!$v) {
+            if (str_starts_with($code, 'GF-WELCOME50')) {
+                $v = ['type' => 'fixed', 'value' => 50000, 'min' => 250000, 'max_discount' => 50000, 'title' => 'Voucher Thành Viên Mới 50.000đ'];
+            } elseif (str_starts_with($code, 'GF20K')) {
+                $v = ['type' => 'fixed', 'value' => 20000, 'min' => 150000, 'max_discount' => 20000, 'title' => 'Voucher Giảm 20.000đ'];
+            } elseif (str_starts_with($code, 'GF50K')) {
+                $v = ['type' => 'fixed', 'value' => 50000, 'min' => 300000, 'max_discount' => 50000, 'title' => 'Voucher Giảm 50.000đ'];
+            } elseif (str_starts_with($code, 'GFFREE') || str_starts_with($code, 'GF-FREE')) {
+                $v = ['type' => 'shipping', 'value' => 100, 'min' => 200000, 'max_discount' => 25000, 'title' => 'Voucher Miễn Phí Vận Chuyển'];
+            } elseif (str_starts_with($code, 'GF100K')) {
+                $v = ['type' => 'fixed', 'value' => 100000, 'min' => 500000, 'max_discount' => 100000, 'title' => 'Voucher Khủng Giảm 100.000đ'];
+            }
+        }
+
+        if (!$v) {
             return [
                 'valid' => false,
                 'message' => 'Mã khuyến mãi không tồn tại hoặc đã hết hạn.'
             ];
         }
 
-        $v = $vouchers[$code];
         if ($orderTotal < $v['min']) {
             return [
                 'valid' => false,
-                'message' => 'Đơn hàng tối thiểu ' . number_format($v['min'], 0, ',', '.') . 'đ để sử dụng mã này.'
+                'message' => 'Đơn hàng tối thiểu ' . number_format($v['min'], 0, ',', '.') . 'đ để sử dụng mã này (Hiện tại: ' . number_format($orderTotal, 0, ',', '.') . 'đ).'
             ];
         }
 
@@ -88,6 +105,8 @@ class PromotionService
             'valid' => true,
             'code' => $code,
             'discount' => $discount,
+            'discount_type' => $v['type'],
+            'title' => $v['title'] ?? 'Ưu đãi GreenFood',
             'message' => 'Áp dụng mã giảm giá thành công!'
         ];
     }

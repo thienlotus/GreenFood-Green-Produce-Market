@@ -84,7 +84,13 @@ Route::prefix('v1')->group(function () {
     Route::get('/farmers', [FarmerController::class, 'index']);
     Route::get('/farmers/{id}', [FarmerController::class, 'show']);
 
-    // 8. Admin & Dashboard Endpoints
+    // 8. Logistics & GHN API Endpoints
+    Route::get('/ghn/provinces', [GHNController::class, 'getProvinces']);
+    Route::get('/ghn/districts/{provinceId}', [GHNController::class, 'getDistricts']);
+    Route::get('/ghn/wards/{districtId}', [GHNController::class, 'getWards']);
+    Route::post('/ghn/calculate-fee', [GHNController::class, 'getShippingFee']);
+
+    // 9. Admin & Dashboard Endpoints
     Route::get('/admin/orders', [OrderController::class, 'index']);
     Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
     Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
@@ -149,6 +155,11 @@ Route::delete('/shipping-zones/{id}', [ShippingZoneController::class, 'destroy']
 
 Route::get('/farmers', [FarmerController::class, 'index']);
 Route::get('/farmers/{id}', [FarmerController::class, 'show']);
+
+Route::get('/ghn/provinces', [GHNController::class, 'getProvinces']);
+Route::get('/ghn/districts/{provinceId}', [GHNController::class, 'getDistricts']);
+Route::get('/ghn/wards/{districtId}', [GHNController::class, 'getWards']);
+Route::post('/ghn/calculate-fee', [GHNController::class, 'getShippingFee']);
 
 Route::get('/admin/orders', [OrderController::class, 'index']);
 Route::get('/admin/orders/{id}', [OrderController::class, 'show']);

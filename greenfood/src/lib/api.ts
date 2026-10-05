@@ -436,6 +436,8 @@ export async function createOrder(payload: {
   shippingAddress: string;
   shippingZoneId?: string;
   shippingFee?: number;
+  voucherCode?: string;
+  discountAmount?: number;
   toDistrictId?: number;
   toWardCode?: string;
   paymentMethod: string;
@@ -457,6 +459,8 @@ export async function createOrder(payload: {
         shipping_address: payload.shippingAddress,
         shipping_zone_id: payload.shippingZoneId,
         shipping_fee: payload.shippingFee,
+        voucher_code: payload.voucherCode,
+        discount_amount: payload.discountAmount,
         to_district_id: payload.toDistrictId,
         to_ward_code: payload.toWardCode,
         payment_method: payload.paymentMethod,
@@ -541,12 +545,30 @@ export async function getMyOrders(phone: string): Promise<any[]> {
   return [];
 }
 
-// 6. GHN API INTEGRATION
+// 6. GHN API INTEGRATION (With In-Memory Caching for Instant 0ms Selection)
+let cachedProvinces: any[] | null = null;
+const cachedDistricts: Record<number, any[]> = {};
+const cachedWards: Record<number, any[]> = {};
+
 export async function getGhnProvinces(): Promise<any[]> {
+  if (cachedProvinces && cachedProvinces.length > 0) {
+    return cachedProvinces;
+  }
   try {
     const res = await fetchApi<{ code: number; data: any[] }>('/ghn/provinces');
     if (res && res.code === 200 && Array.isArray(res.data)) {
-      return res.data;
+      // Sắp xếp thông minh: Đưa các trung tâm lớn lên đầu, sau đó sắp xếp theo A-Z
+      const priorityNames = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Bình Dương', 'Đồng Nai', 'Cần Thơ', 'Hải Phòng'];
+      const sorted = [...res.data].sort((a, b) => {
+        const aIndex = priorityNames.findIndex(p => a.ProvinceName.includes(p));
+        const bIndex = priorityNames.findIndex(p => b.ProvinceName.includes(p));
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        return a.ProvinceName.localeCompare(b.ProvinceName, 'vi');
+      });
+      cachedProvinces = sorted;
+      return sorted;
     }
     return [];
   } catch (error) {
@@ -556,10 +578,15 @@ export async function getGhnProvinces(): Promise<any[]> {
 }
 
 export async function getGhnDistricts(provinceId: number): Promise<any[]> {
+  if (cachedDistricts[provinceId]) {
+    return cachedDistricts[provinceId];
+  }
   try {
     const res = await fetchApi<{ code: number; data: any[] }>(`/ghn/districts/${provinceId}`);
     if (res && res.code === 200 && Array.isArray(res.data)) {
-      return res.data;
+      const sorted = [...res.data].sort((a, b) => a.DistrictName.localeCompare(b.DistrictName, 'vi'));
+      cachedDistricts[provinceId] = sorted;
+      return sorted;
     }
     return [];
   } catch (error) {
@@ -569,10 +596,15 @@ export async function getGhnDistricts(provinceId: number): Promise<any[]> {
 }
 
 export async function getGhnWards(districtId: number): Promise<any[]> {
+  if (cachedWards[districtId]) {
+    return cachedWards[districtId];
+  }
   try {
     const res = await fetchApi<{ code: number; data: any[] }>(`/ghn/wards/${districtId}`);
     if (res && res.code === 200 && Array.isArray(res.data)) {
-      return res.data;
+      const sorted = [...res.data].sort((a, b) => a.WardName.localeCompare(b.WardName, 'vi'));
+      cachedWards[districtId] = sorted;
+      return sorted;
     }
     return [];
   } catch (error) {

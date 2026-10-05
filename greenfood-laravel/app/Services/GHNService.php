@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -43,31 +44,37 @@ class GHNService
     }
 
     /**
-     * Lấy danh sách 63 Tỉnh/Thành phố từ GHN
+     * Lấy danh sách 63 Tỉnh/Thành phố từ GHN (Cache 24 giờ để tăng tốc tức thì)
      */
     public function getProvinces(): array
     {
-        return $this->get('/master-data/province');
+        return Cache::remember('ghn_master_provinces', 86400, function () {
+            return $this->get('/master-data/province');
+        });
     }
 
     /**
-     * Lấy danh sách Quận/Huyện theo ID Tỉnh
+     * Lấy danh sách Quận/Huyện theo ID Tỉnh (Cache 24 giờ)
      */
     public function getDistricts(int $provinceId): array
     {
-        return $this->get('/master-data/district', [
-            'province_id' => $provinceId,
-        ]);
+        return Cache::remember("ghn_master_districts_{$provinceId}", 86400, function () use ($provinceId) {
+            return $this->get('/master-data/district', [
+                'province_id' => $provinceId,
+            ]);
+        });
     }
 
     /**
-     * Lấy danh sách Phường/Xã theo ID Huyện
+     * Lấy danh sách Phường/Xã theo ID Huyện (Cache 24 giờ)
      */
     public function getWards(int $districtId): array
     {
-        return $this->get('/master-data/ward', [
-            'district_id' => $districtId,
-        ]);
+        return Cache::remember("ghn_master_wards_{$districtId}", 86400, function () use ($districtId) {
+            return $this->get('/master-data/ward', [
+                'district_id' => $districtId,
+            ]);
+        });
     }
 
     /**
