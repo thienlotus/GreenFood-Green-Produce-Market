@@ -10,12 +10,12 @@ class CartRepository
 {
     public function getProductById(string|int $id): ?Product
     {
-        return Product::find($id);
+        return Product::with('variants')->find($id);
     }
 
     public function getVariantById(string|int $variantId): ?ProductVariant
     {
-        return ProductVariant::find($variantId);
+        return ProductVariant::with('product')->find($variantId);
     }
 
     public function getShippingZone(string $zoneId): ?ShippingZone

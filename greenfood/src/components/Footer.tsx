@@ -94,7 +94,16 @@ export default function Footer() {
           
           {/* Cột 1 */}
           <div>
-            <h4 className="text-white font-bold mb-6 text-lg uppercase tracking-wider">CÔNG TY CỔ PHẦN GREENFOOD</h4>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-1.5 bg-white rounded-2xl shadow-xs">
+                <img src="/logo.jpg" alt="GreenFood" className="h-12 w-12 object-contain" />
+              </div>
+              <div>
+                <span className="text-3xl font-bold text-white font-pacifico leading-none block">GreenFood</span>
+                <span className="text-[10px] text-emerald-300 font-semibold tracking-wider uppercase mt-1 block">Nông sản sạch từ tâm</span>
+              </div>
+            </div>
+            <h4 className="text-emerald-200 font-bold mb-4 text-xs uppercase tracking-wider">CÔNG TY CỔ PHẦN GREENFOOD</h4>
             <ul className="space-y-4 text-sm text-emerald-100">
               <li className="flex gap-3">
                 <MapPin className="shrink-0 mt-0.5 text-emerald-400" size={18} />

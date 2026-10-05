@@ -64,11 +64,24 @@ export default function Navbar() {
 
       {/* 2. MAIN HEADER */}
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-4 lg:gap-8">
+        <div className="flex items-center justify-between h-20 sm:h-22 lg:h-24 gap-4 lg:gap-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <img src="/logo.jpg" alt="GreenFood Logo" className="h-10 w-10 object-contain rounded-lg shadow-sm mix-blend-multiply" />
-            <span className="text-3xl font-medium text-emerald-600 hidden sm:block tracking-tight font-pacifico">GreenFood</span>
+          <Link href="/" className="flex items-center gap-3 shrink-0 group py-1">
+            <div className="relative flex items-center justify-center p-1 bg-white rounded-2xl shadow-xs border border-emerald-100 group-hover:border-emerald-300 group-hover:shadow-md transition-all">
+              <img 
+                src="/logo.jpg" 
+                alt="GreenFood Logo" 
+                className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-200" 
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-3xl sm:text-4xl md:text-[2.65rem] font-bold text-emerald-600 tracking-tight font-pacifico leading-none">
+                GreenFood
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-700/80 tracking-wider uppercase mt-1 hidden sm:block">
+                Nông sản sạch từ tâm
+              </span>
+            </div>
           </Link>
 
           {/* Search Bar */}
@@ -273,7 +286,18 @@ export default function Navbar() {
       {/* 4. MOBILE DRAWER MENU */}
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 top-20 bg-black/40 backdrop-blur-xs z-40" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="bg-white w-4/5 max-w-sm h-full shadow-2xl p-6 space-y-6 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white w-4/5 max-w-sm h-full shadow-2xl p-6 space-y-5 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Brand Logo in Drawer */}
+            <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+              <div className="p-1 bg-white rounded-xl shadow-xs border border-emerald-100">
+                <img src="/logo.jpg" alt="GreenFood Logo" className="h-12 w-12 object-contain mix-blend-multiply" />
+              </div>
+              <div>
+                <span className="text-2xl font-bold text-emerald-600 font-pacifico leading-none block">GreenFood</span>
+                <span className="text-[10px] text-emerald-700/80 font-semibold uppercase mt-0.5 block">Nông sản sạch từ tâm</span>
+              </div>
+            </div>
+
             {/* User Info Header in Drawer */}
             {mounted && isAuthenticated && user ? (
               <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-3">
