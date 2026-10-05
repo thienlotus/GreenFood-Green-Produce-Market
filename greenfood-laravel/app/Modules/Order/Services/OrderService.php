@@ -17,13 +17,18 @@ class OrderService
         try {
             DB::beginTransaction();
 
-            $zone = $this->orderRepository->getShippingZone($data['shipping_zone_id']);
+            $zoneId = $data['shipping_zone_id'] ?? null;
+            $zone = $zoneId ? $this->orderRepository->getShippingZone($zoneId) : null;
             $itemsTotal = 0;
             foreach ($data['items'] as $it) {
                 $itemsTotal += ($it['price'] * $it['quantity']);
             }
 
-            $shippingFee = ($zone && $itemsTotal >= $zone->free_ship_minimum) ? 0 : ($zone ? (float)$zone->base_fee : 0);
+            if (isset($data['shipping_fee'])) {
+                $shippingFee = (float)$data['shipping_fee'];
+            } else {
+                $shippingFee = ($zone && $itemsTotal >= $zone->free_ship_minimum) ? 0 : ($zone ? (float)$zone->base_fee : 0);
+            }
             $totalAmount = $itemsTotal + $shippingFee;
             $trackingNumber = 'GF' . mt_rand(100000, 999999);
 
@@ -34,7 +39,7 @@ class OrderService
                 'customer_phone' => $data['customer_phone'],
                 'customer_email' => $data['customer_email'] ?? null,
                 'shipping_address' => $data['shipping_address'],
-                'shipping_zone_id' => $data['shipping_zone_id'],
+                'shipping_zone_id' => $zoneId,
                 'shipping_fee' => $shippingFee,
                 'total_amount' => $totalAmount,
                 'status' => 'PENDING',
