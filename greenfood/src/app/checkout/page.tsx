@@ -55,6 +55,11 @@ export default function CheckoutPage() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [momoData, setMomoData] = useState<{ payUrl?: string; qrCodeUrl?: string } | null>(null);
   const [isGeneratingMomo, setIsGeneratingMomo] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -336,6 +341,15 @@ export default function CheckoutPage() {
             Tiếp tục mua sắm
           </Link>
         </div>
+      </div>
+    );
+  }
+
+  if (!mounted) {
+    return (
+      <div className="container mx-auto px-4 py-20 text-center">
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-emerald-600 border-t-transparent mb-4"></div>
+        <p className="text-gray-600 font-medium">Đang tải thông tin giỏ hàng & thanh toán...</p>
       </div>
     );
   }

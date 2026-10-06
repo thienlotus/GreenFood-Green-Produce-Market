@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { ShoppingCart, Star, MapPin, ShieldCheck, ChevronRight, Truck, Leaf, Check } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { getProductBySlug, getProducts } from '@/lib/api';
@@ -12,6 +12,7 @@ import ProductCard from '@/components/ProductCard';
 
 export default function ProductDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const slug = typeof params?.slug === 'string' ? params.slug : '';
 
   const [product, setProduct] = useState<ProductItem>(ALL_PRODUCTS[0]);
@@ -61,8 +62,17 @@ export default function ProductDetailPage() {
   };
 
   const handleBuyNow = () => {
-    handleAddToCart();
-    setIsOpen(true);
+    addItem({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      variantId: selectedVariant.id,
+      unit: selectedVariant.unit,
+      price: selectedVariant.price,
+      quantity,
+      image: product.images[0]
+    });
+    router.push('/checkout');
   };
 
   return (
