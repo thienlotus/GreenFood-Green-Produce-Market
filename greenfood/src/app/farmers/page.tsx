@@ -130,10 +130,16 @@ export default function FarmersPage() {
                   <p className="text-xs text-gray-500 mb-4">Chủ vườn: {farmer.owner}</p>
                   <div className="flex gap-2">
                     <Link
+                      href={`/farmers/${farmer.id}`}
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 text-white font-semibold py-2.5 rounded-xl text-sm hover:bg-emerald-700 transition-colors shadow-2xs"
+                    >
+                      🌱 Xem gian hàng
+                    </Link>
+                    <Link
                       href="/map"
                       className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-emerald-100 transition-colors border border-emerald-100"
                     >
-                      <Map size={14} /> Xem trên bản đồ
+                      <Map size={14} /> Bản đồ
                     </Link>
                   </div>
                 </div>

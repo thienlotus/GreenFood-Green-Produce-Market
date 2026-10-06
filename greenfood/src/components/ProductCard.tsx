@@ -13,6 +13,7 @@ interface ProductCardProps {
   name: string;
   slug: string;
   farmerName: string;
+  farmerId?: string;
   region: string;
   image: string;
   defaultPrice: number;
@@ -31,6 +32,7 @@ export default function ProductCard({
   name: rawName,
   slug,
   farmerName: rawFarmerName,
+  farmerId,
   region: rawRegion,
   image,
   defaultPrice,
@@ -134,7 +136,21 @@ export default function ProductCard({
           <MapPin size={11} className="text-emerald-600 shrink-0" />
           <span className="truncate max-w-[90px]">{region}</span>
           <span className="text-emerald-300">•</span>
-          <span className="truncate max-w-[100px] text-emerald-900 font-semibold">{farmerName}</span>
+          {farmerId ? (
+            <span
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = `/farmers/${farmerId}`;
+              }}
+              className="truncate max-w-[100px] text-emerald-900 font-semibold hover:underline cursor-pointer"
+              title={`Ghé thăm gian hàng ${farmerName}`}
+            >
+              {farmerName}
+            </span>
+          ) : (
+            <span className="truncate max-w-[100px] text-emerald-900 font-semibold">{farmerName}</span>
+          )}
         </div>
 
         {/* Tên sản phẩm */}

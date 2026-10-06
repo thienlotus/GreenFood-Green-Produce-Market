@@ -102,6 +102,7 @@ function toCardProps(p: ProductItem) {
     name: p.name,
     slug: p.slug,
     farmerName: p.farmer?.name || 'Nông hộ GreenFood',
+    farmerId: p.farmer?.id || p.farmerId,
     region: p.farmer?.region || 'Việt Nam',
     image: p.images?.[0] || '',
     defaultPrice: v?.price ?? 0,

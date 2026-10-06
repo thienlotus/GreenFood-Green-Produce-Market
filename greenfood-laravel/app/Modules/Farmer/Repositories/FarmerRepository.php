@@ -34,4 +34,35 @@ class FarmerRepository
     {
         return Farmer::with(['region', 'products.variants'])->find($id);
     }
+
+    public function findByUserId(string $userId): ?Farmer
+    {
+        return Farmer::with(['region', 'products.variants'])->where('user_id', $userId)->first();
+    }
+
+    public function getAllForAdmin(): Collection
+    {
+        return Farmer::with(['region', 'user', 'products'])->latest()->get();
+    }
+
+    public function create(array $data): Farmer
+    {
+        return Farmer::create($data);
+    }
+
+    public function update(Farmer|string $farmer, array $data): bool
+    {
+        if (is_string($farmer)) {
+            $farmer = Farmer::findOrFail($farmer);
+        }
+        return $farmer->update($data);
+    }
+
+    public function delete(Farmer|string $farmer): bool
+    {
+        if (is_string($farmer)) {
+            $farmer = Farmer::findOrFail($farmer);
+        }
+        return (bool) $farmer->delete();
+    }
 }

@@ -268,6 +268,7 @@ export default function CategoryClient({ initialSlug }: CategoryClientProps) {
                 name={product.name}
                 slug={product.slug}
                 farmerName={product.farmer?.name || 'Nông Hộ GreenFood'}
+                farmerId={product.farmer?.id || product.farmerId}
                 region={product.farmer?.region || 'Việt Nam'}
                 image={product.images[0]}
                 defaultPrice={product.variants[0]?.price || 0}

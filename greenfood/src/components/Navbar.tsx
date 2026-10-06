@@ -65,6 +65,9 @@ export default function Navbar() {
             <div onClick={() => toast('Tính năng tải ứng dụng đang phát triển')} className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 cursor-pointer transition-colors text-[11px]">
               <Download size={13} /> Tải ứng dụng
             </div>
+            <Link href="/farmer" className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 transition-colors text-[11px]">
+              <Store size={13} /> Kênh Người Bán
+            </Link>
             <Link href="/partners" className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 transition-colors text-[11px]">
               <Users size={13} /> Dành cho Nông hộ
             </Link>
@@ -304,8 +307,15 @@ export default function Navbar() {
                 <span>Đặc sản</span>
               </Link>
               <Link 
-                href="/map/" 
+                href="/farmers" 
                 className="px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
+              >
+                <Store size={15} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
+                <span>Gian hàng nông hộ</span>
+              </Link>
+              <Link 
+                href="/map/" 
+                className="px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
               >
                 <Map size={15} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
                 <span>Bản đồ nhà vườn</span>

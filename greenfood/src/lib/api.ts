@@ -115,12 +115,14 @@ function mapProduct(p: any): ProductItem {
         }))
       : [{ id: 'v1', unit: '1kg', price: 100000 }],
     farmer: {
+      id: p.farmer?.id || p.farmer_id || undefined,
       name: cleanVietnameseMojibake(p.farmer?.farm_name || 'Nông Hộ GreenFood'),
       region: cleanVietnameseMojibake(p.farmer?.region?.name || p.farmer?.address || 'Việt Nam'),
       rating: p.farmer?.rating ? Number(p.farmer.rating) : 4.8,
       address: cleanVietnameseMojibake(p.farmer?.address || ''),
       story: cleanVietnameseMojibake(p.farmer?.story || 'Nông sản hữu cơ sạch chuẩn VietGAP.')
     },
+    farmerId: p.farmer?.id || p.farmer_id || undefined,
     badge: p.badge ? cleanVietnameseMojibake(p.badge) : undefined,
     soldCount: p.sold_count ? Number(p.sold_count) : 0,
     rating: p.rating ? Number(p.rating) : 5.0,
@@ -836,6 +838,116 @@ export async function checkSepayStatus(orderId: string): Promise<SepayStatusResp
   } catch (error) {
     console.error('[API] checkSepayStatus error:', error);
     return null;
+  }
+}
+
+// 9. FARMER & AGRICULTURAL MARKETPLACE API
+export interface FarmerDetailData {
+  id: string;
+  user_id?: string;
+  farm_name: string;
+  story?: string;
+  address: string;
+  region_id?: number;
+  latitude?: number;
+  longitude?: number;
+  image_url?: string;
+  specialty?: string;
+  rating?: number;
+  is_verified?: boolean;
+  region?: {
+    id: number;
+    name: string;
+    zone: string;
+  };
+  user?: {
+    id: string;
+    full_name: string;
+    phone: string;
+    email?: string;
+  };
+  products?: any[];
+}
+
+export async function getFarmersApi(filters?: { zone?: string; search?: string }): Promise<FarmerDetailData[]> {
+  try {
+    const params = new URLSearchParams();
+    if (filters?.zone) params.append('zone', filters.zone);
+    if (filters?.search) params.append('search', filters.search);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetchApi<{ success: boolean; data: FarmerDetailData[] }>(`/farmers${query}`);
+    return res?.data || [];
+  } catch (error) {
+    console.error('[API] getFarmersApi error:', error);
+    return [];
+  }
+}
+
+export async function getFarmerDetailApi(id: string): Promise<FarmerDetailData | null> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: FarmerDetailData }>(`/farmers/${id}`);
+    return res?.data || null;
+  } catch (error) {
+    console.error('[API] getFarmerDetailApi error:', error);
+    return null;
+  }
+}
+
+export async function registerFarmerApi(payload: {
+  farm_name: string;
+  phone: string;
+  name?: string;
+  email?: string;
+  address?: string;
+  location?: string;
+  scale?: string;
+  specialty?: string;
+  note?: string;
+}): Promise<{ success: boolean; message: string; data?: any }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: any }>('/farmers/register', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return res || { success: false, message: 'Lỗi gửi yêu cầu đăng ký' };
+  } catch (error) {
+    console.error('[API] registerFarmerApi error:', error);
+    return { success: false, message: 'Lỗi mạng khi đăng ký đối tác nông hộ' };
+  }
+}
+
+export async function getAdminFarmersApi(): Promise<FarmerDetailData[]> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: FarmerDetailData[] }>('/admin/farmers');
+    return res?.data || [];
+  } catch (error) {
+    console.error('[API] getAdminFarmersApi error:', error);
+    return [];
+  }
+}
+
+export async function updateFarmerStatusApi(id: string, isVerified: boolean): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string }>(`/admin/farmers/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ is_verified: isVerified }),
+    });
+    return res || { success: false, message: 'Lỗi cập nhật trạng thái' };
+  } catch (error) {
+    console.error('[API] updateFarmerStatusApi error:', error);
+    return { success: false, message: 'Lỗi mạng khi cập nhật trạng thái nông hộ' };
+  }
+}
+
+export async function deleteFarmerApi(id: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string }>(`/admin/farmers/${id}`, {
+      method: 'DELETE',
+    });
+    return res || { success: false, message: 'Lỗi xóa nông hộ' };
+  } catch (error) {
+    console.error('[API] deleteFarmerApi error:', error);
+    return { success: false, message: 'Lỗi mạng khi xóa nông hộ' };
   }
 }
 

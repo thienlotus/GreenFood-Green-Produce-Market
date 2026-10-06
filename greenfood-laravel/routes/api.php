@@ -87,7 +87,11 @@ Route::prefix('v1')->group(function () {
 
     // 7. Farmer & GIS Module
     Route::get('/farmers', [FarmerController::class, 'index']);
+    Route::post('/farmers/register', [FarmerController::class, 'register']);
     Route::get('/farmers/{id}', [FarmerController::class, 'show']);
+    Route::get('/admin/farmers', [FarmerController::class, 'adminIndex']);
+    Route::put('/admin/farmers/{id}/status', [FarmerController::class, 'updateStatus']);
+    Route::delete('/admin/farmers/{id}', [FarmerController::class, 'destroy']);
 
     // 8. Logistics & GHN API Endpoints
     Route::get('/ghn/provinces', [GHNController::class, 'getProvinces']);
@@ -157,7 +161,11 @@ Route::put('/shipping-zones/{id}', [ShippingZoneController::class, 'update']);
 Route::delete('/shipping-zones/{id}', [ShippingZoneController::class, 'destroy']);
 
 Route::get('/farmers', [FarmerController::class, 'index']);
+Route::post('/farmers/register', [FarmerController::class, 'register']);
 Route::get('/farmers/{id}', [FarmerController::class, 'show']);
+Route::get('/admin/farmers', [FarmerController::class, 'adminIndex']);
+Route::put('/admin/farmers/{id}/status', [FarmerController::class, 'updateStatus']);
+Route::delete('/admin/farmers/{id}', [FarmerController::class, 'destroy']);
 
 Route::get('/ghn/provinces', [GHNController::class, 'getProvinces']);
 Route::get('/ghn/districts/{provinceId}', [GHNController::class, 'getDistricts']);
