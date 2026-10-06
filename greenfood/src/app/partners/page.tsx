@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, Handshake, Sprout, TrendingUp, DollarSign, CheckCircle2, Send, PhoneCall, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { registerFarmerApi } from '@/lib/api';
 
 export default function PartnersPage() {
   const [partnerType, setPartnerType] = useState('farmer');
@@ -17,18 +18,35 @@ export default function PartnersPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone) {
+    if (!formData.name.trim() || !formData.phone.trim()) {
       toast.error('Vui lòng nhập họ tên và số điện thoại liên hệ!');
       return;
     }
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const res = await registerFarmerApi({
+        farm_name: formData.name.trim(),
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim() || undefined,
+        location: formData.location.trim() || undefined,
+        scale: formData.scale.trim() || undefined,
+        note: formData.note.trim() || undefined,
+      });
+
+      if (res && res.success) {
+        toast.success(res.message || 'Đăng ký đối tác nông hộ thành công! Hồ sơ đã gửi đến ban quản trị kiểm duyệt.');
+        setFormData({ name: '', phone: '', email: '', location: '', scale: '', note: '' });
+      } else {
+        toast.error(res?.message || 'Có lỗi xảy ra khi gửi thông tin, vui lòng thử lại.');
+      }
+    } catch (err) {
+      toast.error('Lỗi kết nối máy chủ!');
+    } finally {
       setIsSubmitting(false);
-      toast.success('Gửi thông tin hợp tác thành công! GreenFood sẽ liên hệ lại trong 24h.');
-      setFormData({ name: '', phone: '', email: '', location: '', scale: '', note: '' });
-    }, 1000);
+    }
   };
 
   const benefits = [

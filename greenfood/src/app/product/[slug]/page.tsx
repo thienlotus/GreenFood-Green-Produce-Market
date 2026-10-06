@@ -271,12 +271,22 @@ export default function ProductDetailPage() {
                       </p>
                     </div>
                   </div>
-                  <Link 
-                    href="/map"
-                    className="text-xs font-bold text-emerald-700 hover:underline bg-white px-3 py-1.5 rounded-full border border-emerald-200 shadow-2xs"
-                  >
-                    Xem vị trí vườn 📍
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    {product.farmer.id && (
+                      <Link 
+                        href={`/farmers/${product.farmer.id}`}
+                        className="text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-white px-3 py-1.5 rounded-full border border-emerald-200 shadow-2xs hover:bg-emerald-50 transition-colors"
+                      >
+                        Ghé thăm gian hàng 🛒
+                      </Link>
+                    )}
+                    <Link 
+                      href="/map"
+                      className="text-xs font-bold text-emerald-700 hover:underline bg-white px-3 py-1.5 rounded-full border border-emerald-200 shadow-2xs"
+                    >
+                      Xem vị trí vườn 📍
+                    </Link>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-600 italic bg-white/70 p-3 rounded-xl border border-emerald-100/60 mt-3">
                   &ldquo;{product.farmer.story}&rdquo;
@@ -308,6 +318,7 @@ export default function ProductDetailPage() {
                   name={p.name}
                   slug={p.slug}
                   farmerName={p.farmer.name}
+                  farmerId={p.farmer?.id || p.farmerId}
                   region={p.farmer.region}
                   image={p.images[0]}
                   defaultPrice={p.variants[0].price}

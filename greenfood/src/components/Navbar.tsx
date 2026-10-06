@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, ChevronDown, List, Map, Package, LogOut, ShieldCheck, X } from 'lucide-react';
+import { ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, ChevronDown, List, Map, Package, LogOut, ShieldCheck, X, Store } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useState, useEffect } from 'react';
@@ -50,8 +50,11 @@ export default function Navbar() {
             <div onClick={() => toast('Tính năng tải ứng dụng đang phát triển')} className="flex items-center gap-1 hover:text-emerald-200 cursor-pointer transition-colors">
               <Download size={14} /> Tải ứng dụng
             </div>
+            <Link href="/farmer" className="flex items-center gap-1 text-emerald-200 hover:text-white font-medium transition-colors">
+              <Store size={14} /> Kênh Người Bán
+            </Link>
             <Link href="/partners" className="flex items-center gap-1 hover:text-emerald-200 transition-colors">
-              <Users size={14} /> Dành cho Nông hộ
+              <Users size={14} /> Đăng ký Nông hộ
             </Link>
             {mounted && isAuthenticated && user && (
               <Link href="/profile" className="flex items-center gap-1 text-amber-300 hover:text-amber-200 font-bold transition-colors">
@@ -266,7 +269,10 @@ export default function Navbar() {
               <Link href="/category/dac-san" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
                 ĐẶC SẢN
               </Link>
-              <Link href="/map" className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
+              <Link href="/farmers" className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
+                <Store size={15} /> GIAN HÀNG NÔNG HỘ
+              </Link>
+              <Link href="/map" className="flex items-center gap-1.5 text-gray-700 hover:text-emerald-600 font-bold text-sm uppercase transition-colors">
                 <Map size={15} /> BẢN ĐỒ NHÀ VƯỜN
               </Link>
               <Link href="/tracking" className="flex items-center gap-1.5 text-amber-700 hover:text-amber-600 font-bold text-sm uppercase transition-colors">

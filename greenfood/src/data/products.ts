@@ -6,6 +6,7 @@ export interface ProductVariant {
 }
 
 export interface FarmerInfo {
+  id?: string;
   name: string;
   region: string;
   rating: number;
@@ -21,6 +22,7 @@ export interface ProductItem {
   categoryName: string;
   description: string;
   farmer: FarmerInfo;
+  farmerId?: string;
   images: string[];
   variants: ProductVariant[];
   badge?: string;
