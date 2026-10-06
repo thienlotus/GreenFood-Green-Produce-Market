@@ -87,7 +87,7 @@ export default function HowToBuyPage() {
             <ul className="text-sm text-amber-800 space-y-2 list-disc pl-5">
               <li>Nên đặt trước 10h sáng để nông sản được tuyển chọn từ các chuyến hàng bình minh vừa cập bến.</li>
               <li>Nhập mã giảm giá (nếu có) tại trang giỏ hàng trước khi bấm thanh toán.</li>
-              <li>Sử dụng chức năng <strong>"Theo Dõi Đơn"</strong> để biết chính xác vị trí shipper đang di chuyển.</li>
+              <li>Sử dụng chức năng <strong>&ldquo;Theo Dõi Đơn&rdquo;</strong> để biết chính xác vị trí shipper đang di chuyển.</li>
             </ul>
           </div>
 

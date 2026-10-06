@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/navigation';
-import NextLink from 'next/link';
+import Link from 'next/link';
 import { 
   ChevronRight, MapPin, Star, ShieldCheck, Phone, Mail, 
   Leaf, Package, ArrowLeft, Share2, Award, Clock
@@ -68,12 +67,12 @@ export default function FarmerStorefrontPage() {
         <p className="text-gray-500 mb-6 max-w-md">
           Nhà vườn này có thể chưa được kích hoạt hoặc đường dẫn không chính xác.
         </p>
-        <NextLink
+        <Link
           href="/farmers"
           className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-sm"
         >
           <ArrowLeft size={18} /> Quay lại danh sách nông hộ
-        </NextLink>
+        </Link>
       </div>
     );
   }
@@ -85,9 +84,9 @@ export default function FarmerStorefrontPage() {
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-100">
         <div className="container mx-auto px-4 lg:px-8 py-3 flex items-center text-xs text-gray-500 gap-1.5">
-          <NextLink href="/" className="hover:text-emerald-600 transition-colors">Trang chủ</NextLink>
+          <Link href="/" className="hover:text-emerald-600 transition-colors">Trang chủ</Link>
           <ChevronRight size={12} />
-          <NextLink href="/farmers" className="hover:text-emerald-600 transition-colors">Nông hộ đối tác</NextLink>
+          <Link href="/farmers" className="hover:text-emerald-600 transition-colors">Nông hộ đối tác</Link>
           <ChevronRight size={12} />
           <span className="text-gray-900 font-medium truncate">{farmer.farm_name || farmer.name}</span>
         </div>
@@ -146,12 +145,12 @@ export default function FarmerStorefrontPage() {
               >
                 <Share2 size={18} />
               </button>
-              <NextLink
+              <Link
                 href="/map"
                 className="flex-1 sm:flex-none text-center bg-white text-emerald-800 hover:bg-emerald-50 font-bold px-5 py-3 rounded-xl text-sm transition-all shadow-md"
               >
                 Vị trí vườn 📍
-              </NextLink>
+              </Link>
             </div>
           </div>
 

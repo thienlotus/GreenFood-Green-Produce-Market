@@ -50,18 +50,26 @@ class FarmerRepository
         return Farmer::create($data);
     }
 
-    public function update(Farmer|string $farmer, array $data): bool
+    public function update(Farmer|string|int $farmer, array $data): bool
     {
-        if (is_string($farmer)) {
-            $farmer = Farmer::findOrFail($farmer);
+        if (!$farmer instanceof Farmer) {
+            $found = Farmer::find($farmer);
+            if (!$found) {
+                return false;
+            }
+            $farmer = $found;
         }
-        return $farmer->update($data);
+        return (bool) $farmer->update($data);
     }
 
-    public function delete(Farmer|string $farmer): bool
+    public function delete(Farmer|string|int $farmer): bool
     {
-        if (is_string($farmer)) {
-            $farmer = Farmer::findOrFail($farmer);
+        if (!$farmer instanceof Farmer) {
+            $found = Farmer::find($farmer);
+            if (!$found) {
+                return false;
+            }
+            $farmer = $found;
         }
         return (bool) $farmer->delete();
     }

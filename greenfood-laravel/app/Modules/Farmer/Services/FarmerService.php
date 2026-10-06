@@ -49,16 +49,16 @@ class FarmerService
             $user = \App\Models\User::create([
                 'name' => $name,
                 'full_name' => $name,
-                'phone' => $phone ?? ('09' . rand(10000000, 99999999)),
+                'phone' => $phone ?? ('09' . random_int(10000000, 99999999)),
                 'email' => $email ?? ('farmer_' . time() . '@greenfood.asia'),
                 'password' => bcrypt('GreenFood@123'),
-                'role' => 'FARMER',
-                'is_verified' => true,
+                'role' => 'VENDOR',
+                'email_verified' => true,
             ]);
         } else {
             // Cập nhật role nếu chưa có
             if ($user->role !== 'ADMIN') {
-                $user->update(['role' => 'FARMER']);
+                $user->update(['role' => 'VENDOR']);
             }
         }
 

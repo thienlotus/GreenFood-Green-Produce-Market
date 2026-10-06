@@ -427,6 +427,7 @@ export default function Navbar() {
                 { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: Apple, color: 'text-rose-500' },
                 { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700' },
                 { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: Gift, color: 'text-purple-600' },
+                { name: 'Gian hàng nông hộ', href: '/farmers/', icon: Store, color: 'text-emerald-700' },
                 { name: 'Bản đồ nhà vườn', href: '/map/', icon: Map, color: 'text-emerald-600' },
                 { name: 'Theo dõi đơn hàng', href: '/tracking/', icon: Package, color: 'text-amber-600' },
                 { name: 'Hồ sơ cá nhân & VIP', href: '/profile/', icon: User, color: 'text-teal-600' },

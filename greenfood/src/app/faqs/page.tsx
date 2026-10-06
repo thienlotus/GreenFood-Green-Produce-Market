@@ -139,7 +139,7 @@ export default function FaqsPage() {
             })
           ) : (
             <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
-              <p className="text-gray-500 text-sm">Không tìm thấy câu hỏi phù hợp với từ khóa "{searchQuery}"</p>
+              <p className="text-gray-500 text-sm">Không tìm thấy câu hỏi phù hợp với từ khóa &ldquo;{searchQuery}&rdquo;</p>
             </div>
           )}
         </div>

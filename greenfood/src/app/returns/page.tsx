@@ -44,7 +44,7 @@ export default function ReturnPolicyPage() {
           {/* Guarantee banner */}
           <div className="bg-gradient-to-r from-emerald-800 to-teal-700 text-white rounded-xl p-6 mb-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <h3 className="text-xl font-bold mb-1">Cam Kết "Đổi Mới Hoặc Hoàn Tiền 100%"</h3>
+              <h3 className="text-xl font-bold mb-1">Cam Kết &ldquo;Đổi Mới Hoặc Hoàn Tiền 100%&rdquo;</h3>
               <p className="text-sm text-emerald-100">
                 Nếu nông sản giao đến không tươi ngon như cam kết, quý khách không cần phải trả thêm bất kỳ chi phí nào.
               </p>

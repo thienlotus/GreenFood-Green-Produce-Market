@@ -250,13 +250,13 @@ class UserService
             ];
         }
 
-        // Giới hạn 5 lần trong vòng 15 phút để bảo vệ hệ thống nhưng không làm phiền người dùng hợp lệ
+        // Giới hạn 3 lần trong vòng 15 phút để bảo vệ hệ thống chống spam OTP
         $recentCount = $this->emailVerificationRepository->getRecentAttemptsCount($email, 15);
-        if ($recentCount >= 5) {
+        if ($recentCount >= 3) {
             return [
                 'success' => false,
                 'status' => 429,
-                'message' => 'Bạn đã gửi yêu cầu quá 5 lần trong vòng 15 phút. Vui lòng chờ trước khi thử lại!',
+                'message' => 'Bạn đã yêu cầu gửi mã quá 3 lần trong vòng 15 phút. Vui lòng chờ trước khi thử lại!',
             ];
         }
 

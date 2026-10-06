@@ -29,7 +29,7 @@ export default function TermsPage() {
                 <span className="text-emerald-600 font-extrabold">1.</span> Giới thiệu chung
               </h2>
               <p>
-                Chào mừng quý khách đến với sàn thương mại điện tử nông sản <strong>GreenFood</strong> (sau đây gọi tắt là "GreenFood", "chúng tôi"). Việc quý khách truy cập, đăng ký tài khoản và thực hiện đặt hàng trên website đồng nghĩa với việc quý khách chấp thuận và tuân thủ toàn bộ các điều khoản được quy định dưới đây.
+                Chào mừng quý khách đến với sàn thương mại điện tử nông sản <strong>GreenFood</strong> (sau đây gọi tắt là &ldquo;GreenFood&rdquo;, &ldquo;chúng tôi&rdquo;). Việc quý khách truy cập, đăng ký tài khoản và thực hiện đặt hàng trên website đồng nghĩa với việc quý khách chấp thuận và tuân thủ toàn bộ các điều khoản được quy định dưới đây.
               </p>
               <p className="mt-2">
                 GreenFood có quyền điều chỉnh, bổ sung nội dung các điều khoản bất cứ lúc nào. Các thay đổi có hiệu lực ngay khi được công bố chính thức trên website.
