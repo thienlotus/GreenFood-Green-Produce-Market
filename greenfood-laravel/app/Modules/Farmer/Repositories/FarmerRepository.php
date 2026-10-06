@@ -42,7 +42,7 @@ class FarmerRepository
 
     public function getAllForAdmin(): Collection
     {
-        return Farmer::with(['region', 'user', 'products'])->latest()->get();
+        return Farmer::with(['region', 'user', 'products.variants'])->latest()->get();
     }
 
     public function create(array $data): Farmer

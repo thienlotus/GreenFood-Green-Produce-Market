@@ -37,11 +37,17 @@ export default function FarmerPortalPage() {
 
   const currentFarmer = farmers.find(f => f.id === selectedFarmerId) || farmers[0];
 
-  // Quick stats
+  // Quick stats tính toán động chuẩn theo dữ liệu thực tế của từng nhà vườn
   const products = currentFarmer?.products || [];
   const totalProducts = products.length;
-  const estimatedRevenue = 28500000; // Doanh thu vụ mùa giả định
-  const totalOrders = 86; // Đơn hàng giao trong vụ
+
+  // Tính tổng số lượt đặt hàng / bán ra và tổng doanh thu thực tế từ nông sản của nhà vườn
+  const totalOrders = products.reduce((sum: number, p: any) => sum + (Number(p.sold_count) || 0), 0);
+  const estimatedRevenue = products.reduce((sum: number, p: any) => {
+    const sold = Number(p.sold_count) || 0;
+    const price = Number(p.variants?.[0]?.price) || 0;
+    return sum + (sold * price);
+  }, 0);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -151,10 +157,14 @@ export default function FarmerPortalPage() {
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-gray-900">
-                      {estimatedRevenue.toLocaleString('vi-VN')}đ
+                      {estimatedRevenue > 0 ? `${estimatedRevenue.toLocaleString('vi-VN')}đ` : '0đ'}
                     </div>
-                    <p className="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
-                      <span>↑ 18.5%</span> so với vụ trước
+                    <p className="text-xs text-gray-500 font-medium mt-1">
+                      {estimatedRevenue > 0 ? (
+                        <span className="text-emerald-600 font-semibold">Doanh thu thực theo đơn chốt</span>
+                      ) : (
+                        <span>Chưa phát sinh doanh thu</span>
+                      )}
                     </p>
                   </div>
 
@@ -168,7 +178,9 @@ export default function FarmerPortalPage() {
                     <div className="text-2xl font-bold text-gray-900">
                       {totalOrders} đơn
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Giao qua đối tác GHN</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {totalOrders > 0 ? 'Giao qua đối tác GHN' : 'Chưa có đơn hàng phát sinh'}
+                    </p>
                   </div>
 
                   <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs">
@@ -181,7 +193,13 @@ export default function FarmerPortalPage() {
                     <div className="text-2xl font-bold text-gray-900">
                       {totalProducts} sản phẩm
                     </div>
-                    <p className="text-xs text-emerald-600 font-medium mt-1">Đang mở bán trên sàn</p>
+                    <p className="text-xs text-gray-500 font-medium mt-1">
+                      {totalProducts > 0 ? (
+                        <span className="text-emerald-600 font-semibold">Đang mở bán trên sàn</span>
+                      ) : (
+                        <span>Chưa đăng bán sản phẩm</span>
+                      )}
+                    </p>
                   </div>
 
                   <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs">
@@ -192,35 +210,58 @@ export default function FarmerPortalPage() {
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-gray-900 flex items-center gap-1">
-                      ⭐ {Number(currentFarmer?.rating || 4.9).toFixed(1)}
+                      ⭐ {Number(currentFarmer?.rating || 5.0).toFixed(1)}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Chuẩn nông sản VietGAP</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {currentFarmer?.is_verified ? 'Nhà vườn chuẩn VietGAP' : 'Đang chờ thẩm định'}
+                    </p>
                   </div>
                 </div>
 
                 {/* Status Notice */}
-                <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                      <CheckCircle size={20} />
+                {currentFarmer?.is_verified ? (
+                  <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                        <CheckCircle size={20} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-emerald-950 text-sm">
+                          Gian hàng {currentFarmer?.farm_name} đã xác minh và hoạt động bình thường!
+                        </h4>
+                        <p className="text-xs text-emerald-700 mt-0.5">
+                          Khi có đơn đặt hàng mới từ khách, hệ thống sẽ tự động thông báo và điều phối đơn vị vận chuyển GHN đến thu gom tại vườn.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-emerald-950 text-sm">
-                        Gian hàng {currentFarmer?.farm_name} đã xác minh và hoạt động bình thường!
-                      </h4>
-                      <p className="text-xs text-emerald-700 mt-0.5">
-                        Khi có đơn đặt hàng mới từ khách, hệ thống sẽ tự động thông báo và điều phối đơn vị vận chuyển GHN đến thu gom tại vườn.
-                      </p>
-                    </div>
+                    <Link
+                      href={`/farmers/${currentFarmer?.id}`}
+                      target="_blank"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors shadow-2xs"
+                    >
+                      Xem gian hàng của tôi 🛒
+                    </Link>
                   </div>
-                  <Link
-                    href={`/farmers/${currentFarmer?.id}`}
-                    target="_blank"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors shadow-2xs"
-                  >
-                    Xem gian hàng của tôi 🛒
-                  </Link>
-                </div>
+                ) : (
+                  <div className="bg-amber-50 rounded-2xl p-5 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0">
+                        <AlertCircle size={20} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-amber-950 text-sm">
+                          Hồ sơ gian hàng {currentFarmer?.farm_name} đang chờ ban quản trị GreenFood xét duyệt!
+                        </h4>
+                        <p className="text-xs text-amber-700 mt-0.5">
+                          Đội ngũ kiểm định chất lượng sẽ liên hệ thẩm định tiêu chuẩn VietGAP/Hữu cơ trong 24h làm việc.
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-amber-700 bg-amber-100 px-3 py-1.5 rounded-xl">
+                      Chờ duyệt ⏳
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -283,7 +324,7 @@ export default function FarmerPortalPage() {
                                 {Number(variant.price || 60000).toLocaleString('vi-VN')}đ / {variant.unit || 'kg'}
                               </td>
                               <td className="p-4 font-medium text-gray-700">
-                                {p.sold_count || 12} đơn
+                                {Number(p.sold_count || 0)} lượt bán
                               </td>
                               <td className="p-4 text-amber-500 font-bold">
                                 ⭐ {Number(p.rating || 5.0).toFixed(1)}
