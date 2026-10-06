@@ -292,3 +292,12 @@ body {
   animation: sloganWaveShimmer 4.5s linear infinite;
   display: inline-block;
 }
+
+/* Tiện ích ẩn thanh cuộn cho thanh menu ngang mượt mà */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
