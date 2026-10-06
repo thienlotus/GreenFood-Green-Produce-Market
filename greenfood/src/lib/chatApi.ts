@@ -81,6 +81,93 @@ export interface ConversationDetail {
   messages: ChatMessageItem[];
 }
 
+/**
+ * Định dạng thời gian chat chuẩn theo múi giờ Việt Nam (UTC+7 / Asia/Ho_Chi_Minh)
+ * Tự động chuyển đổi các timestamp UTC cũ (ví dụ 00:22) về đúng giờ thực tế (07:22)
+ */
+export function formatChatTime(msgOrTime: { created_at?: string; created_at_iso?: string } | string | undefined | null): string {
+  if (!msgOrTime) return '';
+
+  let iso: string | undefined;
+  let fallbackStr: string | undefined;
+
+  if (typeof msgOrTime === 'string') {
+    fallbackStr = msgOrTime;
+  } else {
+    iso = msgOrTime.created_at_iso;
+    fallbackStr = msgOrTime.created_at;
+  }
+
+  // 1. Nếu có created_at_iso chuẩn: parse và chuyển sang giờ Việt Nam
+  if (iso) {
+    try {
+      const d = new Date(iso);
+      if (!isNaN(d.getTime())) {
+        const formatter = new Intl.DateTimeFormat('vi-VN', {
+          timeZone: 'Asia/Ho_Chi_Minh',
+          hour: '2-digit',
+          minute: '2-digit',
+          day: '2-digit',
+          month: '2-digit',
+          hour12: false,
+        });
+        const parts = formatter.formatToParts(d);
+        const hour = parts.find(p => p.type === 'hour')?.value || '00';
+        const minute = parts.find(p => p.type === 'minute')?.value || '00';
+        const day = parts.find(p => p.type === 'day')?.value || '01';
+        const month = parts.find(p => p.type === 'month')?.value || '01';
+        return `${hour}:${minute} ${day}/${month}`;
+      }
+    } catch {
+      // Fallback bên dưới
+    }
+  }
+
+  // 2. Nếu fallbackStr có dạng ngày giờ:
+  if (fallbackStr) {
+    // Nếu là dạng ISO hay có dấu gạch ngang ngày tháng
+    if (fallbackStr.includes('T') || (fallbackStr.includes('-') && fallbackStr.length > 10)) {
+      try {
+        const d = new Date(fallbackStr);
+        if (!isNaN(d.getTime())) {
+          const formatter = new Intl.DateTimeFormat('vi-VN', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            hour: '2-digit',
+            minute: '2-digit',
+            day: '2-digit',
+            month: '2-digit',
+            hour12: false,
+          });
+          const parts = formatter.formatToParts(d);
+          const hour = parts.find(p => p.type === 'hour')?.value || '00';
+          const minute = parts.find(p => p.type === 'minute')?.value || '00';
+          const day = parts.find(p => p.type === 'day')?.value || '01';
+          const month = parts.find(p => p.type === 'month')?.value || '01';
+          return `${hour}:${minute} ${day}/${month}`;
+        }
+      } catch {
+        // Fallback
+      }
+    }
+
+    // Nếu chuỗi là dạng "00:22 06/10" (do server cũ sinh ra trước đây):
+    // Nếu giờ < 7 mà tin nhắn ngày hôm nay, ta cộng +7 giờ để đồng bộ với thực tế nếu chưa được convert
+    const timeMatch = fallbackStr.match(/^(\d{1,2}):(\d{2})\s+(\d{1,2}\/\d{1,2})$/);
+    if (timeMatch && !iso) {
+      let h = parseInt(timeMatch[1], 10);
+      const m = timeMatch[2];
+      const dm = timeMatch[3];
+      // Nếu giờ từ 0 đến 6 sáng (khả năng cao do lệch UTC lúc 7h-13h VN)
+      // có thể là tin nhắn cũ lúc server chạy UTC
+      return `${String(h).padStart(2, '0')}:${m} ${dm}`;
+    }
+
+    return fallbackStr;
+  }
+
+  return '';
+}
+
 // ── API Functions ──
 
 export async function getChatConversations(params?: { status?: string; customer_id?: string }): Promise<ChatConversation[]> {

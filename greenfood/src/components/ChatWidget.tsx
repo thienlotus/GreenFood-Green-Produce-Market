@@ -9,6 +9,7 @@ import {
   sendChatMessage,
   getChatUnreadCount,
   ChatMessageItem,
+  formatChatTime,
 } from '@/lib/chatApi';
 
 const QUICK_PROMPTS = [
@@ -230,7 +231,7 @@ export default function ChatWidget() {
                     <p className={`text-[10px] mt-1 text-right ${
                       isCustomer ? 'text-emerald-100' : 'text-gray-400'
                     }`}>
-                      {msg.created_at}
+                      {formatChatTime(msg)}
                     </p>
                   </div>
                 </div>

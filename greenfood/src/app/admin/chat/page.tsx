@@ -12,6 +12,7 @@ import {
   closeChatConversation,
   ChatConversation,
   ChatMessageItem,
+  formatChatTime,
 } from '@/lib/chatApi';
 import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 
@@ -251,7 +252,7 @@ export default function AdminChatPage() {
                       <p className={`text-[10px] mt-1 ${
                         isAdmin ? 'text-emerald-200' : 'text-gray-400'
                       }`}>
-                        {msg.created_at}
+                        {formatChatTime(msg)}
                         {isAdmin && msg.is_read && ' ✓✓'}
                       </p>
                     </div>

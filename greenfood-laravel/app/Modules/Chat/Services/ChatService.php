@@ -36,10 +36,10 @@ class ChatService
                 'last_message' => $conv->latestMessage ? [
                     'message' => Str::limit($conv->latestMessage->message, 80),
                     'sender_role' => $conv->latestMessage->sender_role,
-                    'created_at' => $conv->latestMessage->created_at->diffForHumans(),
+                    'created_at' => $conv->latestMessage->created_at->timezone('Asia/Ho_Chi_Minh')->diffForHumans(),
                 ] : null,
-                'created_at' => $conv->created_at->format('Y-m-d H:i'),
-                'updated_at' => $conv->updated_at->diffForHumans(),
+                'created_at' => $conv->created_at->timezone('Asia/Ho_Chi_Minh')->format('H:i d/m'),
+                'updated_at' => $conv->updated_at->timezone('Asia/Ho_Chi_Minh')->diffForHumans(),
             ];
         });
     }
@@ -81,8 +81,8 @@ class ChatService
                     'message' => $msg->message,
                     'message_type' => $msg->message_type,
                     'is_read' => $msg->is_read,
-                    'created_at' => $msg->created_at->format('H:i d/m'),
-                    'created_at_iso' => $msg->created_at->toIso8601String(),
+                    'created_at' => $msg->created_at->timezone('Asia/Ho_Chi_Minh')->format('H:i d/m'),
+                    'created_at_iso' => $msg->created_at->timezone('Asia/Ho_Chi_Minh')->toIso8601String(),
                 ];
             }),
         ];
@@ -180,8 +180,8 @@ class ChatService
                         'sender_name' => 'Trợ lý AI (Gemini Flash)',
                         'message' => $bMsg->message,
                         'message_type' => $bMsg->message_type,
-                        'created_at' => $bMsg->created_at->format('H:i d/m'),
-                        'created_at_iso' => $bMsg->created_at->toIso8601String(),
+                        'created_at' => $bMsg->created_at->timezone('Asia/Ho_Chi_Minh')->format('H:i d/m'),
+                        'created_at_iso' => $bMsg->created_at->timezone('Asia/Ho_Chi_Minh')->toIso8601String(),
                     ];
                 }
             }
@@ -194,7 +194,8 @@ class ChatService
             'sender_role' => $senderRole,
             'message' => $msg->message,
             'message_type' => $msg->message_type,
-            'created_at' => $msg->created_at->format('H:i d/m'),
+            'created_at' => $msg->created_at->timezone('Asia/Ho_Chi_Minh')->format('H:i d/m'),
+            'created_at_iso' => $msg->created_at->timezone('Asia/Ho_Chi_Minh')->toIso8601String(),
             'bot_reply' => $botReplyData,
         ];
     }
@@ -241,8 +242,8 @@ class ChatService
                     'message' => $msg->message,
                     'message_type' => $msg->message_type,
                     'is_read' => $msg->is_read,
-                    'created_at' => $msg->created_at->format('H:i d/m'),
-                    'created_at_iso' => $msg->created_at->toIso8601String(),
+                    'created_at' => $msg->created_at->timezone('Asia/Ho_Chi_Minh')->format('H:i d/m'),
+                    'created_at_iso' => $msg->created_at->timezone('Asia/Ho_Chi_Minh')->toIso8601String(),
                 ];
             }),
         ];
