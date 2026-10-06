@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, 
-  ChevronDown, List, Map, Package, LogOut, ShieldCheck, X,
+  ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, List, Map, Package, LogOut, ShieldCheck, X,
   ShoppingBag, Apple, Coffee, Gift, Store
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import BrandLogo from '@/components/BrandLogo';
 
@@ -20,11 +20,84 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
-  
+
+  // Scrollable ribbon states & drag controls
+  const navRef = useRef<HTMLElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+  const hasMovedRef = useRef(false);
+
+  const checkScroll = useCallback(() => {
+    if (navRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = navRef.current;
+      setCanScrollLeft(scrollLeft > 4);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
+    }
+  }, []);
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener('scroll', checkScroll, { passive: true });
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      el.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [checkScroll, mounted, isAuthenticated, user]);
+
+  const scrollNav = (direction: 'left' | 'right') => {
+    if (navRef.current) {
+      const scrollAmount = 260;
+      navRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+      setTimeout(checkScroll, 350);
+    }
+  };
+
+  const handleNavWheel = (e: React.WheelEvent) => {
+    if (navRef.current && (e.deltaY !== 0 || e.deltaX !== 0)) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        navRef.current.scrollLeft += e.deltaY;
+        checkScroll();
+      }
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!navRef.current) return;
+    isDraggingRef.current = true;
+    hasMovedRef.current = false;
+    startXRef.current = e.pageX - navRef.current.offsetLeft;
+    scrollLeftRef.current = navRef.current.scrollLeft;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingRef.current || !navRef.current) return;
+    const x = e.pageX - navRef.current.offsetLeft;
+    const walk = x - startXRef.current;
+    if (Math.abs(walk) > 4) {
+      hasMovedRef.current = true;
+    }
+    navRef.current.scrollLeft = scrollLeftRef.current - walk;
+    checkScroll();
+  };
+
+  const handleMouseUpOrLeave = () => {
+    isDraggingRef.current = false;
+  };
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -230,24 +303,24 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 3. MENU BAR (Desktop Only) - Tối ưu hiển thị đầy đủ 100% các mục lựa chọn, không bị tràn hay mất chữ */}
-      <div className="hidden lg:block border-t border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs">
+      {/* 3. MENU BAR (Desktop Only) - Hỗ trợ cả 2 dạng: KÉO NGANG mượt mà & KÉO XUỐNG tiện lợi */}
+      <div className="hidden lg:block border-t border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs relative select-none">
         <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-3 lg:px-4 xl:px-6">
-          <div className="flex items-center gap-1.5 xl:gap-2.5 2xl:gap-3.5 h-12 xl:h-13 py-1 overflow-x-auto no-scrollbar scroll-smooth">
+          <div className="flex items-center gap-2 xl:gap-3 h-12 xl:h-13 py-1">
             
-            {/* Mega Menu Toggle */}
+            {/* CỐ ĐỊNH BÊN TRÁI: Mega Menu Dropdown (DẠNG KÉO XUỐNG TOÀN DIỆN) */}
             <div 
-              className="relative flex items-center shrink-0"
+              className="relative flex items-center shrink-0 z-30"
               onMouseEnter={() => setIsCategoryOpen(true)}
               onMouseLeave={() => setIsCategoryOpen(false)}
             >
-              <button className="flex items-center gap-1 xl:gap-1.5 bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-800 hover:from-emerald-800 hover:to-teal-900 text-white px-2.5 xl:px-3.5 py-1.5 rounded-full font-bold text-[11px] xl:text-xs 2xl:text-[13px] tracking-wide whitespace-nowrap shadow-xs hover:shadow-md hover:shadow-emerald-950/20 active:scale-95 transition-all duration-300 cursor-pointer shrink-0">
-                <List size={13} className="shrink-0" />
+              <button className="flex items-center gap-1.5 xl:gap-2 bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-800 hover:from-emerald-800 hover:to-teal-900 text-white px-3 xl:px-3.5 py-1.5 rounded-full font-bold text-xs xl:text-[13px] tracking-wide whitespace-nowrap shadow-xs hover:shadow-md hover:shadow-emerald-950/20 active:scale-95 transition-all duration-300 cursor-pointer shrink-0">
+                <List size={14} className="shrink-0" />
                 <span>Danh mục nông sản</span>
-                <ChevronDown size={11} className={`transition-transform duration-300 shrink-0 ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={12} className={`transition-transform duration-300 shrink-0 ${isCategoryOpen ? 'rotate-180' : ''}`} />
               </button>
 
-              {/* Dropdown Content */}
+              {/* Dropdown Content - Kéo xuống đầy đủ tất cả các mục */}
               {isCategoryOpen && (
                 <div className="absolute top-full left-0 w-64 bg-white/95 backdrop-blur-xl shadow-2xl border border-slate-200/90 py-2.5 z-50 rounded-2xl mt-1.5 animate-fadeIn">
                   {[
@@ -255,8 +328,10 @@ export default function Navbar() {
                     { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: Apple, color: 'text-rose-600 bg-rose-50' },
                     { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700 bg-amber-50' },
                     { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: Gift, color: 'text-purple-600 bg-purple-50' },
-                    { name: 'Agrishow Triển lãm', href: '/category/agrishow/', icon: Store, color: 'text-teal-600 bg-teal-50' },
-                    { name: 'Nông hộ & Nhà vườn', href: '/farmers/', icon: Users, color: 'text-sky-600 bg-sky-50' }
+                    { name: 'Gian hàng nông hộ', href: '/farmers/', icon: Store, color: 'text-emerald-700 bg-emerald-50' },
+                    { name: 'Bản đồ nhà vườn', href: '/map/', icon: Map, color: 'text-teal-600 bg-teal-50' },
+                    { name: 'Theo dõi đơn hàng', href: '/tracking/', icon: Package, color: 'text-amber-700 bg-amber-50' },
+                    { name: 'Hồ sơ của tôi', href: '/profile/', icon: User, color: 'text-teal-700 bg-teal-50' },
                   ].map((cat) => {
                     const IconComp = cat.icon;
                     return (
@@ -276,67 +351,169 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Horizontal Links - Tinh gọn khoảng cách và kích thước, vừa vặn hoàn toàn trên mọi màn hình */}
-            <nav className="flex items-center gap-0.5 xl:gap-1.5 2xl:gap-2 min-w-0">
-              <Link 
-                href="/category/di-cho-online/" 
-                className="px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-full text-[11px] xl:text-xs 2xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1 xl:gap-1.5 whitespace-nowrap shrink-0 group"
-              >
-                <ShoppingBag size={13} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Đi chợ online</span>
-              </Link>
-              <Link 
-                href="/category/trai-cay/" 
-                className="px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-full text-[11px] xl:text-xs 2xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50 transition-all duration-200 flex items-center gap-1 xl:gap-1.5 whitespace-nowrap shrink-0 group"
-              >
-                <Apple size={13} className="text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Trái cây tươi</span>
-              </Link>
-              <Link 
-                href="/category/tra-ca-phe/" 
-                className="px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-full text-[11px] xl:text-xs 2xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50 transition-all duration-200 flex items-center gap-1 xl:gap-1.5 whitespace-nowrap shrink-0 group"
-              >
-                <Coffee size={13} className="text-amber-700 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Trà & Cà phê</span>
-              </Link>
-              <Link 
-                href="/category/dac-san/" 
-                className="px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-full text-[11px] xl:text-xs 2xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50 transition-all duration-200 flex items-center gap-1 xl:gap-1.5 whitespace-nowrap shrink-0 group"
-              >
-                <Gift size={13} className="text-purple-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Đặc sản</span>
-              </Link>
-              <Link 
-                href="/farmers" 
-                className="px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-full text-[11px] xl:text-xs 2xl:text-[13px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-300/80 transition-all duration-200 flex items-center gap-1 xl:gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
-              >
-                <Store size={13} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Gian hàng nông hộ</span>
-              </Link>
-              <Link 
-                href="/map/" 
-                className="px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-full text-[11px] xl:text-xs 2xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1 xl:gap-1.5 whitespace-nowrap shrink-0 group"
-              >
-                <Map size={13} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Bản đồ nhà vườn</span>
-              </Link>
-              <Link 
-                href="/tracking/" 
-                className="px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-full text-[11px] xl:text-xs 2xl:text-[13px] font-bold text-amber-900 hover:text-amber-950 bg-amber-50/90 hover:bg-amber-100 border border-amber-300/80 transition-all duration-200 flex items-center gap-1 xl:gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
-              >
-                <Package size={13} className="text-amber-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Theo dõi đơn</span>
-              </Link>
-              {mounted && isAuthenticated && user && (
-                <Link 
-                  href="/profile/" 
-                  className="px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-full text-[11px] xl:text-xs 2xl:text-[13px] font-bold text-teal-900 hover:text-teal-950 bg-teal-50/90 hover:bg-teal-100 border border-teal-300/80 transition-all duration-200 flex items-center gap-1 xl:gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
-                >
-                  <User size={13} className="text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
-                  <span>Hồ sơ của tôi</span>
-                </Link>
+            {/* DẢI KÉO NGANG (DẠNG KÉO TRƯỢT NGANG VỚI NÚT MŨI TÊN + DRAG CHUỘT + LĂN CHUỘT) */}
+            <div className="relative flex-1 min-w-0 flex items-center">
+              
+              {/* Nút mũi tên trượt sang trái khi bị khuất */}
+              {canScrollLeft && (
+                <div className="absolute left-0 top-0 bottom-0 z-20 flex items-center pr-3 bg-gradient-to-r from-white via-white/95 to-transparent">
+                  <button
+                    onClick={() => scrollNav('left')}
+                    aria-label="Cuộn sang trái"
+                    className="w-7 h-7 rounded-full bg-white shadow-md border border-slate-200 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 flex items-center justify-center transition-all cursor-pointer active:scale-90"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                </div>
               )}
-            </nav>
+
+              {/* Thanh nav trượt ngang tự do */}
+              <nav
+                ref={navRef}
+                onWheel={handleNavWheel}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUpOrLeave}
+                onMouseLeave={handleMouseUpOrLeave}
+                className="flex items-center gap-1 xl:gap-2 overflow-x-auto no-scrollbar scroll-smooth w-full py-1 cursor-grab active:cursor-grabbing"
+              >
+                <Link 
+                  href="/category/di-cho-online/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                >
+                  <ShoppingBag size={14} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Đi chợ online</span>
+                </Link>
+                <Link 
+                  href="/category/trai-cay/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                >
+                  <Apple size={14} className="text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Trái cây tươi</span>
+                </Link>
+                <Link 
+                  href="/category/tra-ca-phe/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                >
+                  <Coffee size={14} className="text-amber-700 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Trà & Cà phê</span>
+                </Link>
+                <Link 
+                  href="/category/dac-san/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                >
+                  <Gift size={14} className="text-purple-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Đặc sản</span>
+                </Link>
+                <Link 
+                  href="/farmers" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
+                >
+                  <Store size={14} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Gian hàng nông hộ</span>
+                </Link>
+                <Link 
+                  href="/map/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                >
+                  <Map size={14} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Bản đồ nhà vườn</span>
+                </Link>
+                <Link 
+                  href="/tracking/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-amber-900 hover:text-amber-950 bg-amber-50/90 hover:bg-amber-100 border border-amber-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
+                >
+                  <Package size={14} className="text-amber-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Theo dõi đơn</span>
+                </Link>
+                {mounted && isAuthenticated && user && (
+                  <Link 
+                    href="/profile/" 
+                    onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                    className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-teal-900 hover:text-teal-950 bg-teal-50/90 hover:bg-teal-100 border border-teal-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
+                  >
+                    <User size={14} className="text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
+                    <span>Hồ sơ của tôi</span>
+                  </Link>
+                )}
+              </nav>
+
+              {/* Nút mũi tên trượt sang phải khi còn mục bị khuất */}
+              {canScrollRight && (
+                <div className="absolute right-0 top-0 bottom-0 z-20 flex items-center pl-3 bg-gradient-to-l from-white via-white/95 to-transparent">
+                  <button
+                    onClick={() => scrollNav('right')}
+                    aria-label="Cuộn sang phải"
+                    className="w-7 h-7 rounded-full bg-white shadow-md border border-slate-200 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 flex items-center justify-center transition-all cursor-pointer active:scale-90"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+
+            </div>
+
+            {/* NÚT KÉO XUỐNG BỔ SUNG (DROPDOWN "THÊM ▾" TIỆN ÍCH) */}
+            <div 
+              className="relative shrink-0 flex items-center z-30"
+              onMouseEnter={() => setIsMoreMenuOpen(true)}
+              onMouseLeave={() => setIsMoreMenuOpen(false)}
+            >
+              <button 
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-emerald-800 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-all cursor-pointer whitespace-nowrap"
+                title="Kéo xuống xem thêm các mục"
+              >
+                <MoreHorizontal size={14} className="text-slate-600" />
+                <span>Thêm</span>
+                <ChevronDown size={11} className={`transition-transform duration-200 ${isMoreMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Menu Kéo Xuống */}
+              {isMoreMenuOpen && (
+                <div className="absolute top-full right-0 w-52 bg-white/95 backdrop-blur-xl shadow-2xl border border-slate-200/90 py-2 z-50 rounded-2xl mt-1.5 animate-fadeIn">
+                  <div className="px-3.5 py-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Tiện ích nổi bật
+                  </div>
+                  <Link 
+                    href="/farmers" 
+                    className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-semibold transition-colors"
+                  >
+                    <Store size={14} className="text-emerald-600" />
+                    <span>Gian hàng nông hộ</span>
+                  </Link>
+                  <Link 
+                    href="/map/" 
+                    className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-semibold transition-colors"
+                  >
+                    <Map size={14} className="text-emerald-600" />
+                    <span>Bản đồ nhà vườn</span>
+                  </Link>
+                  <Link 
+                    href="/tracking/" 
+                    className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-amber-50 text-slate-700 hover:text-amber-800 text-xs font-semibold transition-colors"
+                  >
+                    <Package size={14} className="text-amber-600" />
+                    <span>Theo dõi đơn hàng</span>
+                  </Link>
+                  {mounted && isAuthenticated && user && (
+                    <Link 
+                      href="/profile/" 
+                      className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-teal-50 text-slate-700 hover:text-teal-800 text-xs font-semibold transition-colors"
+                    >
+                      <User size={14} className="text-teal-600" />
+                      <span>Hồ sơ & Điểm VIP</span>
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
 
           </div>
         </div>
