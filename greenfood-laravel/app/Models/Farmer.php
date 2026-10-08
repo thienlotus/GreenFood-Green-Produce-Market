@@ -21,14 +21,23 @@ class Farmer extends Model
         'image_url',
         'specialty',
         'rating',
-        'is_verified'
+        'is_verified',
+        'bank_name',
+        'bank_account_number',
+        'bank_account_name',
+        'balance_available',
+        'commission_rate',
+        'total_sales_count'
     ];
 
     protected $casts = [
         'latitude' => 'float',
         'longitude' => 'float',
         'rating' => 'float',
-        'is_verified' => 'boolean'
+        'is_verified' => 'boolean',
+        'balance_available' => 'float',
+        'commission_rate' => 'float',
+        'total_sales_count' => 'integer'
     ];
 
     public function user()
@@ -44,5 +53,10 @@ class Farmer extends Model
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function vendorOrders()
+    {
+        return $this->hasMany(VendorOrder::class);
     }
 }

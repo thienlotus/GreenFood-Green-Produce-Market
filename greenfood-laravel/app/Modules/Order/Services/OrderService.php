@@ -64,9 +64,21 @@ class OrderService
 
                 $itemsTotal += ($realPrice * $qty);
 
+                $farmerId = null;
+                if ($productId) {
+                    $prod = \App\Models\Product::find($productId);
+                    if ($prod) {
+                        $farmerId = $prod->farmer_id;
+                    }
+                }
+                if (!$farmerId) {
+                    $farmerId = \App\Models\Farmer::value('id');
+                }
+
                 $validatedItems[] = [
                     'product_id' => $productId,
                     'variant_id' => $variantId,
+                    'farmer_id' => $farmerId,
                     'product_name' => $it['product_name'],
                     'unit' => $it['unit'],
                     'quantity' => $qty,
@@ -124,17 +136,61 @@ class OrderService
                 'dest_lng' => 106.7019,
             ]);
 
+            // ── Tách đơn hàng theo từng Nông Hộ Cung Cấp (Vendor Sub-orders) ──
+            $itemsByFarmer = [];
             foreach ($validatedItems as $it) {
-                $this->orderRepository->createOrderItem([
+                $fId = $it['farmer_id'] ?: (\App\Models\Farmer::value('id') ?? 'default_farmer');
+                $itemsByFarmer[$fId][] = $it;
+            }
+
+            $vendorIndex = 1;
+            $vendorCount = count($itemsByFarmer);
+            $allocatedShippingFee = $vendorCount > 0 ? round($shippingFee / $vendorCount, 2) : 0;
+
+            foreach ($itemsByFarmer as $farmerId => $fItems) {
+                $farmer = \App\Models\Farmer::find($farmerId);
+                $farmerSubtotal = 0;
+                foreach ($fItems as $fi) {
+                    $farmerSubtotal += ($fi['price'] * $fi['quantity']);
+                }
+
+                $commissionRate = $farmer ? (float)$farmer->commission_rate : 8.0;
+                $platformCommission = round(($farmerSubtotal * $commissionRate) / 100, 2);
+                $netEarnings = max(0, $farmerSubtotal - $platformCommission);
+                $subOrderNumber = $order->tracking_number . '-VN' . str_pad((string)$vendorIndex, 2, '0', STR_PAD_LEFT);
+
+                $vendorOrder = \App\Models\VendorOrder::create([
                     'id' => (string) Str::uuid(),
                     'order_id' => $order->id,
-                    'product_id' => $it['product_id'],
-                    'variant_id' => $it['variant_id'],
-                    'product_name' => $it['product_name'],
-                    'unit' => $it['unit'],
-                    'quantity' => $it['quantity'],
-                    'price_at_time' => $it['price'],
+                    'farmer_id' => $farmer ? $farmer->id : (\App\Models\Farmer::value('id') ?? $farmerId),
+                    'sub_order_number' => $subOrderNumber,
+                    'sub_total' => $farmerSubtotal,
+                    'shipping_fee' => $allocatedShippingFee,
+                    'platform_commission' => $platformCommission,
+                    'net_earnings' => $netEarnings,
+                    'status' => 'PENDING',
+                    'note' => $farmer ? "Kiện hàng nông sản từ {$farmer->farm_name}" : null,
                 ]);
+
+                if ($farmer) {
+                    $farmer->increment('total_sales_count');
+                }
+
+                foreach ($fItems as $it) {
+                    $this->orderRepository->createOrderItem([
+                        'id' => (string) Str::uuid(),
+                        'order_id' => $order->id,
+                        'vendor_order_id' => $vendorOrder->id,
+                        'product_id' => $it['product_id'],
+                        'variant_id' => $it['variant_id'],
+                        'product_name' => $it['product_name'],
+                        'unit' => $it['unit'],
+                        'quantity' => $it['quantity'],
+                        'price_at_time' => $it['price'],
+                    ]);
+                }
+
+                $vendorIndex++;
             }
 
             DB::commit();
@@ -325,6 +381,31 @@ class OrderService
         }
 
         $updated = $this->orderRepository->updateStatus($order, $dbStatus);
+
+        // ── Đồng bộ trạng thái Vendor Orders & Quyết toán dòng tiền (Payout) ──
+        if ($dbStatus === 'DELIVERED' && $currentStatus !== 'DELIVERED') {
+            try {
+                $vendorOrders = \App\Models\VendorOrder::where('order_id', $order->id)->get();
+                foreach ($vendorOrders as $vo) {
+                    if ($vo->status !== 'DELIVERED') {
+                        $vo->update(['status' => 'DELIVERED']);
+                        $farmer = \App\Models\Farmer::find($vo->farmer_id);
+                        if ($farmer && $vo->net_earnings > 0) {
+                            $farmer->increment('balance_available', (float)$vo->net_earnings);
+                            Log::info("Quyết toán ví nông hộ: +{$vo->net_earnings}đ cho {$farmer->farm_name} (#{$farmer->id}) từ Sub-Order {$vo->sub_order_number}");
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::error("Lỗi quyết toán ví nông hộ khi hoàn tất đơn #{$order->id}: " . $e->getMessage());
+            }
+        } elseif ($dbStatus === 'CANCELLED' && $currentStatus !== 'CANCELLED') {
+            try {
+                \App\Models\VendorOrder::where('order_id', $order->id)->update(['status' => 'CANCELLED']);
+            } catch (\Throwable $e) {
+                Log::warning("Lỗi cập nhật hủy vendor orders cho đơn #{$order->id}: " . $e->getMessage());
+            }
+        }
 
         // Khôi phục số lượng tồn kho khi đơn hàng bị HỦY
         if ($dbStatus === 'CANCELLED' && $currentStatus !== 'CANCELLED') {

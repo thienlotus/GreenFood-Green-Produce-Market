@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   Search, Trash2, Tractor, Plus, CheckCircle, XCircle, 
-  Store, MapPin, Phone, Mail, RefreshCw, AlertCircle, ShieldCheck, Edit, Compass
+  Store, MapPin, Phone, Mail, RefreshCw, AlertCircle, ShieldCheck, Edit, Compass,
+  Bell, Filter, Sparkles
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { 
@@ -334,6 +335,43 @@ export default function AdminFarmersPage() {
           </div>
         </div>
       </div>
+
+      {/* Real-time Notification Banner for Pending Approvals */}
+      {stats.pending > 0 && (
+        <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-2 border-amber-300/80 rounded-2xl p-4.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md ring-4 ring-amber-200/60 animate-bounce">
+              <Bell size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-amber-950 text-sm md:text-base flex items-center gap-1.5">
+                  Thông báo: Đang có {stats.pending} hồ sơ Nông hộ gửi yêu cầu chờ duyệt!
+                </h3>
+                <span className="bg-rose-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-2xs">
+                  Cần xử lý
+                </span>
+              </div>
+              <p className="text-xs text-amber-900/90 mt-1">
+                Các nông hộ ({farmers.filter(f => !f.is_verified).map(f => f.farm_name).slice(0, 3).join(', ')}{stats.pending > 3 ? '...' : ''}) vừa nộp hồ sơ đối tác hoặc cập nhật thông tin vị trí GPS/chứng nhận VietGAP cần được kiểm định.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
+            <button
+              onClick={() => setFilterStatus('pending')}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer ${
+                filterStatus === 'pending'
+                  ? 'bg-amber-700 text-white ring-2 ring-amber-400'
+                  : 'bg-amber-600 hover:bg-amber-700 text-white'
+              }`}
+            >
+              <Filter size={14} />
+              <span>{filterStatus === 'pending' ? 'Đang lọc xem hồ sơ chờ duyệt' : `Xem ${stats.pending} hồ sơ chờ duyệt`}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Table Container */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

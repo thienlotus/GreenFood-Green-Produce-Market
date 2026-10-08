@@ -164,4 +164,161 @@ class FarmerService
     {
         return $this->farmerRepository->delete($id);
     }
+
+    public function getFarmerOrders(string $farmerId, array $filters = [])
+    {
+        $query = \App\Models\VendorOrder::with(['order', 'items.product', 'items.variant'])
+            ->where('farmer_id', $farmerId)
+            ->latest();
+
+        if (!empty($filters['status']) && $filters['status'] !== 'all') {
+            $query->where('status', strtoupper($filters['status']));
+        }
+
+        if (!empty($filters['search'])) {
+            $search = trim($filters['search']);
+            $query->where(function ($q) use ($search) {
+                $q->where('sub_order_number', 'like', "%{$search}%")
+                  ->orWhereHas('order', function ($oq) use ($search) {
+                      $oq->where('customer_name', 'like', "%{$search}%")
+                         ->orWhere('customer_phone', 'like', "%{$search}%")
+                         ->orWhere('tracking_number', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        return $query->get()->map(function ($vo) {
+            return [
+                'id' => $vo->id,
+                'sub_order_number' => $vo->sub_order_number,
+                'order_id' => $vo->order_id,
+                'master_tracking' => $vo->order?->tracking_number,
+                'customer_name' => $vo->order?->customer_name,
+                'customer_phone' => $vo->order?->customer_phone,
+                'shipping_address' => $vo->order?->shipping_address,
+                'payment_method' => $vo->order?->payment_method,
+                'payment_status' => $vo->order?->payment_status,
+                'sub_total' => (float)$vo->sub_total,
+                'shipping_fee' => (float)$vo->shipping_fee,
+                'platform_commission' => (float)$vo->platform_commission,
+                'net_earnings' => (float)$vo->net_earnings,
+                'status' => $vo->status,
+                'ghn_order_code' => $vo->ghn_order_code,
+                'note' => $vo->note,
+                'created_at' => $vo->created_at->format('Y-m-d H:i:s'),
+                'items_count' => $vo->items->sum('quantity'),
+                'items' => $vo->items->map(function ($it) {
+                    return [
+                        'id' => $it->id,
+                        'product_id' => $it->product_id,
+                        'product_name' => $it->product_name,
+                        'unit' => $it->unit,
+                        'quantity' => $it->quantity,
+                        'price' => (float)$it->price_at_time,
+                        'subtotal' => (float)($it->price_at_time * $it->quantity),
+                        'image_url' => $it->product?->image_url,
+                    ];
+                })
+            ];
+        });
+    }
+
+    public function updateVendorOrderStatus(string $vendorOrderId, string $status, ?string $farmerId = null): array
+    {
+        $query = \App\Models\VendorOrder::where('id', $vendorOrderId);
+        if ($farmerId) {
+            $query->where('farmer_id', $farmerId);
+        }
+        $vendorOrder = $query->first();
+
+        if (!$vendorOrder) {
+            return ['success' => false, 'message' => 'Không tìm thấy đơn hàng nông hộ', 'code' => 404];
+        }
+
+        $targetStatus = strtoupper($status);
+        $allowedStatuses = ['PENDING', 'CONFIRMED', 'PACKING', 'SHIPPING', 'DELIVERED', 'CANCELLED'];
+        if (!in_array($targetStatus, $allowedStatuses)) {
+            return ['success' => false, 'message' => 'Trạng thái đơn hàng không hợp lệ', 'code' => 400];
+        }
+
+        $prevStatus = $vendorOrder->status;
+        $vendorOrder->update(['status' => $targetStatus]);
+
+        // Nếu chuyển sang DELIVERED và trước đó chưa hoàn tất, cộng tiền ví cho nông hộ
+        if ($targetStatus === 'DELIVERED' && $prevStatus !== 'DELIVERED') {
+            $farmer = \App\Models\Farmer::find($vendorOrder->farmer_id);
+            if ($farmer && $vendorOrder->net_earnings > 0) {
+                $farmer->increment('balance_available', (float)$vendorOrder->net_earnings);
+            }
+        }
+
+        // Kiểm tra xem tất cả các Vendor Orders của Master Order đã DELIVERED chưa
+        $masterOrder = \App\Models\Order::find($vendorOrder->order_id);
+        if ($masterOrder) {
+            $allDelivered = !\App\Models\VendorOrder::where('order_id', $masterOrder->id)
+                ->where('status', '!=', 'DELIVERED')
+                ->where('status', '!=', 'CANCELLED')
+                ->exists();
+
+            if ($allDelivered && $targetStatus === 'DELIVERED' && $masterOrder->status !== 'DELIVERED') {
+                $masterOrder->update(['status' => 'DELIVERED']);
+            }
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Cập nhật trạng thái kiện hàng thành công',
+            'data' => [
+                'id' => $vendorOrder->id,
+                'status' => $targetStatus,
+                'sub_order_number' => $vendorOrder->sub_order_number,
+            ]
+        ];
+    }
+
+    public function getFarmerWallet(string $farmerId): ?array
+    {
+        $farmer = $this->farmerRepository->findById($farmerId);
+        if (!$farmer) {
+            return null;
+        }
+
+        $vendorOrders = \App\Models\VendorOrder::where('farmer_id', $farmerId)->get();
+        $totalGrossRevenue = (float)$vendorOrders->where('status', 'DELIVERED')->sum('sub_total');
+        $totalCommissionPaid = (float)$vendorOrders->where('status', 'DELIVERED')->sum('platform_commission');
+        $totalNetEarnings = (float)$vendorOrders->where('status', 'DELIVERED')->sum('net_earnings');
+        $pendingPayout = (float)$vendorOrders->whereIn('status', ['PENDING', 'CONFIRMED', 'PACKING', 'SHIPPING'])->sum('net_earnings');
+
+        return [
+            'farmer_id' => $farmer->id,
+            'farm_name' => $farmer->farm_name,
+            'balance_available' => (float)$farmer->balance_available,
+            'pending_payout' => $pendingPayout,
+            'total_gross_revenue' => $totalGrossRevenue,
+            'total_commission_paid' => $totalCommissionPaid,
+            'total_net_earnings' => $totalNetEarnings,
+            'commission_rate' => (float)$farmer->commission_rate,
+            'total_orders' => $vendorOrders->count(),
+            'delivered_orders_count' => $vendorOrders->where('status', 'DELIVERED')->count(),
+            'bank_info' => [
+                'bank_name' => $farmer->bank_name,
+                'bank_account_number' => $farmer->bank_account_number,
+                'bank_account_name' => $farmer->bank_account_name,
+            ]
+        ];
+    }
+
+    public function updateBankInfo(string $farmerId, array $bankData): bool
+    {
+        $farmer = $this->farmerRepository->findById($farmerId);
+        if (!$farmer) {
+            return false;
+        }
+
+        return $this->farmerRepository->update($farmer, [
+            'bank_name' => $bankData['bank_name'] ?? $farmer->bank_name,
+            'bank_account_number' => $bankData['bank_account_number'] ?? $farmer->bank_account_number,
+            'bank_account_name' => $bankData['bank_account_name'] ?? $farmer->bank_account_name,
+        ]);
+    }
 }

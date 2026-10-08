@@ -157,4 +157,75 @@ class FarmerController extends Controller
             'message' => 'Đã xóa đối tác nông hộ thành công'
         ]);
     }
+
+    public function getOrders(Request $request, $id)
+    {
+        $filters = [
+            'status' => $request->get('status'),
+            'search' => $request->get('search'),
+        ];
+
+        $orders = $this->farmerService->getFarmerOrders((string)$id, $filters);
+
+        return response()->json([
+            'success' => true,
+            'count' => $orders->count(),
+            'data' => $orders
+        ]);
+    }
+
+    public function updateSubOrderStatus(Request $request, $id, $orderId)
+    {
+        $status = $request->input('status');
+        if (empty($status)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng cung cấp trạng thái mới (status)'
+            ], 400);
+        }
+
+        $res = $this->farmerService->updateVendorOrderStatus((string)$orderId, (string)$status, (string)$id);
+
+        return response()->json($res, $res['code'] ?? 200);
+    }
+
+    public function getWallet(Request $request, $id)
+    {
+        $wallet = $this->farmerService->getFarmerWallet((string)$id);
+
+        if (!$wallet) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy nông hộ'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $wallet
+        ]);
+    }
+
+    public function updateBank(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'bank_name' => 'required|string|max:100',
+            'bank_account_number' => 'required|string|max:50',
+            'bank_account_name' => 'required|string|max:100',
+        ]);
+
+        $success = $this->farmerService->updateBankInfo((string)$id, $validated);
+
+        if (!$success) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cập nhật tài khoản ngân hàng thất bại'
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật tài khoản ngân hàng nhận tiền thành công!'
+        ]);
+    }
 }

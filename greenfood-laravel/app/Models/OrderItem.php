@@ -12,6 +12,7 @@ class OrderItem extends Model
 
     protected $fillable = [
         'order_id',
+        'vendor_order_id',
         'product_id',
         'variant_id',
         'product_name',
@@ -23,6 +24,16 @@ class OrderItem extends Model
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function vendorOrder()
+    {
+        return $this->belongsTo(VendorOrder::class, 'vendor_order_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function variant()

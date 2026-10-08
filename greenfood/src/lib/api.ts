@@ -994,5 +994,114 @@ export async function updateFarmerProfileApi(id: string, payload: {
   }
 }
 
+// ── VENDOR ORDERS & WALLET API (MULTI-VENDOR MARKETPLACE) ──
+
+export interface VendorOrderItem {
+  id: string;
+  product_id?: string;
+  product_name: string;
+  unit: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
+  image_url?: string;
+}
+
+export interface VendorOrderData {
+  id: string;
+  sub_order_number: string;
+  order_id: string;
+  master_tracking?: string;
+  customer_name?: string;
+  customer_phone?: string;
+  shipping_address?: string;
+  payment_method?: string;
+  payment_status?: string;
+  sub_total: number;
+  shipping_fee: number;
+  platform_commission: number;
+  net_earnings: number;
+  status: 'PENDING' | 'CONFIRMED' | 'PACKING' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED';
+  ghn_order_code?: string;
+  note?: string;
+  created_at: string;
+  items_count: number;
+  items: VendorOrderItem[];
+}
+
+export interface FarmerWalletData {
+  farmer_id: string;
+  farm_name: string;
+  balance_available: number;
+  pending_payout: number;
+  total_gross_revenue: number;
+  total_commission_paid: number;
+  total_net_earnings: number;
+  commission_rate: number;
+  total_orders: number;
+  delivered_orders_count: number;
+  bank_info: {
+    bank_name?: string;
+    bank_account_number?: string;
+    bank_account_name?: string;
+  };
+}
+
+export async function getFarmerOrdersApi(farmerId: string, filters: { status?: string; search?: string } = {}): Promise<VendorOrderData[]> {
+  try {
+    const params = new URLSearchParams();
+    if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+    if (filters.search) params.append('search', filters.search);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+
+    const res = await fetchApi<{ success: boolean; data: VendorOrderData[] }>(`/farmers/${farmerId}/orders${qs}`);
+    return res?.data || [];
+  } catch (error) {
+    console.error('[API] getFarmerOrdersApi error:', error);
+    return [];
+  }
+}
+
+export async function updateFarmerOrderStatusApi(farmerId: string, orderId: string, status: string): Promise<{ success: boolean; message: string; data?: any }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/farmers/${farmerId}/orders/${orderId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status })
+    });
+    return res || { success: false, message: 'Lỗi cập nhật trạng thái đơn hàng' };
+  } catch (error) {
+    console.error('[API] updateFarmerOrderStatusApi error:', error);
+    return { success: false, message: 'Lỗi kết nối khi cập nhật đơn hàng' };
+  }
+}
+
+export async function getFarmerWalletApi(farmerId: string): Promise<FarmerWalletData | null> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: FarmerWalletData }>(`/farmers/${farmerId}/wallet`);
+    return res?.data || null;
+  } catch (error) {
+    console.error('[API] getFarmerWalletApi error:', error);
+    return null;
+  }
+}
+
+export async function updateFarmerBankApi(farmerId: string, bankData: {
+  bank_name: string;
+  bank_account_number: string;
+  bank_account_name: string;
+}): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string }>(`/farmers/${farmerId}/bank`, {
+      method: 'PUT',
+      body: JSON.stringify(bankData)
+    });
+    return res || { success: false, message: 'Lỗi cập nhật ngân hàng' };
+  } catch (error) {
+    console.error('[API] updateFarmerBankApi error:', error);
+    return { success: false, message: 'Lỗi mạng khi cập nhật tài khoản ngân hàng' };
+  }
+}
+
+
 
 

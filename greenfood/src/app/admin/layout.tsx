@@ -45,6 +45,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pendingFarmerCount, setPendingFarmerCount] = useState(0);
+
+  useEffect(() => {
+    async function checkPendingFarmers() {
+      try {
+        const { getAdminFarmersApi } = await import('@/lib/api');
+        const data = await getAdminFarmersApi();
+        if (Array.isArray(data)) {
+          const count = data.filter(f => !f.is_verified).length;
+          setPendingFarmerCount(count);
+        }
+      } catch {}
+    }
+    checkPendingFarmers();
+    const interval = setInterval(checkPendingFarmers, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -63,7 +80,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { name: 'Đơn hàng', href: '/admin/orders/', icon: ShoppingBag, badge: 'Mới' },
         { name: 'Sản phẩm', href: '/admin/products/', icon: Package },
-        { name: 'Nông hộ & Vườn', href: '/admin/farmers/', icon: Tractor },
+        { 
+          name: 'Nông hộ & Vườn', 
+          href: '/admin/farmers/', 
+          icon: Tractor, 
+          badge: pendingFarmerCount > 0 ? `${pendingFarmerCount} chờ duyệt` : undefined,
+          highlight: pendingFarmerCount > 0
+        },
         { name: 'Phí giao hàng GHN', href: '/admin/shipping/', icon: Truck },
       ],
     },
