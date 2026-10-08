@@ -27,9 +27,9 @@ class PaymentService
             ],
             [
                 'code' => 'MOMO',
-                'name' => 'Ví điện tử MoMo',
-                'description' => 'Thanh toán tức thời qua ứng dụng ví MoMo',
-                'is_active' => true
+                'name' => 'Ví điện tử MoMo (Đang phát triển)',
+                'description' => 'Phương thức thanh toán qua Ví MoMo đang trong quá trình nâng cấp & phát triển',
+                'is_active' => false
             ],
             [
                 'code' => 'VNPAY',

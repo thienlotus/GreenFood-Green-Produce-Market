@@ -21,8 +21,20 @@ class GHNOrderService
      * @param bool $isPaid Trạng thái đơn đã trả tiền trước hay chưa (true nếu qua QR/Chuyển khoản)
      * @return array Kết quả phản hồi từ GHN (chứa mã vận đơn order_code)
      */
-    public function create(Order $order, string $toWardCode, int $toDistrictId, bool $isPaid = false): array
+    public function create(Order $order, string|bool $toWardCode = '', int|bool $toDistrictId = 0, bool $isPaid = false): array
     {
+        // Hỗ trợ trường hợp gọi $ghnOrders->create($order, true) hoặc $ghnOrders->create($order)
+        if (is_bool($toWardCode)) {
+            $isPaid = $toWardCode;
+            $toWardCode = '';
+        } elseif (is_bool($toDistrictId)) {
+            $isPaid = $toDistrictId;
+            $toDistrictId = 0;
+        }
+
+        $effectiveWardCode = !empty($toWardCode) ? (string) $toWardCode : (string) ($order->to_ward_code ?: '13010');
+        $effectiveDistrictId = !empty($toDistrictId) ? (int) $toDistrictId : (int) ($order->to_district_id ?: config('services.ghn.from_district_id', 3440));
+
         if (!$order->relationLoaded('items')) {
             $order->load('items');
         }

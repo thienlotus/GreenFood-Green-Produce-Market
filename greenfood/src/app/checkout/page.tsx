@@ -12,7 +12,7 @@ import { toast } from 'react-hot-toast';
 
 // Fallback zones logic removed since we use GHN directly
 
-type PaymentMethod = 'COD' | 'BANK_TRANSFER' | 'MOMO' | 'VNPAY';
+type PaymentMethod = 'COD' | 'BANK_TRANSFER' | 'MOMO' | 'VNPAY' | 'ATM_CARD';
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
@@ -52,7 +52,7 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState(''); // street address
   const [note, setNote] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('ATM_CARD');
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [momoData, setMomoData] = useState<{ payUrl?: string; qrCodeUrl?: string } | null>(null);
@@ -294,19 +294,62 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    if (paymentMethod === 'MOMO') {
-      setShowPaymentPopup(true);
-      if (!momoData) {
-        setIsGeneratingMomo(true);
-        const tempId = 'GF' + Math.floor(100000 + Math.random() * 900000);
-        createMomoPayment(tempId, finalTotal, `Thanh toán đơn hàng GreenFood #${tempId}`)
-          .then((res) => {
-            if (res && res.success) {
-              setMomoData(res);
-            }
-          })
-          .finally(() => setIsGeneratingMomo(false));
+    if (paymentMethod === 'ATM_CARD') {
+      setIsSubmitting(true);
+      const code = tempOrderId || ('GF' + Math.floor(100000 + Math.random() * 900000));
+      if (!tempOrderId) {
+        setTempOrderId(code);
       }
+
+      const provinceName = provinces.find(p => p.ProvinceID === selectedProvinceId)?.ProvinceName || '';
+      const districtName = districts.find(d => d.DistrictID === selectedDistrictId)?.DistrictName || '';
+      const wardName = wards.find(w => w.WardCode === selectedWardCode)?.WardName || '';
+      const fullAddress = `${address}, ${wardName}, ${districtName}, ${provinceName}`;
+
+      createOrder({
+        customerName: fullName,
+        customerPhone: phone,
+        customerEmail: email,
+        shippingAddress: fullAddress,
+        shippingFee: shippingFee,
+        voucherCode: appliedVoucher ? appliedVoucher.code : undefined,
+        discountAmount: calculatedDiscount > 0 ? calculatedDiscount : undefined,
+        toDistrictId: selectedDistrictId ? Number(selectedDistrictId) : undefined,
+        toWardCode: selectedWardCode ? String(selectedWardCode) : undefined,
+        paymentMethod: 'VNPAY',
+        trackingNumber: code,
+        paymentStatus: 'unpaid',
+        status: 'PENDING',
+        note: note,
+        items: items.map(i => ({
+          productId: String(i.id),
+          variantId: i.variantId ? String(i.variantId) : undefined,
+          productName: cleanVietnameseMojibake(i.name),
+          unit: cleanVietnameseMojibake(i.unit),
+          quantity: i.quantity,
+          price: i.price,
+        }))
+      })
+      .then((orderRes) => {
+        const finalTrackingCode = orderRes.trackingNumber || code;
+        window.location.href = `/payment/atm-card/?orderId=${encodeURIComponent(finalTrackingCode)}&amount=${finalTotal}`;
+      })
+      .catch((err) => {
+        console.error('Lỗi tạo đơn thẻ ATM:', err);
+        alert('Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại!');
+        setIsSubmitting(false);
+      });
+      return;
+    }
+
+    if (paymentMethod === 'MOMO') {
+      alert('Phương thức thanh toán Ví MoMo đang trong quá trình phát triển & nâng cấp. Vui lòng chọn Thẻ ATM nội địa hoặc Chuyển khoản VietQR!');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (paymentMethod === 'VNPAY') {
+      setShowPaymentPopup(true);
       return;
     }
 
@@ -326,11 +369,6 @@ export default function CheckoutPage() {
           })
           .finally(() => setIsGeneratingSepay(false));
       }
-      return;
-    }
-
-    if (paymentMethod === 'VNPAY') {
-      setShowPaymentPopup(true);
       return;
     }
     processOrder();
@@ -449,10 +487,44 @@ export default function CheckoutPage() {
   }
 
   const paymentMethods = [
-    { id: 'COD' as PaymentMethod, name: 'Thanh toán khi nhận hàng (COD)', desc: 'Trả tiền mặt cho shipper khi nhận hàng', icon: Banknote, color: 'emerald' },
-    { id: 'BANK_TRANSFER' as PaymentMethod, name: 'Chuyển khoản VietQR (SePay tự động)', desc: 'Quét mã VietQR SePay xác nhận tức thì trong 3 giây', icon: Building2, color: 'blue', badge: 'Tự động 24/7' },
-    { id: 'MOMO' as PaymentMethod, name: 'Ví MoMo', desc: 'Thanh toán qua ví điện tử MoMo', icon: Smartphone, color: 'pink' },
-    { id: 'VNPAY' as PaymentMethod, name: 'VNPay', desc: 'Thanh toán qua cổng VNPay', icon: CreditCard, color: 'indigo' },
+    { 
+      id: 'ATM_CARD' as PaymentMethod, 
+      name: 'Thẻ ATM nội địa (Napas / Thẻ ngân hàng)', 
+      desc: 'Thanh toán trực tiếp bằng thẻ ATM tất cả ngân hàng Việt Nam (VCB, MB, Techcombank, NCB...)', 
+      icon: CreditCard, 
+      color: 'emerald', 
+    },
+    { 
+      id: 'VNPAY' as PaymentMethod, 
+      name: 'Cổng VNPAY-QR / Thẻ ATM', 
+      desc: 'Thanh toán qua cổng VNPAY hỗ trợ thẻ nội địa và quốc tế', 
+      icon: CreditCard, 
+      color: 'indigo', 
+    },
+    { 
+      id: 'BANK_TRANSFER' as PaymentMethod, 
+      name: 'Chuyển khoản VietQR (SePay tự động)', 
+      desc: 'Quét mã VietQR SePay xác nhận tức thì trong 3 giây', 
+      icon: Building2, 
+      color: 'blue', 
+      badge: 'Tự động 24/7' 
+    },
+    { 
+      id: 'COD' as PaymentMethod, 
+      name: 'Thanh toán khi nhận hàng (COD)', 
+      desc: 'Trả tiền mặt cho shipper khi nhận hàng', 
+      icon: Banknote, 
+      color: 'amber' 
+    },
+    { 
+      id: 'MOMO' as PaymentMethod, 
+      name: 'Ví điện tử MoMo', 
+      desc: 'Phương thức Ví MoMo đang trong quá trình bảo trì & nâng cấp', 
+      icon: CreditCard, 
+      color: 'pink', 
+      badge: 'Đang phát triển',
+      disabled: true,
+    },
   ];
 
   return (
@@ -608,14 +680,22 @@ export default function CheckoutPage() {
                   {paymentMethods.map((pm) => {
                     const Icon = pm.icon;
                     const isSelected = paymentMethod === pm.id;
+                    const isDisabled = Boolean((pm as any).disabled);
                     return (
                       <label key={pm.id}
-                        className={`flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all ${
-                          isSelected ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'border-gray-200 hover:bg-gray-50'
+                        className={`flex items-start gap-4 p-4 border rounded-xl transition-all ${
+                          isDisabled
+                            ? 'opacity-60 cursor-not-allowed bg-slate-50/70 border-slate-200'
+                            : isSelected 
+                              ? 'border-emerald-500 bg-emerald-50 shadow-sm cursor-pointer' 
+                              : 'border-gray-200 hover:bg-gray-50 cursor-pointer'
                         }`}>
                         <input type="radio" name="payment" value={pm.id} checked={isSelected}
-                          onChange={() => setPaymentMethod(pm.id)}
-                          className="w-4 h-4 text-emerald-600 accent-emerald-600 mt-1" />
+                          disabled={isDisabled}
+                          onChange={() => {
+                            if (!isDisabled) setPaymentMethod(pm.id);
+                          }}
+                          className="w-4 h-4 text-emerald-600 accent-emerald-600 mt-1 disabled:opacity-40" />
                         <div className="flex items-center gap-3 flex-1">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                             pm.color === 'emerald' ? 'bg-emerald-100 text-emerald-600' :
@@ -629,7 +709,11 @@ export default function CheckoutPage() {
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-gray-800 text-sm">{pm.name}</span>
                               {(pm as any).badge && (
-                                <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                                  pm.id === 'MOMO' 
+                                    ? 'bg-amber-100 text-amber-800 border border-amber-200/80' 
+                                    : 'bg-blue-100 text-blue-700'
+                                }`}>
                                   {(pm as any).badge}
                                 </span>
                               )}
@@ -852,13 +936,17 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 form="checkout-form"
-                disabled={isSubmitting}
-                className={`w-full font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 ${
-                  isSubmitting ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-amber-500 hover:bg-amber-600 text-white hover:shadow-lg'
+                disabled={isSubmitting || paymentMethod === 'MOMO'}
+                className={`w-full font-bold py-4 rounded-2xl shadow-md transition-all flex items-center justify-center gap-1.5 ${
+                  isSubmitting || paymentMethod === 'MOMO'
+                    ? 'bg-gray-400 cursor-not-allowed text-white'
+                    : 'bg-amber-500 hover:bg-amber-600 text-white hover:shadow-lg'
                 }`}
               >
                 {isSubmitting ? (
-                  <>Đang tạo đơn trên hệ thống...</>
+                  <>Đang khởi tạo...</>
+                ) : paymentMethod === 'MOMO' ? (
+                  <>⚠️ Ví MoMo đang phát triển (Vui lòng chọn phương thức khác)</>
                 ) : (
                   <>Đặt hàng ngay <ChevronRight size={20} /></>
                 )}
@@ -879,7 +967,6 @@ export default function CheckoutPage() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">
               {paymentMethod === 'BANK_TRANSFER' && '⚡ Thanh toán VietQR SePay'}
-              {paymentMethod === 'MOMO' && '📱 Thanh toán MoMo'}
               {paymentMethod === 'VNPAY' && '💳 Thanh toán VNPay'}
             </h3>
 
@@ -985,65 +1072,17 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {paymentMethod === 'MOMO' && (
-              <div className="space-y-4 text-center">
-                <div className="bg-pink-50 border border-pink-200 rounded-xl p-4">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <span className="w-2.5 h-2.5 rounded-full bg-pink-500 animate-pulse"></span>
-                    <p className="text-pink-800 font-semibold text-sm">Cổng thanh toán Ví MoMo</p>
-                  </div>
-                  <p className="text-xs text-pink-600">Quét mã QR bằng App MoMo hoặc click mở link bên dưới</p>
-                  <p className="text-2xl font-bold text-pink-600 mt-2">{finalTotal.toLocaleString('vi-VN')}đ</p>
-                </div>
-
-                <div className="bg-white border-2 border-pink-100 rounded-2xl p-4 flex flex-col items-center justify-center min-h-[180px] shadow-sm">
-                  {isGeneratingMomo ? (
-                    <div className="flex flex-col items-center gap-2 text-pink-600">
-                      <div className="w-8 h-8 border-3 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-xs font-medium">Đang tạo mã thanh toán MoMo...</span>
-                    </div>
-                  ) : momoData?.qrCodeUrl ? (
-                    <div className="flex flex-col items-center gap-2">
-                      <img
-                        src={momoData.qrCodeUrl}
-                        alt="MoMo QR Code"
-                        className="w-44 h-44 object-contain rounded-lg border border-pink-100 shadow-inner"
-                      />
-                      <span className="text-xs text-gray-500">Mã QR MoMo cho đơn hàng này</span>
-                    </div>
-                  ) : (
-                    <div className="w-44 h-44 bg-pink-50 rounded-xl flex flex-col items-center justify-center p-3 text-pink-600">
-                      <Smartphone size={36} className="mb-2" />
-                      <span className="text-xs font-medium text-center">Sẵn sàng mở Cổng MoMo</span>
-                    </div>
-                  )}
-                </div>
-
-                {momoData?.payUrl && (
-                  <a
-                    href={momoData.payUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md transition-all text-center"
-                  >
-                    🔗 Mở Cổng MoMo / Thanh toán ngay
-                  </a>
-                )}
-              </div>
-            )}
-
             {paymentMethod === 'VNPAY' && (
               <div className="space-y-4 text-center">
                 <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
                   <p className="text-indigo-700 text-sm">Bạn sẽ được chuyển đến cổng thanh toán VNPay</p>
                   <p className="text-2xl font-bold text-indigo-600 mt-2">{finalTotal.toLocaleString('vi-VN')}đ</p>
                 </div>
-                <div className="bg-indigo-100 rounded-xl h-40 flex items-center justify-center text-indigo-400 text-sm">
-                  [ Cổng thanh toán VNPay ]
+                <div className="bg-indigo-100 rounded-xl h-40 flex items-center justify-center text-indigo-500 font-medium text-sm border border-dashed border-indigo-300">
+                  💳 Cổng thanh toán VNPAY-QR / Thẻ ATM
                 </div>
               </div>
             )}
-
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowPaymentPopup(false)}
                 className="flex-1 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors border border-gray-200">

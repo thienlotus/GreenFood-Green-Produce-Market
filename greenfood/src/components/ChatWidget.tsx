@@ -15,7 +15,7 @@ import {
 const QUICK_PROMPTS = [
   { label: '🥦 Rau củ VietGAP', query: 'Rau củ quả tại GreenFood có chuẩn VietGAP không?' },
   { label: '🚚 Phí ship GHN', query: 'Phí giao hàng qua GHN và thời gian nhận hàng như thế nào?' },
-  { label: '💳 Thanh toán MoMo', query: 'Shop có hỗ trợ thanh toán qua Ví MoMo không?' },
+  { label: '💳 Thanh toán Thẻ ATM', query: 'Shop có hỗ trợ thanh toán qua Thẻ ATM nội địa Napas không?' },
   { label: '🎁 Mã khuyến mãi', query: 'Hiện GreenFood có mã voucher giảm giá nào không?' },
   { label: '👨‍💼 Gặp nhân viên', query: 'Tôi muốn gặp nhân viên tư vấn trực tiếp' },
 ];

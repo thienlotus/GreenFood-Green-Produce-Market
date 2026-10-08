@@ -53,11 +53,15 @@ return [
         'max_tokens' => (int) env('GEMINI_MAX_TOKENS', 200),
     ],
 
-    // Cổng thanh toán Ví MoMo API (Sprint 2 - Quý)
+    // Cổng thanh toán Ví MoMo API (Sandbox Test)
     'momo' => [
+        'endpoint' => env('MOMO_ENDPOINT', 'https://test-payment.momo.vn/v2/gateway/api/create'),
         'partner_code' => env('MOMO_PARTNER_CODE', 'MOMOBKUN20180529'),
         'access_key' => env('MOMO_ACCESS_KEY', 'klm05TvNBzhg7h7j'),
-        'secret_key' => env('MOMO_SECRET_KEY', 'at67qH6mk8w5Y1nAyMoYKMWACiEi2Aca'),
+        'secret_key' => env('MOMO_SECRET_KEY', 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa'),
+        'verify_ssl' => env('MOMO_VERIFY_SSL', false),
+        'redirect_url' => env('MOMO_REDIRECT_URL'),
+        'ipn_url' => env('MOMO_IPN_URL'),
         'api_url' => env('MOMO_API_URL', 'https://test-payment.momo.vn'),
         'return_url' => env('MOMO_RETURN_URL', 'http://localhost:3000/payment/momo/return'),
         'notify_url' => env('MOMO_NOTIFY_URL', 'http://localhost:8000/api/v1/payment/momo/callback'),

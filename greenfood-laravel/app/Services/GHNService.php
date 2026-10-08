@@ -98,6 +98,14 @@ class GHNService
     }
 
     /**
+     * Trọng lượng mặc định của mỗi sản phẩm (gram)
+     */
+    public function productWeight(): int
+    {
+        return (int) config('services.ghn.default_weight', 200);
+    }
+
+    /**
      * Cấu hình kích thước và quy cách đóng gói mặc định cho gói hàng
      */
     public function packageParameters(int $weight): array

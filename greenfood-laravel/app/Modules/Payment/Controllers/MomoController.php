@@ -150,4 +150,33 @@ class MomoController extends Controller
 
         return response()->json($result, 200);
     }
+
+    /**
+     * Mô phỏng thanh toán MoMo Sandbox thành công cho môi trường test khi cổng Napas MoMo từ chối thẻ.
+     * POST /api/v1/payment/momo/simulate
+     */
+    public function simulate(Request $request)
+    {
+        $orderId = trim($request->input('order_id', ''));
+        if (!$orderId) {
+            return response()->json(['success' => false, 'message' => 'Thiếu mã đơn hàng'], 422);
+        }
+
+        $transId = 'MOMO_TEST_' . time();
+        $payload = [
+            'orderId' => $orderId,
+            'resultCode' => 0,
+            'message' => 'Thành công (Mô phỏng Sandbox)',
+            'transId' => $transId,
+            'amount' => $request->input('amount', 50000),
+        ];
+
+        $res = $this->momoService->handleSuccessfulPayment($orderId, $transId, $payload);
+
+        return response()->json([
+            'success' => $res['success'],
+            'message' => $res['message'],
+            'data' => $payload,
+        ]);
+    }
 }

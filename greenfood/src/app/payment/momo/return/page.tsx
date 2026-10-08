@@ -18,6 +18,32 @@ function MomoReturnContent() {
   const [amount, setAmount] = useState<number | null>(null);
   const [transId, setTransId] = useState('');
   const [message, setMessage] = useState('');
+  const [isSimulating, setIsSimulating] = useState(false);
+
+  const handleSimulateSuccess = async () => {
+    if (!orderId) return;
+    setIsSimulating(true);
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/v1/payment/momo/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: orderId, amount: amount || 50000 })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsSuccess(true);
+        setMessage('Đã xác nhận thanh toán MoMo Sandbox thành công!');
+        clearCart();
+      } else {
+        alert(data.message || 'Lỗi khi mô phỏng thanh toán');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Không thể kết nối đến máy chủ backend');
+    } finally {
+      setIsSimulating(false);
+    }
+  };
 
   useEffect(() => {
     const rawOrderId = searchParams.get('orderId') || '';
@@ -141,6 +167,16 @@ function MomoReturnContent() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              {orderId && (
+                <button
+                  type="button"
+                  onClick={handleSimulateSuccess}
+                  disabled={isSimulating}
+                  className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  {isSimulating ? 'Đang kích hoạt...' : '⚡ Giả lập MoMo Sandbox'}
+                </button>
+              )}
               <Link
                 href="/checkout"
                 className="inline-flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition-all"

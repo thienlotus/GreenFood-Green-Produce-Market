@@ -18,8 +18,19 @@ class OrderItem extends Model
         'product_name',
         'unit',
         'quantity',
-        'price_at_time'
+        'price_at_time',
+        'price',
     ];
+
+    public function getPriceAttribute(): float
+    {
+        return (float) ($this->attributes['price_at_time'] ?? 0);
+    }
+
+    public function setPriceAttribute($value): void
+    {
+        $this->attributes['price_at_time'] = (float) $value;
+    }
 
     public function order()
     {

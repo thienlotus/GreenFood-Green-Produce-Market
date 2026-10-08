@@ -747,6 +747,47 @@ export async function checkVoucherApi(code: string, orderTotal: number): Promise
   }
 }
 
+// 7.5 DOMESTIC ATM CARD PAYMENT API (Napas Direct Gateway)
+export interface CardPaymentRequest {
+  order_id: string;
+  card_number: string;
+  card_holder: string;
+  issue_date: string;
+  bank_code?: string;
+  otp?: string;
+}
+
+export interface CardPaymentResponse {
+  success: boolean;
+  message?: string;
+  data?: {
+    order_id: number | string;
+    tracking_number: string;
+    ghn_order_code?: string;
+    trans_id: string;
+    bank_code: string;
+    card_masked: string;
+    card_holder: string;
+    amount: number;
+    paid_at: string;
+  };
+}
+
+export async function processCardPayment(
+  payload: CardPaymentRequest
+): Promise<CardPaymentResponse> {
+  try {
+    const res = await fetchApi<CardPaymentResponse>('/payment/card/process', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return res || { success: false, message: 'Không thể kết nối đến máy chủ thanh toán thẻ' };
+  } catch (error) {
+    console.error('[API] processCardPayment error:', error);
+    return { success: false, message: 'Lỗi khi gọi API thanh toán thẻ' };
+  }
+}
+
 // 8. MOMO PAYMENT GATEWAY API (Sprint 2 - Lương Văn Quý)
 export interface MomoPaymentResponse {
   success: boolean;
