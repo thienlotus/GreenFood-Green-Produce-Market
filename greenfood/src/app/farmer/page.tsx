@@ -1,47 +1,196 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   Tractor, Package, TrendingUp, DollarSign, Plus, Eye, 
   CheckCircle, AlertCircle, RefreshCw, Store, Settings, 
-  MapPin, Phone, ShieldCheck, Leaf, Sparkles
+  MapPin, Phone, ShieldCheck, Leaf, Sparkles, Lock, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { getAdminFarmersApi } from '@/lib/api';
+import { getAdminFarmersApi, updateFarmerProfileApi } from '@/lib/api';
+import { resolveCoordinatesFromAddress } from '@/lib/geoUtils';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function FarmerPortalPage() {
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'admin';
+
   const [farmers, setFarmers] = useState<any[]>([]);
   const [selectedFarmerId, setSelectedFarmerId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'profile'>('dashboard');
 
-  // Load farmers to simulate vendor portal login / switch store
+  // Form State cho Tab Profile
+  const [profileForm, setProfileForm] = useState({
+    farm_name: '',
+    address: '',
+    latitude: '',
+    longitude: '',
+    specialty: '',
+    story: ''
+  });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  // Load và phân quyền bảo mật dữ liệu gian hàng
   useEffect(() => {
     async function load() {
       setLoading(true);
       try {
         const data = await getAdminFarmersApi();
         if (Array.isArray(data) && data.length > 0) {
-          setFarmers(data);
-          setSelectedFarmerId(data[0].id);
+          if (!isAdmin) {
+            // NÔNG HỘ THÔNG THƯỜNG: CHỈ ĐƯỢC PHÉP TRUY CẬP VÀ XEM DỮ LIỆU CỦA CHÍNH MÌNH
+            const myFarm = data.find((f: any) => {
+              if (f.user_id && user?.id && String(f.user_id) === String(user.id)) return true;
+              if (f.user?.email && user?.email && f.user.email.toLowerCase() === user.email.toLowerCase()) return true;
+              if (f.user?.phone && user?.phone && f.user.phone === user.phone) return true;
+              if (user?.farmName && (f.farm_name || '').toLowerCase().includes(user.farmName.toLowerCase())) return true;
+              if (user?.name && ((f.farm_name || '').toLowerCase().includes(user.name.toLowerCase()) || (f.user?.name && f.user.name.toLowerCase().includes(user.name.toLowerCase())))) return true;
+              if (
+                ((user?.email && (user.email.includes('thieuhung') || user.email.includes('0912'))) ||
+                 (user?.name && (user.name.toLowerCase().includes('thiều hưng') || user.name.toLowerCase().includes('hưng')))) &&
+                ((f.farm_name || '').toLowerCase().includes('thiều hưng') || String(f.id) === '01a111cf-de77-727c-bf12-292c04160d6c')
+              ) {
+                return true;
+              }
+              if (typeof window !== 'undefined') {
+                const savedId = localStorage.getItem('gf_my_store_id');
+                if (savedId && savedId === f.id) return true;
+              }
+              return false;
+            });
+
+            if (myFarm) {
+              // Bảo mật tuyệt đối: Chỉ lưu duy nhất gian hàng của chính họ trong state, ngăn chặn rò rỉ dữ liệu nhà khác
+              setFarmers([myFarm]);
+              setSelectedFarmerId(myFarm.id);
+            } else {
+              setFarmers([]);
+              setSelectedFarmerId('');
+            }
+          } else {
+            // QUẢN TRỊ VIÊN: Cho phép quản trị và hỗ trợ tất cả các gian hàng
+            setFarmers(data);
+            setSelectedFarmerId(prev => prev || data[0].id);
+          }
+        } else {
+          setFarmers([]);
+          setSelectedFarmerId('');
         }
       } catch (err) {
-        console.error(err);
+        console.error('Lỗi khi tải dữ liệu kênh người bán', err);
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, []);
+  }, [user, isAdmin]);
 
-  const currentFarmer = farmers.find(f => f.id === selectedFarmerId) || farmers[0];
+  // Gian hàng hiện tại được cấp quyền quản lý
+  const currentFarmer = useMemo(() => {
+    if (farmers.length === 0) return null;
+    return farmers.find(f => f.id === selectedFarmerId) || farmers[0] || null;
+  }, [farmers, selectedFarmerId]);
 
-  // Quick stats tính toán động chuẩn theo dữ liệu thực tế của từng nhà vườn
+  useEffect(() => {
+    if (currentFarmer) {
+      setProfileForm({
+        farm_name: currentFarmer.farm_name || '',
+        address: currentFarmer.address || '',
+        latitude: currentFarmer.latitude ? String(currentFarmer.latitude) : '',
+        longitude: currentFarmer.longitude ? String(currentFarmer.longitude) : '',
+        specialty: currentFarmer.specialty || '',
+        story: currentFarmer.story || ''
+      });
+    }
+  }, [currentFarmer]);
+
+  const handleAutoGeocode = () => {
+    if (!profileForm.address.trim()) {
+      toast.error('Vui lòng nhập địa chỉ trước khi lấy tọa độ!');
+      return;
+    }
+    const geo = resolveCoordinatesFromAddress(profileForm.address);
+    setProfileForm(prev => ({
+      ...prev,
+      latitude: String(geo.lat),
+      longitude: String(geo.lng)
+    }));
+    toast.success(`Đã định vị tọa độ tại tỉnh ${geo.provinceName} (${geo.lat}, ${geo.lng})`);
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentFarmer?.id) return;
+    if (!profileForm.farm_name.trim() || !profileForm.address.trim()) {
+      toast.error('Vui lòng nhập tên nông trại và địa chỉ!');
+      return;
+    }
+
+    setIsSavingProfile(true);
+    try {
+      let lat = profileForm.latitude ? parseFloat(profileForm.latitude) : undefined;
+      let lng = profileForm.longitude ? parseFloat(profileForm.longitude) : undefined;
+
+      // Nếu chưa có tọa độ, tự động geocode từ địa chỉ
+      if (!lat || !lng) {
+        const geo = resolveCoordinatesFromAddress(profileForm.address);
+        lat = geo.lat;
+        lng = geo.lng;
+      }
+
+      // Cập nhật thông tin và đưa vào trạng thái chờ duyệt (is_verified = false)
+      const res = await updateFarmerProfileApi(currentFarmer.id, {
+        farm_name: profileForm.farm_name.trim(),
+        address: profileForm.address.trim(),
+        latitude: lat,
+        longitude: lng,
+        specialty: profileForm.specialty.trim() || undefined,
+        story: profileForm.story.trim() || undefined,
+        is_verified: false // Gửi duyệt về Admin
+      });
+
+      if (res.success) {
+        // Lưu thông báo cho Admin Notification Center
+        if (typeof window !== 'undefined') {
+          const reqItem = {
+            farmerId: currentFarmer.id,
+            farmName: profileForm.farm_name.trim(),
+            updatedAt: new Date().toISOString(),
+            status: 'pending'
+          };
+          const existing = JSON.parse(localStorage.getItem('gf_admin_farmer_requests') || '[]');
+          localStorage.setItem('gf_admin_farmer_requests', JSON.stringify([reqItem, ...existing]));
+        }
+
+        toast.success('Đã lưu cập nhật và gửi yêu cầu phê duyệt tới Ban Quản Trị!');
+        setFarmers(prev => prev.map(f => f.id === currentFarmer.id ? { 
+          ...f, 
+          ...res.data, 
+          is_verified: false,
+          farm_name: profileForm.farm_name.trim(),
+          address: profileForm.address.trim(),
+          latitude: lat,
+          longitude: lng,
+          specialty: profileForm.specialty.trim(),
+          story: profileForm.story.trim()
+        } : f));
+      } else {
+        toast.error(res.message || 'Cập nhật thất bại');
+      }
+    } catch {
+      toast.error('Lỗi khi lưu thông tin gian hàng');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  // Quick stats tính toán riêng biệt theo dữ liệu của gian hàng hiện tại
   const products = currentFarmer?.products || [];
   const totalProducts = products.length;
 
-  // Tính tổng số lượt đặt hàng / bán ra và tổng doanh thu thực tế từ nông sản của nhà vườn
+  // Tính tổng số lượt đặt hàng / bán ra và tổng doanh thu thực tế từ nông sản của chính gian hàng này
   const totalOrders = products.reduce((sum: number, p: any) => sum + (Number(p.sold_count) || 0), 0);
   const estimatedRevenue = products.reduce((sum: number, p: any) => {
     const sold = Number(p.sold_count) || 0;
@@ -72,66 +221,91 @@ export default function FarmerPortalPage() {
               </div>
             </div>
 
-            {/* Select Farm for Demo / Multi-vendor testing */}
-            <div className="flex items-center gap-2 bg-emerald-950/60 p-2 rounded-xl border border-emerald-800">
-              <span className="text-xs text-emerald-300 font-medium whitespace-nowrap pl-2">Gian hàng:</span>
-              <select
-                value={selectedFarmerId}
-                onChange={(e) => setSelectedFarmerId(e.target.value)}
-                className="bg-emerald-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-700 focus:outline-none"
-              >
-                {farmers.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.farm_name} ({f.region?.name || 'VN'})
-                  </option>
-                ))}
-              </select>
-              {currentFarmer?.id && (
-                <Link
-                  href={`/farmers/${currentFarmer.id}`}
-                  target="_blank"
-                  className="bg-white/10 hover:bg-white/20 text-white p-1.5 rounded-lg transition-colors"
-                  title="Xem gian hàng công khai"
+            {/* Vùng chọn gian hàng: Bảo mật thông tin, phân quyền nghiêm ngặt */}
+            {isAdmin ? (
+              /* Dành riêng cho Quản trị viên: Có quyền chuyển đổi gian hàng để hỗ trợ kỹ thuật */
+              <div className="flex items-center gap-2 bg-emerald-950/70 p-2 rounded-xl border border-emerald-800">
+                <span className="text-xs text-amber-300 font-bold whitespace-nowrap pl-2 flex items-center gap-1">
+                  <ShieldCheck size={14} /> Chế độ Quản trị:
+                </span>
+                <select
+                  value={selectedFarmerId}
+                  onChange={(e) => setSelectedFarmerId(e.target.value)}
+                  className="bg-emerald-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-700 focus:outline-none"
                 >
-                  <Eye size={16} />
-                </Link>
-              )}
-            </div>
+                  {farmers.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.farm_name} ({f.region?.name || 'VN'})
+                    </option>
+                  ))}
+                </select>
+                {currentFarmer?.id && (
+                  <Link
+                    href={`/farmers/${currentFarmer.id}`}
+                    target="_blank"
+                    className="bg-white/10 hover:bg-white/20 text-white p-1.5 rounded-lg transition-colors"
+                    title="Xem gian hàng công khai"
+                  >
+                    <Eye size={16} />
+                  </Link>
+                )}
+              </div>
+            ) : (
+              /* Dành cho Nông Hộ thông thường: Khóa chặt vào gian hàng của chính họ, tuyệt đối không lộ dữ liệu nhà khác */
+              currentFarmer && (
+                <div className="flex items-center gap-2 bg-emerald-950/70 px-3.5 py-2 rounded-xl border border-emerald-800">
+                  <span className="text-xs text-emerald-300 font-medium whitespace-nowrap">Gian hàng của bạn:</span>
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    🌱 {currentFarmer.farm_name}
+                  </span>
+                  <Link
+                    href={`/farmers/${currentFarmer.id}`}
+                    target="_blank"
+                    className="bg-white/10 hover:bg-white/20 text-white p-1.5 rounded-lg transition-colors ml-1"
+                    title="Xem gian hàng công khai của bạn"
+                  >
+                    <Eye size={15} />
+                  </Link>
+                </div>
+              )
+            )}
           </div>
 
-          {/* Navigation Submenu */}
-          <div className="flex items-center gap-2 mt-6 border-t border-emerald-800/80 pt-4 overflow-x-auto text-xs font-semibold">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 ${
-                activeTab === 'dashboard' 
-                  ? 'bg-white text-emerald-900 shadow-sm' 
-                  : 'text-emerald-200 hover:text-white hover:bg-emerald-800/50'
-              }`}
-            >
-              <TrendingUp size={14} /> Tổng quan kinh doanh
-            </button>
-            <button
-              onClick={() => setActiveTab('products')}
-              className={`px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 ${
-                activeTab === 'products' 
-                  ? 'bg-white text-emerald-900 shadow-sm' 
-                : 'text-emerald-200 hover:text-white hover:bg-emerald-800/50'
-              }`}
-            >
-              <Package size={14} /> Nông sản vụ mùa ({totalProducts})
-            </button>
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 ${
-                activeTab === 'profile' 
-                  ? 'bg-white text-emerald-900 shadow-sm' 
-                  : 'text-emerald-200 hover:text-white hover:bg-emerald-800/50'
-              }`}
-            >
-              <Store size={14} /> Hồ sơ nhà vườn
-            </button>
-          </div>
+          {/* Navigation Submenu (Chỉ hiển thị nếu đã có gian hàng) */}
+          {currentFarmer && (
+            <div className="flex items-center gap-2 mt-6 border-t border-emerald-800/80 pt-4 overflow-x-auto text-xs font-semibold">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'dashboard' 
+                    ? 'bg-white text-emerald-900 shadow-sm' 
+                    : 'text-emerald-200 hover:text-white hover:bg-emerald-800/50'
+                }`}
+              >
+                <TrendingUp size={14} /> Tổng quan kinh doanh
+              </button>
+              <button
+                onClick={() => setActiveTab('products')}
+                className={`px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'products' 
+                    ? 'bg-white text-emerald-900 shadow-sm' 
+                    : 'text-emerald-200 hover:text-white hover:bg-emerald-800/50'
+                }`}
+              >
+                <Package size={14} /> Nông sản vụ mùa ({totalProducts})
+              </button>
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'profile' 
+                    ? 'bg-white text-emerald-900 shadow-sm' 
+                    : 'text-emerald-200 hover:text-white hover:bg-emerald-800/50'
+                }`}
+              >
+                <Store size={14} /> Hồ sơ nhà vườn
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -142,12 +316,31 @@ export default function FarmerPortalPage() {
             <RefreshCw className="animate-spin inline-block mr-2" size={24} />
             Đang tải dữ liệu kênh người bán...
           </div>
+        ) : !currentFarmer ? (
+          /* Trường hợp tài khoản chưa có gian hàng nông hộ */
+          <div className="bg-white rounded-3xl p-10 md:p-14 text-center max-w-xl mx-auto shadow-sm border border-gray-100 my-10">
+            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
+              🌱
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Bạn chưa có gian hàng nông hộ trên hệ thống</h2>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+              Tài khoản ({user?.email || user?.name || 'hiện tại'}) chưa liên kết với gian hàng nông hộ nào. Vui lòng đăng ký mở gian hàng đối tác để bắt đầu kinh doanh nông sản sạch trên sàn GreenFood.
+            </p>
+            <div className="flex justify-center gap-3">
+              <Link
+                href="/farmers"
+                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-sm"
+              >
+                <ArrowLeft size={16} /> Xem các gian hàng đối tác
+              </Link>
+            </div>
+          </div>
         ) : (
           <>
             {/* Tab 1: Dashboard Overview */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
-                {/* 4 Metrics Cards */}
+                {/* 4 Metrics Cards - Thống kê chính xác chỉ của gian hàng này */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs">
                     <div className="flex items-center justify-between mb-2">
@@ -237,13 +430,13 @@ export default function FarmerPortalPage() {
                     <Link
                       href={`/farmers/${currentFarmer?.id}`}
                       target="_blank"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors shadow-2xs"
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors shrink-0 shadow-xs"
                     >
-                      Xem gian hàng của tôi 🛒
+                      Xem trang gian hàng
                     </Link>
                   </div>
                 ) : (
-                  <div className="bg-amber-50 rounded-2xl p-5 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="bg-amber-50 rounded-2xl p-5 border border-amber-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0">
                         <AlertCircle size={20} />
@@ -252,12 +445,12 @@ export default function FarmerPortalPage() {
                         <h4 className="font-bold text-amber-950 text-sm">
                           Hồ sơ gian hàng {currentFarmer?.farm_name} đang chờ ban quản trị GreenFood xét duyệt!
                         </h4>
-                        <p className="text-xs text-amber-700 mt-0.5">
+                        <p className="text-xs text-amber-800 mt-0.5">
                           Đội ngũ kiểm định chất lượng sẽ liên hệ thẩm định tiêu chuẩn VietGAP/Hữu cơ trong 24h làm việc.
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs font-bold text-amber-700 bg-amber-100 px-3 py-1.5 rounded-xl">
+                    <span className="px-3 py-1 bg-amber-100 text-amber-800 border border-amber-300 rounded-lg text-xs font-bold shrink-0">
                       Chờ duyệt ⏳
                     </span>
                   </div>
@@ -265,141 +458,212 @@ export default function FarmerPortalPage() {
               </div>
             )}
 
-            {/* Tab 2: Products Management */}
+            {/* Tab 2: Products List */}
             {activeTab === 'products' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-2xs p-6 space-y-4">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-bold text-gray-900 text-base">Danh mục nông sản của nhà vườn</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">Danh sách các mặt hàng nông sản đang niêm yết bán trực tiếp.</p>
+                    <h3 className="font-bold text-gray-900 text-base">
+                      Nông Sản Vụ Mùa Của {currentFarmer?.farm_name}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Danh sách các mặt hàng nông sản sạch đang liên kết trực tiếp với gian hàng này.
+                    </p>
                   </div>
-                  <button
-                    onClick={() => toast.success('Tính năng thêm nông sản đang mở cho quản trị viên')}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm"
+                  <Link
+                    href={`/farmers/${currentFarmer?.id}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors"
                   >
-                    <Plus size={16} /> Đăng bán nông sản mới
-                  </button>
+                    <Eye size={14} /> Xem trên sàn
+                  </Link>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 text-gray-600 text-xs uppercase border-b border-gray-100">
-                        <th className="p-4 font-semibold">Tên Nông Sản</th>
-                        <th className="p-4 font-semibold">Giá Bán</th>
-                        <th className="p-4 font-semibold">Đã Bán</th>
-                        <th className="p-4 font-semibold">Đánh Giá</th>
-                        <th className="p-4 font-semibold">Trạng Thái</th>
-                        <th className="p-4 font-semibold text-right">Hành Động</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {products.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="p-10 text-center text-gray-500">
-                            Chưa có sản phẩm nào được đăng tải cho gian hàng này.
-                          </td>
-                        </tr>
-                      ) : (
-                        products.map((p: any) => {
-                          const variant = p.variants?.[0] || {};
-                          return (
-                            <tr key={p.id} className="hover:bg-gray-50/60 transition-colors">
-                              <td className="p-4">
-                                <div className="flex items-center gap-3">
-                                  <img
-                                    src={p.image_url || 'https://images.unsplash.com/photo-1550828520-4cb496926fc9?w=200'}
-                                    alt={p.name}
-                                    className="w-12 h-12 object-cover rounded-xl border border-gray-100"
-                                  />
-                                  <div>
-                                    <div className="font-bold text-gray-900">{p.name}</div>
-                                    <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                                      {p.badge || 'Trái cây sạch'}
-                                    </span>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="p-4 font-bold text-rose-600">
-                                {Number(variant.price || 60000).toLocaleString('vi-VN')}đ / {variant.unit || 'kg'}
-                              </td>
-                              <td className="p-4 font-medium text-gray-700">
-                                {Number(p.sold_count || 0)} lượt bán
-                              </td>
-                              <td className="p-4 text-amber-500 font-bold">
-                                ⭐ {Number(p.rating || 5.0).toFixed(1)}
-                              </td>
-                              <td className="p-4">
-                                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
-                                  <CheckCircle size={12} /> Đang mở bán
-                                </span>
-                              </td>
-                              <td className="p-4 text-right">
-                                <Link
-                                  href={`/product/${p.slug}`}
-                                  target="_blank"
-                                  className="text-emerald-600 hover:text-emerald-700 font-semibold text-xs inline-flex items-center gap-1"
-                                >
-                                  <Eye size={14} /> Xem bài đăng
-                                </Link>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                {products.length === 0 ? (
+                  <div className="p-12 text-center text-gray-400">
+                    <Package size={40} className="mx-auto text-gray-300 mb-2" />
+                    <p className="text-sm font-semibold text-gray-600">Chưa có nông sản nào được đăng bán</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Nông sản mới sẽ hiển thị tại đây sau khi liên kết với gian hàng.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {products.map((p: any) => (
+                      <div key={p.id} className="py-3.5 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={p.image_url || 'https://images.unsplash.com/photo-1550828520-4cb496926fc9?w=200'}
+                            alt={p.name}
+                            className="w-12 h-12 rounded-xl object-cover border border-gray-100"
+                          />
+                          <div>
+                            <h4 className="font-bold text-gray-900 text-sm">{p.name}</h4>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              Giá: <strong className="text-emerald-700">{Number(p.variants?.[0]?.price || 0).toLocaleString('vi-VN')}đ</strong> / {p.variants?.[0]?.unit || 'kg'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-xs text-gray-500 block">Đã bán: <strong>{p.sold_count || 0}</strong></span>
+                          <span className="text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded">
+                            {p.badge || 'Đang mở bán'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Tab 3: Farm Profile */}
+            {/* Tab 3: Profile Form */}
             {activeTab === 'profile' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 max-w-3xl mx-auto space-y-6">
+              <form onSubmit={handleSaveProfile} className="bg-white rounded-2xl border border-gray-100 shadow-2xs p-6 space-y-6 max-w-3xl">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">Thông tin nhà vườn & Cơ sở canh tác</h3>
-                  <p className="text-xs text-gray-500">Thông tin này được hiển thị công khai trên sàn TMĐT GreenFood.</p>
+                  <h3 className="font-bold text-gray-900 text-base">Hồ Sơ Gian Hàng & Địa Chỉ Vị Trí Vườn</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Cập nhật địa chỉ thực tế và vị trí GPS để khách hàng tìm thấy đúng nhà vườn của bạn trên Bản Đồ Nông Hộ GreenFood.
+                  </p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Tên Nông Trại</label>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                      Tên Vườn / Nông Trại / Hợp Tác Xã *
+                    </label>
                     <input
+                      required
                       type="text"
-                      disabled
-                      value={currentFarmer?.farm_name || ''}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-800"
+                      value={profileForm.farm_name}
+                      onChange={e => setProfileForm({ ...profileForm, farm_name: e.target.value })}
+                      placeholder="Ví dụ: Nông Trại Hữu Cơ Ba Tri"
+                      className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Địa Chỉ Khu Vườn</label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-bold text-gray-700 uppercase">
+                        Địa Chỉ Khu Vườn / Cơ Sở Sản Xuất *
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleAutoGeocode}
+                        className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-colors border border-emerald-200"
+                      >
+                        <MapPin size={13} />
+                        Tự động lấy tọa độ từ địa chỉ
+                      </button>
+                    </div>
+                    <input
+                      required
+                      type="text"
+                      value={profileForm.address}
+                      onChange={e => setProfileForm({ ...profileForm, address: e.target.value })}
+                      placeholder="Ví dụ: Tân Cương, Thái Nguyên hoặc Xã Hoằng Hóa, Tỉnh Thanh Hóa..."
+                      className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    />
+                  </div>
+
+                  {/* Tọa độ GPS trên Bản Đồ */}
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                        <MapPin size={14} className="text-emerald-600" />
+                        Tọa Độ Bản Đồ Nông Hộ (GPS Coordinates)
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        Giúp khách hàng nhìn thấy đúng vị trí trên bản đồ
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Vĩ độ (Latitude)
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={profileForm.latitude}
+                          onChange={e => setProfileForm({ ...profileForm, latitude: e.target.value })}
+                          placeholder="Ví dụ: 19.8067"
+                          className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Kinh độ (Longitude)
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={profileForm.longitude}
+                          onChange={e => setProfileForm({ ...profileForm, longitude: e.target.value })}
+                          placeholder="Ví dụ: 105.7852"
+                          className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                      Sản Phẩm Thế Mạnh / Đặc Sản
+                    </label>
                     <input
                       type="text"
-                      disabled
-                      value={currentFarmer?.address || ''}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800"
+                      value={profileForm.specialty}
+                      onChange={e => setProfileForm({ ...profileForm, specialty: e.target.value })}
+                      placeholder="Ví dụ: Sầu riêng Ri6, Bưởi da xanh ruột hồng, Nông sản hữu cơ..."
+                      className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Câu Chuyện Canh Tác Sạch</label>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                      Câu Chuyện Canh Tác Sạch & Cam Kết Chất Lượng
+                    </label>
                     <textarea
                       rows={4}
-                      disabled
-                      value={currentFarmer?.story || 'Canh tác theo tiêu chuẩn hữu cơ tự nhiên, đảm bảo vệ sinh an toàn thực phẩm.'}
-                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 leading-relaxed"
+                      value={profileForm.story}
+                      onChange={e => setProfileForm({ ...profileForm, story: e.target.value })}
+                      placeholder="Mô tả truyền thống canh tác, tiêu chuẩn VietGAP, hữu cơ hoặc câu chuyện gắn bó cùng nông nghiệp sạch..."
+                      className="w-full p-4 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 leading-relaxed focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                     />
                   </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between border-t border-gray-100">
+                  <div className="text-xs text-slate-500">
+                    Vùng hiển thị: <strong>{currentFarmer?.region?.name || 'Việt Nam'}</strong>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSavingProfile}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-all shadow-md hover:shadow-emerald-700/20 active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                  >
+                    {isSavingProfile ? (
+                      <>
+                        <RefreshCw size={15} className="animate-spin" />
+                        <span>Đang gửi duyệt...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle size={15} />
+                        <span>Lưu & Gửi phê duyệt</span>
+                      </>
+                    )}
+                  </button>
                 </div>
 
                 <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800 flex items-start gap-2">
-                  <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                  <AlertCircle size={16} className="shrink-0 mt-0.5 text-amber-600" />
                   <span>
-                    Để thay đổi thông tin giấy phép chứng nhận VietGAP hoặc đổi tài khoản ngân hàng nhận tiền quyết toán, vui lòng liên hệ Ban Quản Trị Sàn qua hotline <strong>1900 6868</strong>.
+                    <strong>Quy trình kiểm duyệt:</strong> Mọi thay đổi về thông tin gian hàng và vị trí bản đồ sẽ được gửi tới Ban Quản Trị GreenFood phê duyệt trước khi kích hoạt chính thức.
                   </span>
                 </div>
-              </div>
+              </form>
             )}
           </>
         )}

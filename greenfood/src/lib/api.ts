@@ -14,6 +14,7 @@ import {
   getFallbackWards,
   calculateFallbackShippingFee
 } from '@/data/vietnamAddress';
+import { resolveCoordinatesFromAddress } from './geoUtils';
 
 export { cleanVietnameseMojibake };
 export type { ProductItem, CategoryInfo };
@@ -210,8 +211,11 @@ export async function getProductBySlug(slug: string): Promise<ProductItem | unde
 // 3. FARMERS API (GIS Map)
 export interface FarmerData {
   id: string;
+  user_id?: string;
   name: string;
   owner: string;
+  ownerEmail?: string;
+  ownerPhone?: string;
   region: string;
   zone: 'north' | 'central' | 'south';
   address: string;
@@ -222,6 +226,7 @@ export interface FarmerData {
   specialty: string;
   isVerified: boolean;
   image: string;
+  story?: string;
 }
 
 export async function getFarmers(params?: { zone?: string; search?: string }): Promise<FarmerData[]> {
@@ -233,21 +238,29 @@ export async function getFarmers(params?: { zone?: string; search?: string }): P
   const res = await fetchApi<{ success: boolean; data: any[] }>(`/farmers${queryStr}`);
 
   if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
-    return res.data.map((f: any) => ({
-      id: f.id,
-      name: f.farm_name,
-      owner: f.user?.full_name || 'Chủ vườn',
-      region: f.region?.name || 'Việt Nam',
-      zone: f.region?.zone || 'south',
-      address: f.address,
-      lat: Number(f.latitude || 10.7769),
-      lng: Number(f.longitude || 106.7009),
-      rating: Number(f.rating || 4.8),
-      products: f.products ? f.products.length : 5,
-      specialty: f.specialty || 'Nông sản sạch',
-      isVerified: Boolean(f.is_verified),
-      image: f.image_url || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400'
-    }));
+    return res.data.map((f: any) => {
+      // Tự động phân giải tọa độ chuẩn xác dựa trên địa chỉ thực tế của gian hàng
+      const geo = resolveCoordinatesFromAddress(f.address, f.latitude, f.longitude);
+      return {
+        id: f.id,
+        user_id: f.user_id,
+        name: f.farm_name,
+        owner: f.user?.full_name || f.user?.name || 'Chủ vườn',
+        ownerEmail: f.user?.email,
+        ownerPhone: f.user?.phone,
+        region: f.region?.name || geo.provinceName,
+        zone: f.region?.zone || geo.zone,
+        address: f.address,
+        lat: geo.lat,
+        lng: geo.lng,
+        rating: Number(f.rating || 4.8),
+        products: f.products ? f.products.length : 0,
+        specialty: f.specialty || 'Nông sản sạch',
+        isVerified: Boolean(f.is_verified),
+        image: f.image_url || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400',
+        story: f.story || ''
+      };
+    });
   }
 
   return [];
@@ -903,6 +916,13 @@ export async function registerFarmerApi(payload: {
   scale?: string;
   specialty?: string;
   note?: string;
+  tax_id?: string;
+  certifications?: string[];
+  cert_code?: string;
+  farm_area?: string;
+  farming_method?: string;
+  experience_years?: string;
+  proof_document?: string;
 }): Promise<{ success: boolean; message: string; data?: any }> {
   try {
     const res = await fetchApi<{ success: boolean; message: string; data?: any }>('/farmers/register', {
@@ -950,5 +970,29 @@ export async function deleteFarmerApi(id: string): Promise<{ success: boolean; m
     return { success: false, message: 'Lỗi mạng khi xóa nông hộ' };
   }
 }
+
+export async function updateFarmerProfileApi(id: string, payload: {
+  farm_name?: string;
+  address?: string;
+  story?: string;
+  specialty?: string;
+  latitude?: number;
+  longitude?: number;
+  region_id?: number;
+  image_url?: string;
+  is_verified?: boolean;
+}): Promise<{ success: boolean; message: string; data?: any }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/farmers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+    return res || { success: false, message: 'Lỗi cập nhật nông hộ' };
+  } catch (error) {
+    console.error('[API] updateFarmerProfileApi error:', error);
+    return { success: false, message: 'Lỗi kết nối máy chủ khi cập nhật nông hộ' };
+  }
+}
+
 
 

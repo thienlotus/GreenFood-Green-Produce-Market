@@ -89,7 +89,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/farmers', [FarmerController::class, 'index']);
     Route::post('/farmers/register', [FarmerController::class, 'register']);
     Route::get('/farmers/{id}', [FarmerController::class, 'show']);
+    Route::put('/farmers/{id}', [FarmerController::class, 'update']);
     Route::get('/admin/farmers', [FarmerController::class, 'adminIndex']);
+    Route::put('/admin/farmers/{id}', [FarmerController::class, 'update']);
     Route::put('/admin/farmers/{id}/status', [FarmerController::class, 'updateStatus']);
     Route::delete('/admin/farmers/{id}', [FarmerController::class, 'destroy']);
 
@@ -163,7 +165,9 @@ Route::delete('/shipping-zones/{id}', [ShippingZoneController::class, 'destroy']
 Route::get('/farmers', [FarmerController::class, 'index']);
 Route::post('/farmers/register', [FarmerController::class, 'register']);
 Route::get('/farmers/{id}', [FarmerController::class, 'show']);
+Route::put('/farmers/{id}', [FarmerController::class, 'update']);
 Route::get('/admin/farmers', [FarmerController::class, 'adminIndex']);
+Route::put('/admin/farmers/{id}', [FarmerController::class, 'update']);
 Route::put('/admin/farmers/{id}/status', [FarmerController::class, 'updateStatus']);
 Route::delete('/admin/farmers/{id}', [FarmerController::class, 'destroy']);
 

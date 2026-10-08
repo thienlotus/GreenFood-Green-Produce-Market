@@ -11,17 +11,18 @@ import {
   RefreshCw, 
   Clock, 
   CheckCircle2,
-  Bot
+  Bot,
+  Tractor
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getAdminOrders, AdminOrder } from '@/lib/api';
+import { getAdminOrders, AdminOrder, getAdminFarmersApi } from '@/lib/api';
 import { getChatConversations, ChatConversation } from '@/lib/chatApi';
 import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 
 export interface AdminNotification {
   id: string;
-  type: 'order' | 'chat' | 'stock';
+  type: 'order' | 'chat' | 'stock' | 'farmer';
   title: string;
   description: string;
   timestamp: string;
@@ -32,7 +33,7 @@ export interface AdminNotification {
 
 export default function AdminNotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'order' | 'chat' | 'stock'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'order' | 'farmer' | 'chat' | 'stock'>('all');
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -132,6 +133,30 @@ export default function AdminNotificationCenter() {
         link: '/admin/products/',
         badge: 'Tồn kho thấp',
       });
+
+      // 4. Fetch Farmer Storefronts pending verification / update approval
+      try {
+        const farmers = await getAdminFarmersApi();
+        if (Array.isArray(farmers)) {
+          // Lọc các nông hộ chưa duyệt hoặc đang chờ duyệt thay đổi
+          farmers.filter(f => !f.is_verified).forEach((f: any) => {
+            const fName = cleanVietnameseMojibake(f.farm_name || f.name || 'Gian hàng nông hộ');
+            const fAddr = cleanVietnameseMojibake(f.address || 'Việt Nam');
+            notifList.push({
+              id: `farmer-${f.id}`,
+              type: 'farmer',
+              title: `Yêu cầu duyệt gian hàng: ${fName}`,
+              description: `Nông hộ "${fName}" (${fAddr}) đã cập nhật thông tin và đang chờ phê duyệt kích hoạt.`,
+              timestamp: 'Chờ duyệt',
+              isRead: readIds.has(`farmer-${f.id}`),
+              link: '/admin/farmers/',
+              badge: 'Chờ duyệt',
+            });
+          });
+        }
+      } catch (err) {
+        console.warn('Farmers notification fetch error:', err);
+      }
 
       // Calculate unread count
       const unread = notifList.filter(n => !n.isRead).length;
@@ -278,6 +303,16 @@ export default function AdminNotificationCenter() {
               Đơn hàng
             </button>
             <button
+              onClick={() => setActiveTab('farmer')}
+              className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center ${
+                activeTab === 'farmer' 
+                  ? 'bg-white text-emerald-700 shadow-xs' 
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+            >
+              Nông hộ
+            </button>
+            <button
               onClick={() => setActiveTab('chat')}
               className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center ${
                 activeTab === 'chat' 
@@ -320,11 +355,14 @@ export default function AdminNotificationCenter() {
                   <div className={`w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-bold text-sm shadow-xs ${
                     item.type === 'order' 
                       ? 'bg-emerald-100 text-emerald-700' 
-                      : item.type === 'chat'
-                        ? 'bg-sky-100 text-sky-700'
-                        : 'bg-amber-100 text-amber-700'
+                      : item.type === 'farmer'
+                        ? 'bg-purple-100 text-purple-700'
+                        : item.type === 'chat'
+                          ? 'bg-sky-100 text-sky-700'
+                          : 'bg-amber-100 text-amber-700'
                   }`}>
                     {item.type === 'order' && <ShoppingBag size={18} />}
+                    {item.type === 'farmer' && <Tractor size={18} />}
                     {item.type === 'chat' && <Bot size={18} />}
                     {item.type === 'stock' && <AlertTriangle size={18} />}
                   </div>

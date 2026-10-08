@@ -68,6 +68,13 @@ class FarmerController extends Controller
             'scale' => 'nullable|string',
             'specialty' => 'nullable|string',
             'note' => 'nullable|string',
+            'tax_id' => 'nullable|string|max:100',
+            'certifications' => 'nullable|array',
+            'cert_code' => 'nullable|string|max:255',
+            'farm_area' => 'nullable|string|max:100',
+            'farming_method' => 'nullable|string|max:255',
+            'experience_years' => 'nullable|string|max:100',
+            'proof_document' => 'nullable|string',
         ]);
 
         try {
@@ -101,6 +108,36 @@ class FarmerController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Cập nhật trạng thái nông hộ thành công'
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'farm_name' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'story' => 'nullable|string',
+            'specialty' => 'nullable|string|max:255',
+            'image_url' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'region_id' => 'nullable|integer',
+            'is_verified' => 'nullable|boolean',
+        ]);
+
+        $farmer = $this->farmerService->updateFarmer($id, $validated);
+
+        if (!$farmer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy nông hộ'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật thông tin gian hàng nông hộ thành công',
+            'data' => $farmer
         ]);
     }
 

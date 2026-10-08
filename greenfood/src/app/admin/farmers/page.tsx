@@ -4,15 +4,17 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   Search, Trash2, Tractor, Plus, CheckCircle, XCircle, 
-  Store, MapPin, Phone, Mail, RefreshCw, AlertCircle, ShieldCheck
+  Store, MapPin, Phone, Mail, RefreshCw, AlertCircle, ShieldCheck, Edit, Compass
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { 
   getAdminFarmersApi, 
   updateFarmerStatusApi, 
   deleteFarmerApi, 
-  registerFarmerApi 
+  registerFarmerApi,
+  updateFarmerProfileApi
 } from '@/lib/api';
+import { resolveCoordinatesFromAddress } from '@/lib/geoUtils';
 
 interface AdminFarmerItem {
   id: string;
@@ -20,6 +22,8 @@ interface AdminFarmerItem {
   story?: string;
   address: string;
   specialty?: string;
+  latitude?: number | string;
+  longitude?: number | string;
   rating?: number;
   is_verified: boolean;
   user?: {
@@ -30,7 +34,7 @@ interface AdminFarmerItem {
     phone?: string;
   };
   region?: {
-    id: string;
+    id: string | number;
     name: string;
     zone?: string;
   };
@@ -43,7 +47,7 @@ export default function AdminFarmersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'pending'>('all');
   
-  // Modal State
+  // Modal State - Add
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -55,6 +59,19 @@ export default function AdminFarmersPage() {
     specialty: 'Rau củ hữu cơ, trái cây chuẩn VietGAP',
     scale: '1 - 3 hecta',
     note: ''
+  });
+
+  // Modal State - Edit
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+  const [editingFarmer, setEditingFarmer] = useState<AdminFarmerItem | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    farm_name: '',
+    address: '',
+    specialty: '',
+    story: '',
+    latitude: '',
+    longitude: ''
   });
 
   const loadData = async () => {
@@ -175,6 +192,70 @@ export default function AdminFarmersPage() {
       toast.error('Lỗi máy chủ khi tạo nông hộ');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleOpenEditModal = (farmer: AdminFarmerItem) => {
+    setEditingFarmer(farmer);
+    setEditFormData({
+      farm_name: farmer.farm_name || '',
+      address: farmer.address || '',
+      specialty: farmer.specialty || '',
+      story: farmer.story || '',
+      latitude: farmer.latitude ? String(farmer.latitude) : '',
+      longitude: farmer.longitude ? String(farmer.longitude) : ''
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleAutoGeocodeInEdit = () => {
+    if (!editFormData.address.trim()) {
+      toast.error('Vui lòng nhập địa chỉ trước');
+      return;
+    }
+    const geo = resolveCoordinatesFromAddress(editFormData.address);
+    setEditFormData(prev => ({
+      ...prev,
+      latitude: String(geo.lat),
+      longitude: String(geo.lng)
+    }));
+    toast.success(`Đã nhận diện tọa độ: ${geo.provinceName} (${geo.lat}, ${geo.lng})`);
+  };
+
+  const handleSubmitEditForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingFarmer || isEditSubmitting) return;
+
+    if (!editFormData.farm_name.trim() || !editFormData.address.trim()) {
+      toast.error('Vui lòng nhập tên vườn và địa chỉ!');
+      return;
+    }
+
+    setIsEditSubmitting(true);
+    try {
+      const lat = editFormData.latitude ? parseFloat(editFormData.latitude) : undefined;
+      const lng = editFormData.longitude ? parseFloat(editFormData.longitude) : undefined;
+
+      const res = await updateFarmerProfileApi(editingFarmer.id, {
+        farm_name: editFormData.farm_name,
+        address: editFormData.address,
+        specialty: editFormData.specialty,
+        story: editFormData.story,
+        latitude: lat,
+        longitude: lng
+      });
+
+      if (res.success) {
+        toast.success('Đã cập nhật thông tin gian hàng nông hộ thành công!');
+        setIsEditModalOpen(false);
+        loadData();
+      } else {
+        toast.error(res.message || 'Cập nhật thất bại');
+      }
+    } catch (err) {
+      toast.error('Lỗi kết nối khi cập nhật nông hộ');
+    } finally {
+      setIsEditSubmitting(false);
     }
   };
 
@@ -379,11 +460,18 @@ export default function AdminFarmersPage() {
                         <MapPin size={14} className="text-emerald-600 shrink-0 mt-0.5" />
                         <span className="line-clamp-2">{farmer.address}</span>
                       </div>
-                      {farmer.region && (
-                        <span className="inline-block mt-1 text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                          {farmer.region.name}
-                        </span>
-                      )}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        {farmer.region && (
+                          <span className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                            {farmer.region.name}
+                          </span>
+                        )}
+                        {farmer.latitude && farmer.longitude && (
+                          <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-mono border border-emerald-100">
+                            GPS: {Number(farmer.latitude).toFixed(3)}, {Number(farmer.longitude).toFixed(3)}
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Sản phẩm */}
@@ -419,6 +507,15 @@ export default function AdminFarmersPage() {
                         >
                           <Store size={16} />
                         </Link>
+
+                        {/* Sửa gian hàng */}
+                        <button
+                          onClick={() => handleOpenEditModal(farmer)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 border border-blue-100 rounded-lg transition-colors"
+                          title="Chỉnh sửa thông tin & tọa độ nông hộ"
+                        >
+                          <Edit size={16} />
+                        </button>
 
                         {/* Toggle Duyệt */}
                         <button
@@ -587,6 +684,153 @@ export default function AdminFarmersPage() {
                     </>
                   ) : (
                     'Tạo đối tác nông hộ'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Farmer Modal */}
+      {isEditModalOpen && editingFarmer && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-gray-100 bg-emerald-50/60 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Edit size={18} className="text-emerald-600" />
+                  Chỉnh Sửa Gian Hàng Nông Hộ
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Cập nhật tên vườn, địa chỉ thực tế và vị trí bản đồ GPS cho &ldquo;{editingFarmer.farm_name}&rdquo;
+                </p>
+              </div>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitEditForm} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Tên Vườn / Nông Trại / HTX *
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={editFormData.farm_name}
+                  onChange={e => setEditFormData({ ...editFormData, farm_name: e.target.value })}
+                  className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Địa Chỉ Thực Tế Của Gian Hàng *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAutoGeocodeInEdit}
+                    className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-colors border border-emerald-200/60"
+                  >
+                    <Compass size={13} />
+                    Tự động lấy GPS từ địa chỉ
+                  </button>
+                </div>
+                <input
+                  required
+                  type="text"
+                  placeholder="Ví dụ: Xã Hoằng Hóa, Tỉnh Thanh Hóa"
+                  value={editFormData.address}
+                  onChange={e => setEditFormData({ ...editFormData, address: e.target.value })}
+                  className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Nhập rõ Tỉnh / Thành phố để hệ thống ghim chính xác vị trí trên bản đồ toàn quốc.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50/80 p-3.5 rounded-xl border border-gray-200/70">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">
+                    Vĩ Độ (Latitude)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    placeholder="19.8067"
+                    value={editFormData.latitude}
+                    onChange={e => setEditFormData({ ...editFormData, latitude: e.target.value })}
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">
+                    Kinh Độ (Longitude)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    placeholder="105.7852"
+                    value={editFormData.longitude}
+                    onChange={e => setEditFormData({ ...editFormData, longitude: e.target.value })}
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Sản Phẩm Nổi Bật / Đặc Sản
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ví dụ: Nem chua Thanh Hóa, Cam bù Hương Sơn..."
+                  value={editFormData.specialty}
+                  onChange={e => setEditFormData({ ...editFormData, specialty: e.target.value })}
+                  className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Câu Chuyện Canh Tác / Giới Thiệu Gian Hàng
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Giới thiệu về quy trình sản xuất sạch, chuẩn hữu cơ VietGAP..."
+                  value={editFormData.story}
+                  onChange={e => setEditFormData({ ...editFormData, story: e.target.value })}
+                  className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  disabled={isEditSubmitting}
+                  className="px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  disabled={isEditSubmitting}
+                  className="px-5 py-2.5 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors disabled:opacity-50 shadow-sm flex items-center gap-2"
+                >
+                  {isEditSubmitting ? (
+                    <>
+                      <RefreshCw className="animate-spin" size={16} />
+                      Đang lưu...
+                    </>
+                  ) : (
+                    'Lưu cập nhật gian hàng'
                   )}
                 </button>
               </div>

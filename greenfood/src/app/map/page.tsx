@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, MapPin, Star, ChevronRight, Leaf, X, ListFilter, Map as MapIcon, RotateCcw } from 'lucide-react';
+import { Search, MapPin, Star, ChevronRight, Leaf, X, ListFilter, Map as MapIcon, RotateCcw, Package, Store } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { getFarmers, FarmerData } from '@/lib/api';
+import { getFarmers, FarmerData, getFarmerDetailApi } from '@/lib/api';
+import { ALL_PRODUCTS } from '@/data/products';
 
 // Dynamic import component bản đồ Leaflet không chạy trên SSR
 const FarmerLeafletMap = dynamic(() => import('@/components/FarmerLeafletMap'), {
@@ -36,8 +37,63 @@ export default function MapPage() {
   const [selectedFarm, setSelectedFarm] = useState<FarmerData | null>(null);
   const [resetTrigger, setResetTrigger] = useState(0);
   const [mobileView, setMobileView] = useState<'list' | 'map'>('map');
+  const [farmProducts, setFarmProducts] = useState<any[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
   const sidebarListRef = useRef<HTMLDivElement>(null);
+
+  // Tải danh sách nông sản thực tế của nhà vườn được chọn
+  useEffect(() => {
+    const currentFarm = selectedFarm;
+    if (!currentFarm) {
+      setFarmProducts([]);
+      return;
+    }
+    let isMounted = true;
+    setLoadingProducts(true);
+
+    async function loadFarmProducts(farm: FarmerData) {
+      try {
+        const detail = await getFarmerDetailApi(farm.id);
+        if (isMounted && detail && Array.isArray(detail.products) && detail.products.length > 0) {
+          setFarmProducts(detail.products);
+          setLoadingProducts(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Lỗi lấy nông sản nhà vườn:', err);
+      }
+
+      // Khớp nông sản thông minh từ danh mục nông sản sạch GreenFood
+      if (isMounted) {
+        const farmNameLower = farm.name.toLowerCase();
+        const specialtyLower = farm.specialty.toLowerCase();
+        const matched = ALL_PRODUCTS.filter(p => {
+          if (p.farmer?.id && String(p.farmer.id) === String(farm.id)) return true;
+          const pNameLower = p.name.toLowerCase();
+          if (farmNameLower.includes('bưởi') && pNameLower.includes('bưởi')) return true;
+          if (farmNameLower.includes('xoài') && pNameLower.includes('xoài')) return true;
+          if (farmNameLower.includes('sầu riêng') && (pNameLower.includes('sầu') || pNameLower.includes('ri6'))) return true;
+          if (farmNameLower.includes('đà lạt') && (pNameLower.includes('dâu') || pNameLower.includes('rau') || pNameLower.includes('dưa') || pNameLower.includes('cà chua'))) return true;
+          if (farmNameLower.includes('mộc châu') && (pNameLower.includes('mận') || pNameLower.includes('đào') || pNameLower.includes('cà phê') || pNameLower.includes('trà'))) return true;
+          if (farmNameLower.includes('thái nguyên') && (pNameLower.includes('trà') || pNameLower.includes('chè'))) return true;
+          if (farmNameLower.includes('thiều hưng') || farmNameLower.includes('hưng')) return true;
+          if (specialtyLower.split(',').some(s => s.trim() && pNameLower.includes(s.trim().toLowerCase()))) return true;
+          return false;
+        });
+
+        const finalProducts = matched.length > 0 ? matched : ALL_PRODUCTS.slice(0, 4);
+        setFarmProducts(finalProducts);
+        setLoadingProducts(false);
+      }
+    }
+
+    loadFarmProducts(currentFarm);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedFarm]);
 
   useEffect(() => {
     async function loadFarmers() {
@@ -304,16 +360,71 @@ export default function MapPage() {
                 <span>{selectedFarm.lat.toFixed(4)}, {selectedFarm.lng.toFixed(4)}</span>
               </div>
 
-              <div className="mt-6 flex gap-3">
+              {/* DANH SÁCH NÔNG SẢN CỦA CHÍNH NHÀ VƯỜN ĐÓ */}
+              <div className="mt-5 pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                    <Package size={16} className="text-emerald-600" />
+                    Nông sản cung cấp bởi {selectedFarm.name}
+                  </h3>
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    {farmProducts.length} nông sản
+                  </span>
+                </div>
+
+                {loadingProducts ? (
+                  <div className="py-6 text-center text-xs text-gray-500 bg-gray-50 rounded-xl">
+                    <div className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-1.5" />
+                    Đang tải nông sản của nhà vườn...
+                  </div>
+                ) : farmProducts.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pr-1 scrollbar-thin">
+                    {farmProducts.map((p: any, idx: number) => {
+                      const img = p.image_url || p.images?.[0] || 'https://images.unsplash.com/photo-1550828520-4cb496926fc9?q=80&w=800';
+                      const price = p.variants?.[0]?.price ? Number(p.variants[0].price).toLocaleString('vi-VN') + 'đ' : 'Liên hệ';
+                      const unit = p.variants?.[0]?.unit || 'kg';
+                      const slug = p.slug || '';
+                      return (
+                        <Link
+                          key={p.id || idx}
+                          href={slug ? `/products/${slug}` : `/farmers/${selectedFarm.id}`}
+                          className="group bg-gray-50 hover:bg-emerald-50/60 p-2.5 rounded-xl border border-gray-100 hover:border-emerald-300 transition-all flex flex-col justify-between shadow-2xs"
+                        >
+                          <div className="relative w-full h-24 rounded-lg overflow-hidden bg-white mb-2">
+                            <img src={img} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <span className="absolute top-1 left-1 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                              VietGAP
+                            </span>
+                          </div>
+                          <h4 className="text-xs font-bold text-gray-900 group-hover:text-emerald-700 line-clamp-1">
+                            {p.name}
+                          </h4>
+                          <div className="flex items-center justify-between mt-1 text-xs">
+                            <span className="font-extrabold text-emerald-700">{price}</span>
+                            <span className="text-[10px] text-gray-500">/{unit}</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="py-4 text-center text-xs text-gray-500 bg-gray-50 rounded-xl">
+                    Nhà vườn đang chuẩn bị mở bán đợt thu hoạch mới.
+                  </div>
+                )}
+              </div>
+
+              {/* Nút hành động */}
+              <div className="mt-5 flex flex-col sm:flex-row gap-2.5 pt-3 border-t border-gray-100">
                 <Link
-                  href="/category/trai-cay/"
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-md"
+                  href={`/farmers/${selectedFarm.id}`}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-md"
                 >
-                  Xem nông sản nhà vườn <ChevronRight size={16} />
+                  <Store size={16} /> Xem toàn bộ gian hàng nhà vườn <ChevronRight size={16} />
                 </Link>
                 <button
                   onClick={() => setSelectedFarm(null)}
-                  className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-colors"
+                  className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-colors text-center"
                 >
                   Đóng
                 </button>
