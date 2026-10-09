@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, 
   ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, List, Map, Package, LogOut, ShieldCheck, X,
-  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles
+  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles, LayoutGrid
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -327,15 +327,15 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 3. MENU BAR (Desktop Only) - Căn giữa toàn bộ thanh menu chính */}
+      {/* 3. MENU BAR (Desktop Only) - Gióng song song tuyệt đối với khối Danh mục nông sản bên dưới bằng CSS Grid 12 cột */}
       <div className="hidden lg:block border-t border-slate-200/80 bg-white shadow-xs relative select-none z-30">
-        <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-3 lg:px-4 xl:px-6">
-          <div className="flex items-center justify-center h-12 xl:h-13 py-1 gap-1.5 sm:gap-2 xl:gap-3">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="grid grid-cols-12 gap-4 items-center h-12 xl:h-13 py-1">
             
-            {/* 1. Nút Mega Menu Danh mục nông sản */}
+            {/* 1. Nút Mega Menu Danh mục nông sản - Chiếm đúng col-span-4 xl:col-span-3, song song và bằng 100% kích thước khối Sidebar bên dưới */}
             <div 
               ref={categoryMenuRef}
-              className="relative flex items-center shrink-0 z-30"
+              className="col-span-4 xl:col-span-3 relative flex items-center z-30 w-full"
               onMouseEnter={() => setIsCategoryOpen(true)}
               onMouseLeave={() => setIsCategoryOpen(false)}
             >
@@ -344,21 +344,23 @@ export default function Navbar() {
                   e.stopPropagation();
                   setIsCategoryOpen(prev => !prev);
                 }}
-                className="flex items-center gap-1.5 xl:gap-2 bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-800 hover:from-emerald-800 hover:to-teal-900 text-white px-3.5 xl:px-4 py-2 rounded-xl font-bold text-xs xl:text-[13px] tracking-wide whitespace-nowrap shadow-xs hover:shadow-md active:scale-95 transition-all duration-300 cursor-pointer shrink-0"
+                className="w-full h-9 xl:h-10 flex items-center justify-between bg-gradient-to-r from-emerald-800 via-emerald-900 to-teal-900 hover:from-emerald-900 hover:to-teal-950 text-white px-4 py-2 rounded-2xl font-bold text-xs xl:text-[13px] tracking-wide whitespace-nowrap shadow-xs hover:shadow-md active:scale-98 transition-all duration-300 cursor-pointer"
               >
-                <List size={15} className="shrink-0" />
-                <span>Danh mục nông sản</span>
-                <ChevronDown size={13} className={`transition-transform duration-300 shrink-0 ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                <span className="flex items-center gap-2">
+                  <List size={16} className="shrink-0 text-emerald-300" />
+                  <span>Danh mục nông sản</span>
+                </span>
+                <ChevronDown size={13} className={`transition-transform duration-300 shrink-0 text-emerald-300 ${isCategoryOpen ? 'rotate-180' : ''}`} />
               </button>
 
-              {/* Dropdown Content */}
+              {/* Dropdown Content - Khớp 100% độ rộng với nút Danh mục nông sản */}
               {isCategoryOpen && (
                 <div 
-                  className="absolute top-full left-0 pt-1.5 z-[100] animate-fadeIn"
+                  className="absolute top-full left-0 pt-1.5 z-[100] animate-fadeIn w-full"
                   onMouseEnter={() => setIsCategoryOpen(true)}
                   onMouseLeave={() => setIsCategoryOpen(false)}
                 >
-                  <div className="w-64 bg-white shadow-2xl border border-slate-200 py-2.5 rounded-2xl relative before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']">
+                  <div className="w-full bg-white shadow-2xl border border-slate-200 py-2.5 rounded-2xl relative before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']">
                     {[
                       { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: ShoppingBag, color: 'text-emerald-700 bg-emerald-50' },
                       { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: Apple, color: 'text-rose-700 bg-rose-50' },
@@ -375,7 +377,7 @@ export default function Navbar() {
                           key={cat.name} 
                           href={cat.href} 
                           onClick={() => setIsCategoryOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50/80 hover:text-emerald-900 text-slate-800 text-xs font-bold transition-all group"
+                          className="flex items-center gap-3 px-4 py-2 hover:bg-emerald-50/80 hover:text-emerald-900 text-slate-800 text-xs font-bold transition-all group"
                         >
                           <span className={`w-7 h-7 rounded-lg flex items-center justify-center ${cat.color} group-hover:scale-110 transition-transform`}>
                             <IconComp size={15} />
@@ -389,174 +391,177 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* 2. Dải các danh mục chính */}
-            <nav
-              ref={navRef}
-              onWheel={handleNavWheel}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUpOrLeave}
-              onMouseLeave={handleMouseUpOrLeave}
-              className="flex items-center gap-1 xl:gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1"
-            >
-              <Link 
-                href="/category/di-cho-online/" 
-                onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+            {/* 2. Cột bên phải: Chiếm col-span-8 xl:col-span-9 - Gồm Dải các danh mục chính & Nút Tiện ích */}
+            <div className="col-span-8 xl:col-span-9 flex items-center justify-between gap-2 min-w-0">
+              <nav
+                ref={navRef}
+                onWheel={handleNavWheel}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUpOrLeave}
+                onMouseLeave={handleMouseUpOrLeave}
+                className="flex items-center gap-1 xl:gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 min-w-0"
               >
-                <ShoppingBag size={14} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Đi chợ online</span>
-              </Link>
-              <Link 
-                href="/category/trai-cay/" 
-                onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
-              >
-                <Apple size={14} className="text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Trái cây tươi</span>
-              </Link>
-              <Link 
-                href="/category/tra-ca-phe/" 
-                onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
-              >
-                <Coffee size={14} className="text-amber-700 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Trà & Cà phê</span>
-              </Link>
-              <Link 
-                href="/category/dac-san/" 
-                onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
-              >
-                <Gift size={14} className="text-purple-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Đặc sản</span>
-              </Link>
-              <Link 
-                href="/category/agrishow/" 
-                onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-teal-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
-              >
-                <Sparkles size={14} className="text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span>Triển lãm Agrishow</span>
-              </Link>
-            </nav>
-
-            {/* 3. Nút Dropdown "Thêm ▾" */}
-            <div 
-              ref={moreMenuRef}
-              className="relative shrink-0 flex items-center z-40 group"
-              onMouseEnter={() => setIsMoreMenuOpen(true)}
-              onMouseLeave={() => setIsMoreMenuOpen(false)}
-            >
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsMoreMenuOpen(prev => !prev);
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  isMoreMenuOpen 
-                    ? 'bg-emerald-100 text-emerald-900 border-emerald-400 shadow-xs' 
-                    : 'text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 border-slate-300/80 hover:border-emerald-400'
-                } border`}
-                title="Xem thêm tiện ích & dịch vụ"
-              >
-                <MoreHorizontal size={14} className={isMoreMenuOpen ? 'text-emerald-800' : 'text-slate-700'} />
-                <span>Thêm</span>
-                <ChevronDown size={12} className={`transition-transform duration-200 ${isMoreMenuOpen ? 'rotate-180 text-emerald-800' : 'text-slate-600'}`} />
-              </button>
-
-              {/* Dropdown Content - Nền trắng đục 100%, rõ nét, không bị mờ */}
-              {isMoreMenuOpen && (
-                <div 
-                  className="absolute top-full left-1/2 -translate-x-1/2 pt-1.5 z-[100] animate-fadeIn"
-                  onMouseEnter={() => setIsMoreMenuOpen(true)}
-                  onMouseLeave={() => setIsMoreMenuOpen(false)}
+                <Link 
+                  href="/category/di-cho-online/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
-                  <div className="w-72 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.22)] border border-slate-200 p-2.5 rounded-2xl relative before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']">
-                    <div className="px-3 pt-1 pb-2 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider border-b border-slate-100 mb-1">
-                      Tiện ích dịch vụ
-                    </div>
+                  <ShoppingBag size={14} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Đi chợ online</span>
+                </Link>
+                <Link 
+                  href="/category/trai-cay/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                >
+                  <Apple size={14} className="text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Trái cây tươi</span>
+                </Link>
+                <Link 
+                  href="/category/tra-ca-phe/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                >
+                  <Coffee size={14} className="text-amber-700 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Trà & Cà phê</span>
+                </Link>
+                <Link 
+                  href="/category/dac-san/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                >
+                  <Gift size={14} className="text-purple-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Đặc sản</span>
+                </Link>
+                <Link 
+                  href="/category/agrishow/" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-teal-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                >
+                  <Sparkles size={14} className="text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Triển lãm Agrishow</span>
+                </Link>
+              </nav>
 
-                    {/* Gian hàng nông hộ */}
-                    <Link 
-                      href="/farmers" 
-                      onClick={() => setIsMoreMenuOpen(false)}
-                      className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-emerald-50 text-slate-800 hover:text-emerald-900 transition-colors group"
-                    >
-                      <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                        <Store size={18} />
-                      </div>
-                      <div className="flex flex-col text-left">
-                        <span className="text-[13px] font-bold text-slate-900 group-hover:text-emerald-800">Gian hàng nông hộ</span>
-                        <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-700">Khám phá nhà vườn trực tiếp</span>
-                      </div>
-                    </Link>
+              {/* 3. NÚT DROPDOWN "TIỆN ÍCH ▾" (Thay thế cho "... Thêm" - Tên gọi sang trọng, dễ nghe) */}
+              <div 
+                ref={moreMenuRef}
+                className="relative shrink-0 flex items-center z-40 group ml-auto"
+                onMouseEnter={() => setIsMoreMenuOpen(true)}
+                onMouseLeave={() => setIsMoreMenuOpen(false)}
+              >
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMoreMenuOpen(prev => !prev);
+                  }}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    isMoreMenuOpen 
+                      ? 'bg-emerald-100 text-emerald-900 border-emerald-400 shadow-xs' 
+                      : 'text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 border-slate-300/80 hover:border-emerald-400'
+                  } border`}
+                  title="Khám phá tiện ích & dịch vụ"
+                >
+                  <LayoutGrid size={14} className={isMoreMenuOpen ? 'text-emerald-800' : 'text-emerald-700'} />
+                  <span>Tiện ích</span>
+                  <ChevronDown size={12} className={`transition-transform duration-200 ${isMoreMenuOpen ? 'rotate-180 text-emerald-800' : 'text-slate-600'}`} />
+                </button>
 
-                    {/* Bản đồ nhà vườn */}
-                    <Link 
-                      href="/map/" 
-                      onClick={() => setIsMoreMenuOpen(false)}
-                      className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-teal-50 text-slate-800 hover:text-teal-900 transition-colors group"
-                    >
-                      <div className="w-9 h-9 rounded-xl bg-teal-100 text-teal-800 border border-teal-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                        <Map size={18} />
+                {/* Dropdown Content - Nền trắng đục 100%, rõ nét, căn phải không bị tràn mép */}
+                {isMoreMenuOpen && (
+                  <div 
+                    className="absolute top-full right-0 pt-1.5 z-[100] animate-fadeIn"
+                    onMouseEnter={() => setIsMoreMenuOpen(true)}
+                    onMouseLeave={() => setIsMoreMenuOpen(false)}
+                  >
+                    <div className="w-72 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.22)] border border-slate-200 p-2.5 rounded-2xl relative before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']">
+                      <div className="px-3 pt-1 pb-2 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider border-b border-slate-100 mb-1">
+                        Tiện ích dịch vụ
                       </div>
-                      <div className="flex flex-col text-left">
-                        <span className="text-[13px] font-bold text-slate-900 group-hover:text-teal-800">Bản đồ nhà vườn</span>
-                        <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-700">Định vị nguồn gốc xuất xứ</span>
-                      </div>
-                    </Link>
 
-                    {/* Theo dõi đơn hàng */}
-                    <Link 
-                      href="/tracking/" 
-                      onClick={() => setIsMoreMenuOpen(false)}
-                      className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-amber-50 text-slate-800 hover:text-amber-900 transition-colors group"
-                    >
-                      <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 border border-amber-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                        <Package size={18} />
-                      </div>
-                      <div className="flex flex-col text-left">
-                        <span className="text-[13px] font-bold text-slate-900 group-hover:text-amber-800">Theo dõi đơn hàng</span>
-                        <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-700">Tra cứu vận đơn & tiến độ</span>
-                      </div>
-                    </Link>
-
-                    <div className="border-t border-slate-100 my-1" />
-
-                    {/* Kênh Người Bán Nông Hộ */}
-                    <Link 
-                      href="/farmer" 
-                      onClick={() => setIsMoreMenuOpen(false)}
-                      className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-blue-50 text-slate-800 hover:text-blue-900 transition-colors group"
-                    >
-                      <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-800 border border-blue-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                        <Users size={18} />
-                      </div>
-                      <div className="flex flex-col text-left">
-                        <span className="text-[13px] font-bold text-slate-900 group-hover:text-blue-800">Kênh người bán</span>
-                        <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-700">Dành cho nhà vườn & đối tác</span>
-                      </div>
-                    </Link>
-
-                    {mounted && isAuthenticated && user && (
+                      {/* Gian hàng nông hộ */}
                       <Link 
-                        href="/profile/" 
+                        href="/farmers" 
                         onClick={() => setIsMoreMenuOpen(false)}
-                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-purple-50 text-slate-800 hover:text-purple-900 transition-colors group"
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-emerald-50 text-slate-800 hover:text-emerald-900 transition-colors group"
                       >
-                        <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-800 border border-purple-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                          <User size={18} />
+                        <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          <Store size={18} />
                         </div>
                         <div className="flex flex-col text-left">
-                          <span className="text-[13px] font-bold text-slate-900 group-hover:text-purple-800">Hồ sơ cá nhân</span>
-                          <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-700">Điểm tích lũy & ưu đãi VIP</span>
+                          <span className="text-[13px] font-bold text-slate-900 group-hover:text-emerald-800">Gian hàng nông hộ</span>
+                          <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-700">Khám phá nhà vườn trực tiếp</span>
                         </div>
                       </Link>
-                    )}
+
+                      {/* Bản đồ nhà vườn */}
+                      <Link 
+                        href="/map/" 
+                        onClick={() => setIsMoreMenuOpen(false)}
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-teal-50 text-slate-800 hover:text-teal-900 transition-colors group"
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-teal-100 text-teal-800 border border-teal-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          <Map size={18} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                          <span className="text-[13px] font-bold text-slate-900 group-hover:text-teal-800">Bản đồ nhà vườn</span>
+                          <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-700">Định vị nguồn gốc xuất xứ</span>
+                        </div>
+                      </Link>
+
+                      {/* Theo dõi đơn hàng */}
+                      <Link 
+                        href="/tracking/" 
+                        onClick={() => setIsMoreMenuOpen(false)}
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-amber-50 text-slate-800 hover:text-amber-900 transition-colors group"
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 border border-amber-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          <Package size={18} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                          <span className="text-[13px] font-bold text-slate-900 group-hover:text-amber-800">Theo dõi đơn hàng</span>
+                          <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-700">Tra cứu vận đơn & tiến độ</span>
+                        </div>
+                      </Link>
+
+                      <div className="border-t border-slate-100 my-1" />
+
+                      {/* Kênh Người Bán Nông Hộ */}
+                      <Link 
+                        href="/farmer" 
+                        onClick={() => setIsMoreMenuOpen(false)}
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-blue-50 text-slate-800 hover:text-blue-900 transition-colors group"
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-800 border border-blue-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          <Users size={18} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                          <span className="text-[13px] font-bold text-slate-900 group-hover:text-blue-800">Kênh người bán</span>
+                          <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-700">Dành cho nhà vườn & đối tác</span>
+                        </div>
+                      </Link>
+
+                      {mounted && isAuthenticated && user && (
+                        <Link 
+                          href="/profile/" 
+                          onClick={() => setIsMoreMenuOpen(false)}
+                          className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-purple-50 text-slate-800 hover:text-purple-900 transition-colors group"
+                        >
+                          <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-800 border border-purple-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <User size={18} />
+                          </div>
+                          <div className="flex flex-col text-left">
+                            <span className="text-[13px] font-bold text-slate-900 group-hover:text-purple-800">Hồ sơ cá nhân</span>
+                            <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-700">Điểm tích lũy & ưu đãi VIP</span>
+                          </div>
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+
             </div>
 
           </div>
