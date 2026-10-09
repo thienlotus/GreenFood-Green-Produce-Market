@@ -24,6 +24,7 @@ import {
   PlusCircle
 } from 'lucide-react';
 import { useNotificationStore, NotificationItem, NotificationType } from '@/store/useNotificationStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { formatNotificationTime } from '@/components/NotificationDropdown';
 import { toast } from 'react-hot-toast';
 
@@ -31,6 +32,7 @@ export default function NotificationsPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [activeCategory, setActiveCategory] = useState<NotificationType>('all');
+  const { user, isAuthenticated } = useAuthStore();
 
   const {
     notifications,
@@ -56,9 +58,44 @@ export default function NotificationsPage() {
     );
   }
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const isUserLoggedIn = Boolean(isAuthenticated && user);
 
-  const filteredNotifications = notifications.filter(item => {
+  if (!isUserLoggedIn) {
+    return (
+      <div className="min-h-[75vh] bg-slate-50/70 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-slate-200 shadow-2xl text-center space-y-5 animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100 shadow-inner">
+            <ShieldCheck size={42} className="text-emerald-600" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-slate-900">Bảo Mật Thông Báo Cá Nhân</h2>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Các thông tin chi tiết về mã vận đơn, tình trạng giao nhận và số tiền thanh toán được bảo mật riêng. Vui lòng đăng nhập để truy cập thông báo của bạn.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2.5 pt-2">
+            <Link
+              href="/login"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-xs transition-all text-center flex items-center justify-center gap-2"
+            >
+              <span>Đăng nhập ngay</span>
+            </Link>
+            <Link
+              href="/"
+              className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all text-center"
+            >
+              Quay lại trang chủ
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const myNotifications = notifications.filter(item => !item.userId || item.userId === String(user?.id));
+  const unreadCount = myNotifications.filter(n => !n.isRead).length;
+
+  const filteredNotifications = myNotifications.filter(item => {
     if (activeCategory === 'all') return true;
     if (activeCategory === 'order') return item.type === 'order';
     if (activeCategory === 'promotion') return item.type === 'promotion';
@@ -66,9 +103,9 @@ export default function NotificationsPage() {
     return item.type === activeCategory;
   });
 
-  const orderNotifsCount = notifications.filter(n => n.type === 'order' && !n.isRead).length;
-  const promoNotifsCount = notifications.filter(n => n.type === 'promotion' && !n.isRead).length;
-  const paymentNotifsCount = notifications.filter(n => (n.type === 'payment' || n.type === 'system') && !n.isRead).length;
+  const orderNotifsCount = myNotifications.filter(n => n.type === 'order' && !n.isRead).length;
+  const promoNotifsCount = myNotifications.filter(n => n.type === 'promotion' && !n.isRead).length;
+  const paymentNotifsCount = myNotifications.filter(n => (n.type === 'payment' || n.type === 'system') && !n.isRead).length;
 
   const handleTestNotification = () => {
     const randomOrder = 'GF-' + Math.floor(100000 + Math.random() * 900000);
