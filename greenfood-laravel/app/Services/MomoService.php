@@ -135,7 +135,7 @@ class MomoService
                 'response_payload' => $result,
                 'result_code' => isset($result['resultCode']) ? (int) $result['resultCode'] : null,
                 'message' => $result['message'] ?? null,
-                'status' => $isPayUrlReady ? 'initiated' : 'failed',
+                'status' => $isPayUrlReady ? 'pending' : 'failed',
             ]);
         }
 
@@ -166,10 +166,11 @@ class MomoService
     {
         $transaction->update([
             'transaction_id' => $payload['transId'] ?? null,
+            'momo_trans_id' => $payload['transId'] ?? null,
             'result_code' => (int) ($payload['resultCode'] ?? 0),
             'message' => $payload['message'] ?? 'Giao dịch thành công',
             'response_payload' => $payload,
-            'status' => 'paid',
+            'status' => 'success',
             'paid_at' => Carbon::now(),
         ]);
     }
@@ -295,7 +296,7 @@ class MomoService
         }
 
         $order->payment_method = 'MOMO';
-        $order->status = 'paid';
+        $order->status = 'CONFIRMED';
         $order->payment_status = 'paid';
         $order->shipping_status = 'processing';
 
@@ -322,6 +323,21 @@ class MomoService
 
         if ($transaction) {
             $this->markPaid($transaction, array_merge($payload, ['transId' => $momoTransId]));
+        } else {
+            PaymentTransaction::create([
+                'order_id' => $order->id,
+                'gateway' => 'momo',
+                'gateway_order_id' => $payload['orderId'] ?? ($order->tracking_number ?: $order->id),
+                'transaction_id' => $momoTransId,
+                'momo_trans_id' => $momoTransId,
+                'momo_request_id' => $payload['requestId'] ?? null,
+                'amount' => $payload['amount'] ?? $order->total_amount,
+                'status' => 'success',
+                'result_code' => (int) ($payload['resultCode'] ?? 0),
+                'message' => $payload['message'] ?? 'Giao dịch thành công',
+                'response_payload' => $payload,
+                'paid_at' => Carbon::now(),
+            ]);
         }
 
         return [

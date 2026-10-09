@@ -49,6 +49,19 @@ class MomoPaymentTest extends TestCase
      */
     public function test_can_create_momo_payment()
     {
+        \Illuminate\Support\Facades\Http::fake([
+            'test-payment.momo.vn/*' => \Illuminate\Support\Facades\Http::response([
+                'partnerCode' => 'MOMOBKUN20180529',
+                'orderId' => $this->order->tracking_number,
+                'requestId' => 'REQ_123456',
+                'amount' => 250000,
+                'responseTime' => time() . '000',
+                'message' => 'Thành công.',
+                'resultCode' => 0,
+                'payUrl' => 'https://test-payment.momo.vn/v2/gateway/pay?s=123456',
+            ], 200),
+        ]);
+
         $response = $this->postJson('/api/v1/payment/momo/create', [
             'order_id' => $this->order->tracking_number,
             'amount' => 250000,

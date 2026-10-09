@@ -101,13 +101,21 @@ class FarmerService
 
         $fullStory = !empty($storyDetails) ? implode("\n", $storyDetails) : ($data['note'] ?? $data['story'] ?? 'Nông trại cam kết canh tác sạch, đạt tiêu chuẩn an toàn thực phẩm.');
 
-        // 4. Tạo hồ sơ Farmer với đầy đủ tọa độ chính xác
+        // 4. Tạo hồ sơ Farmer với đầy đủ tọa độ chính xác, đảm bảo region_id hợp lệ trong DB
+        $targetRegionId = $geo['region_id'];
+        if (!\App\Models\Region::where('id', $targetRegionId)->exists()) {
+            $fallbackRegionId = \App\Models\Region::value('id');
+            if ($fallbackRegionId !== null) {
+                $targetRegionId = $fallbackRegionId;
+            }
+        }
+
         return $this->farmerRepository->create([
             'user_id' => $user->id,
             'farm_name' => $data['farm_name'],
             'story' => $fullStory,
             'address' => $address,
-            'region_id' => $geo['region_id'],
+            'region_id' => $targetRegionId,
             'latitude' => $geo['latitude'],
             'longitude' => $geo['longitude'],
             'specialty' => $data['specialty'] ?? (!empty($data['certifications']) ? 'Chuẩn ' . (is_array($data['certifications']) ? $data['certifications'][0] : $data['certifications']) : 'Nông sản hữu cơ'),
