@@ -49,7 +49,24 @@ class PromotionRepository
 
     public function getNextShippingZoneId(): string
     {
-        $count = ShippingZone::count() + 1;
-        return 'SZ' . str_pad((string)$count, 3, '0', STR_PAD_LEFT);
+        $zones = ShippingZone::pluck('id');
+        $maxNum = 0;
+        foreach ($zones as $id) {
+            if (preg_match('/^SZ(\d+)$/i', $id, $matches)) {
+                $num = (int)$matches[1];
+                if ($num > $maxNum) {
+                    $maxNum = $num;
+                }
+            }
+        }
+        $nextNum = $maxNum + 1;
+        $candidateId = 'SZ' . str_pad((string)$nextNum, 3, '0', STR_PAD_LEFT);
+
+        while (ShippingZone::where('id', $candidateId)->exists()) {
+            $nextNum++;
+            $candidateId = 'SZ' . str_pad((string)$nextNum, 3, '0', STR_PAD_LEFT);
+        }
+
+        return $candidateId;
     }
 }
