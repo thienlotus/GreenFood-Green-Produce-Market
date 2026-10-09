@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, 
   ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, List, Map, Package, LogOut, ShieldCheck, X,
-  ShoppingBag, Apple, Coffee, Gift, Store
+  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -405,7 +405,7 @@ export default function Navbar() {
                 </div>
               )}
 
-              {/* Thanh nav trượt ngang tự do */}
+              {/* Thanh nav trượt ngang tự do - Chỉ hiển thị danh mục sản phẩm chuẩn mực, đồng nhất */}
               <nav
                 ref={navRef}
                 onWheel={handleNavWheel}
@@ -418,7 +418,7 @@ export default function Navbar() {
                 <Link 
                   href="/category/di-cho-online/" 
                   onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                  className="px-3 xl:px-3.5 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
                   <ShoppingBag size={14} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Đi chợ online</span>
@@ -426,7 +426,7 @@ export default function Navbar() {
                 <Link 
                   href="/category/trai-cay/" 
                   onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                  className="px-3 xl:px-3.5 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
                   <Apple size={14} className="text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Trái cây tươi</span>
@@ -434,7 +434,7 @@ export default function Navbar() {
                 <Link 
                   href="/category/tra-ca-phe/" 
                   onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                  className="px-3 xl:px-3.5 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
                   <Coffee size={14} className="text-amber-700 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Trà & Cà phê</span>
@@ -442,45 +442,19 @@ export default function Navbar() {
                 <Link 
                   href="/category/dac-san/" 
                   onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                  className="px-3 xl:px-3.5 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
                   <Gift size={14} className="text-purple-600 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Đặc sản</span>
                 </Link>
                 <Link 
-                  href="/farmers" 
+                  href="/category/agrishow/" 
                   onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
+                  className="px-3 xl:px-3.5 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-teal-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
-                  <Store size={14} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
-                  <span>Gian hàng nông hộ</span>
+                  <Sparkles size={14} className="text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Triển lãm Agrishow</span>
                 </Link>
-                <Link 
-                  href="/map/" 
-                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
-                >
-                  <Map size={14} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
-                  <span>Bản đồ nhà vườn</span>
-                </Link>
-                <Link 
-                  href="/tracking/" 
-                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-amber-900 hover:text-amber-950 bg-amber-50/90 hover:bg-amber-100 border border-amber-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
-                >
-                  <Package size={14} className="text-amber-600 group-hover:scale-110 transition-transform shrink-0" />
-                  <span>Theo dõi đơn</span>
-                </Link>
-                {mounted && isAuthenticated && user && (
-                  <Link 
-                    href="/profile/" 
-                    onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                    className="px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-[13px] font-bold text-teal-900 hover:text-teal-950 bg-teal-50/90 hover:bg-teal-100 border border-teal-300/80 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-xs group"
-                  >
-                    <User size={14} className="text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
-                    <span>Hồ sơ của tôi</span>
-                  </Link>
-                )}
               </nav>
 
               {/* Nút mũi tên trượt sang phải khi còn mục bị khuất */}
@@ -498,7 +472,7 @@ export default function Navbar() {
 
             </div>
 
-            {/* NÚT KÉO XUỐNG BỔ SUNG (DROPDOWN "THÊM ▾" TIỆN ÍCH) */}
+            {/* NÚT DROPDOWN "THÊM ▾" (TIỆN ÍCH DỊCH VỤ - CHỨA CHÍNH XÁC CÁC MỤC Ở ẢNH 2) */}
             <div 
               ref={moreMenuRef}
               className="relative shrink-0 flex items-center z-40 group"
@@ -510,12 +484,12 @@ export default function Navbar() {
                   e.stopPropagation();
                   setIsMoreMenuOpen(prev => !prev);
                 }}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   isMoreMenuOpen 
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
-                    : 'text-slate-700 hover:text-emerald-800 hover:bg-slate-100 border-transparent hover:border-slate-200'
+                    ? 'bg-emerald-100/90 text-emerald-900 border-emerald-300 shadow-xs' 
+                    : 'text-slate-700 hover:text-emerald-900 hover:bg-emerald-50/80 border-slate-200 hover:border-emerald-300'
                 } border`}
-                title="Kéo xuống xem thêm các mục"
+                title="Xem thêm tiện ích & dịch vụ"
               >
                 <MoreHorizontal size={14} className={isMoreMenuOpen ? 'text-emerald-700' : 'text-slate-600'} />
                 <span>Thêm</span>
@@ -529,42 +503,86 @@ export default function Navbar() {
                   onMouseEnter={() => setIsMoreMenuOpen(true)}
                   onMouseLeave={() => setIsMoreMenuOpen(false)}
                 >
-                  <div className="w-56 bg-white/95 backdrop-blur-xl shadow-2xl border border-slate-200/90 py-2 rounded-2xl relative before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']">
-                    <div className="px-3.5 py-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                      Tiện ích nổi bật
+                  <div className="w-64 bg-white/98 backdrop-blur-xl shadow-2xl border border-slate-200/90 p-2 rounded-2xl relative before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']">
+                    <div className="px-3 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Tiện ích dịch vụ
                     </div>
+
+                    {/* 1. Gian hàng nông hộ (Ảnh 2) */}
                     <Link 
                       href="/farmers" 
                       onClick={() => setIsMoreMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-semibold transition-colors"
+                      className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 transition-colors group"
                     >
-                      <Store size={14} className="text-emerald-600 shrink-0" />
-                      <span>Gian hàng nông hộ</span>
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <Store size={16} />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-800">Gian hàng nông hộ</span>
+                        <span className="text-[10px] text-slate-500">Khám phá nhà vườn trực tiếp</span>
+                      </div>
                     </Link>
+
+                    {/* 2. Bản đồ nhà vườn (Ảnh 2) */}
                     <Link 
                       href="/map/" 
                       onClick={() => setIsMoreMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-semibold transition-colors"
+                      className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-teal-50 text-slate-700 hover:text-teal-900 transition-colors group"
                     >
-                      <Map size={14} className="text-emerald-600 shrink-0" />
-                      <span>Bản đồ nhà vườn</span>
+                      <div className="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <Map size={16} />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-xs font-bold text-slate-800 group-hover:text-teal-800">Bản đồ nhà vườn</span>
+                        <span className="text-[10px] text-slate-500">Định vị nguồn gốc xuất xứ</span>
+                      </div>
                     </Link>
+
+                    {/* 3. Theo dõi đơn hàng (Ảnh 2) */}
                     <Link 
                       href="/tracking/" 
                       onClick={() => setIsMoreMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-amber-50 text-slate-700 hover:text-amber-800 text-xs font-semibold transition-colors"
+                      className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-amber-50 text-slate-700 hover:text-amber-900 transition-colors group"
                     >
-                      <Package size={14} className="text-amber-600 shrink-0" />
-                      <span>Theo dõi đơn hàng</span>
+                      <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <Package size={16} />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-xs font-bold text-slate-800 group-hover:text-amber-800">Theo dõi đơn hàng</span>
+                        <span className="text-[10px] text-slate-500">Tra cứu vận đơn & tiến độ</span>
+                      </div>
                     </Link>
+
+                    <div className="border-t border-slate-100 my-1" />
+
+                    {/* Tiện ích bổ sung: Kênh Người Bán Nông Hộ */}
+                    <Link 
+                      href="/farmer" 
+                      onClick={() => setIsMoreMenuOpen(false)}
+                      className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-emerald-800 transition-colors group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 group-hover:text-emerald-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <Users size={16} />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-800">Kênh người bán</span>
+                        <span className="text-[10px] text-slate-500">Dành cho nhà vườn & đối tác</span>
+                      </div>
+                    </Link>
+
                     {mounted && isAuthenticated && user && (
                       <Link 
                         href="/profile/" 
                         onClick={() => setIsMoreMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-teal-50 text-slate-700 hover:text-teal-800 text-xs font-semibold transition-colors"
+                        className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 transition-colors group"
                       >
-                        <User size={14} className="text-teal-600 shrink-0" />
-                        <span>Hồ sơ & Điểm VIP</span>
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          <User size={16} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                          <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-800">Hồ sơ cá nhân</span>
+                          <span className="text-[10px] text-slate-500">Điểm tích lũy & ưu đãi VIP</span>
+                        </div>
                       </Link>
                     )}
                   </div>
@@ -653,17 +671,39 @@ export default function Navbar() {
               </button>
             </form>
 
-            {/* Navigation links */}
+            {/* Danh mục nông sản */}
             <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 px-3">Danh mục chính</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Danh mục nông sản</span>
               {[
                 { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: ShoppingBag, color: 'text-emerald-600' },
                 { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: Apple, color: 'text-rose-500' },
                 { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700' },
                 { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: Gift, color: 'text-purple-600' },
-                { name: 'Gian hàng nông hộ', href: '/farmers/', icon: Store, color: 'text-emerald-700' },
-                { name: 'Bản đồ nhà vườn', href: '/map/', icon: Map, color: 'text-emerald-600' },
+                { name: 'Triển lãm Agrishow', href: '/category/agrishow/', icon: Sparkles, color: 'text-teal-600' },
+              ].map((link) => {
+                const IconComp = link.icon;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
+                  >
+                    <IconComp size={16} className={link.color} />
+                    <span>{link.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Tiện ích & Dịch vụ */}
+            <div className="space-y-1 pt-2 border-t border-slate-100">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Tiện ích dịch vụ</span>
+              {[
+                { name: 'Gian hàng nông hộ', href: '/farmers', icon: Store, color: 'text-emerald-600' },
+                { name: 'Bản đồ nhà vườn', href: '/map/', icon: Map, color: 'text-teal-600' },
                 { name: 'Theo dõi đơn hàng', href: '/tracking/', icon: Package, color: 'text-amber-600' },
+                { name: 'Kênh người bán', href: '/farmer', icon: Users, color: 'text-slate-600' },
                 { name: 'Thông báo của tôi', href: '/notifications/', icon: Bell, color: 'text-emerald-600' },
                 { name: 'Hồ sơ cá nhân & VIP', href: '/profile/', icon: User, color: 'text-teal-600' },
               ].map((link) => {
