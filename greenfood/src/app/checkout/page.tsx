@@ -10,6 +10,7 @@ import { getGhnProvinces, getGhnDistricts, getGhnWards, calculateGhnShippingFee,
 import { cleanVietnameseMojibake, FALLBACK_PROVINCES, getFallbackDistricts, getFallbackWards } from '@/data/vietnamAddress';
 import { ALL_PRODUCTS } from '@/data/products';
 import { toast } from 'react-hot-toast';
+import { useNotificationStore } from '@/store/useNotificationStore';
 
 // Fallback zones logic removed since we use GHN directly
 
@@ -352,12 +353,17 @@ export default function CheckoutPage() {
         }))
       })
       .then((orderRes) => {
+        if (!orderRes || !orderRes.success) {
+          toast.error(orderRes?.message || 'Có lỗi xảy ra khi tạo đơn hàng!');
+          setIsSubmitting(false);
+          return;
+        }
         const finalTrackingCode = orderRes.trackingNumber || code;
         window.location.href = `/payment/atm-card/?orderId=${encodeURIComponent(finalTrackingCode)}&amount=${finalTotal}`;
       })
       .catch((err) => {
         console.error('Lỗi tạo đơn thẻ ATM:', err);
-        alert('Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại!');
+        toast.error('Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại!');
         setIsSubmitting(false);
       });
       return;
@@ -511,6 +517,20 @@ export default function CheckoutPage() {
         total: finalTotal
       });
       localStorage.setItem('my_orders', JSON.stringify(savedOrders));
+
+      // Thông báo kiểu Shopee cho đơn hàng mới
+      try {
+        useNotificationStore.getState().addNotification({
+          type: 'order',
+          title: `Đặt hàng thành công: Đơn #${finalCode}`,
+          message: `Đơn hàng trị giá ${finalTotal.toLocaleString('vi-VN')}đ đã được chuyển đến nhà vườn để chuẩn bị và đóng gói nông sản.`,
+          link: `/tracking?order=${encodeURIComponent(finalCode)}`,
+          orderCode: finalCode,
+          tag: isPaidOrder ? 'Đã thanh toán' : 'Chờ xác nhận',
+        });
+      } catch (err) {
+        console.warn('Failed to add order notification:', err);
+      }
 
       setIsSubmitting(false);
       setIsSuccess(true);

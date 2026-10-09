@@ -1,20 +1,15 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Search, Package, CheckCircle2, Clock, Truck, Phone, AlertCircle, RefreshCw, Lock, ShieldAlert, ArrowRight, UserCheck, Shield } from 'lucide-react';
+import { useState, useEffect, Suspense } from 'react';
+import { Search, Package, CheckCircle2, Clock, Truck, Phone, AlertCircle, RefreshCw, ChevronRight, ArrowLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import { trackOrder } from '@/lib/api';
-import { useAuthStore } from '@/store/useAuthStore';
+import { trackOrder, getMyOrders } from '@/lib/api';
 
-const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
-const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
 
-// Chuẩn hóa số điện thoại để so sánh quyền sở hữu (+84 / 0...)
+
+// Chuẩn hóa số điện thoại (+84 / 0...)
 function normalizePhone(phone?: string): string {
   if (!phone) return '';
   const digits = phone.replace(/\D/g, '');
@@ -22,11 +17,17 @@ function normalizePhone(phone?: string): string {
   return digits;
 }
 
+// Kiểm tra xem chuỗi nhập vào có phải số điện thoại không (9-11 chữ số)
+function isPhoneNumber(val: string): boolean {
+  const digits = val.replace(/\D/g, '');
+  return digits.length >= 9 && digits.length <= 11;
+}
+
 const fallbackOrders: Record<string, any> = {
   GF284910: {
     id: 'GF284910',
     customer: 'Nguyễn Văn Khách',
-    phone: '0912345678', // Khớp với tài khoản Khách Hàng demo
+    phone: '0912345678',
     address: '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh',
     date: '2026-08-19 09:30',
     total: 340000,
@@ -54,7 +55,7 @@ const fallbackOrders: Record<string, any> = {
   GF285020: {
     id: 'GF285020',
     customer: 'Lê Hoàng Nông Dân',
-    phone: '0987654321', // Khớp với tài khoản Nông Hộ demo
+    phone: '0987654321',
     address: '456 Lê Lợi, Quận 3, TP. Hồ Chí Minh',
     date: '2026-08-18 14:00',
     total: 1250000,
@@ -84,26 +85,37 @@ const statusLabels: Record<string, { label: string; color: string; icon: any }> 
   cancelled: { label: 'Đã hủy', color: 'bg-rose-100 text-rose-800 border-rose-200', icon: AlertCircle },
 };
 
-export default function TrackingPage() {
-  const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+function TrackingContent() {
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
 
-  const [orderCode, setOrderCode] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [currentOrder, setCurrentOrder] = useState<any | null>(null);
+  const [phoneOrdersList, setPhoneOrdersList] = useState<any[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
-  const [searchError, setSearchError] = useState<'NOT_FOUND' | 'FORBIDDEN' | null>(null);
-  const [forbiddenCode, setForbiddenCode] = useState('');
+  const [searchError, setSearchError] = useState<'NOT_FOUND' | null>(null);
+  const [notFoundTerm, setNotFoundTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Tự động nhận mã đơn hoặc số điện thoại từ URL query parameter
+    const queryOrder = searchParams.get('order') || searchParams.get('order_code') || searchParams.get('id');
+    const queryPhone = searchParams.get('phone');
 
-  const handleSearch = async (codeToSearch?: string) => {
-    const code = (codeToSearch || orderCode).trim().toUpperCase();
-    if (!code) {
-      toast.error('Vui lòng nhập mã đơn hàng cần tra cứu!');
+    if (queryOrder) {
+      setSearchInput(queryOrder);
+      handleSearch(queryOrder);
+    } else if (queryPhone) {
+      setSearchInput(queryPhone);
+      handleSearch(queryPhone);
+    }
+  }, [searchParams]);
+
+  const handleSearch = async (termToSearch?: string) => {
+    const rawTerm = (termToSearch !== undefined ? termToSearch : searchInput).trim();
+    if (!rawTerm) {
+      toast.error('Vui lòng nhập mã đơn hàng hoặc số điện thoại cần tra cứu!');
       return;
     }
 
@@ -111,8 +123,70 @@ export default function TrackingPage() {
     setHasSearched(true);
     setSearchError(null);
     setCurrentOrder(null);
+    setPhoneOrdersList([]);
 
-    const cleanCode = code.replace('#', '');
+    // TRƯỜNG HỢP 1: NGƯỜI DÙNG NHẬP SỐ ĐIỆN THOẠI (9 - 11 chữ số)
+    if (isPhoneNumber(rawTerm)) {
+      const cleanPhone = normalizePhone(rawTerm);
+      let list = await getMyOrders(cleanPhone);
+
+      // Bổ sung các đơn fallback nếu trùng SĐT demo
+      const matchedFallback = Object.values(fallbackOrders).filter(
+        fo => normalizePhone(fo.phone) === cleanPhone
+      );
+
+      const combinedCodes = new Set<string>();
+      const combinedList: any[] = [];
+
+      (list || []).forEach(o => {
+        const code = (o.code || o.id || '').replace('#', '');
+        if (code && !combinedCodes.has(code)) {
+          combinedCodes.add(code);
+          combinedList.push({
+            code: code,
+            date: o.date || 'Gần đây',
+            total: o.total || 0,
+            status: o.status || 'pending',
+            customer: o.customer_name || 'Khách hàng',
+            phone: o.customer_phone || cleanPhone,
+            address: o.shipping_address || '',
+            itemsCount: o.items_count || undefined
+          });
+        }
+      });
+
+      matchedFallback.forEach(fo => {
+        if (!combinedCodes.has(fo.id)) {
+          combinedCodes.add(fo.id);
+          combinedList.push({
+            code: fo.id,
+            date: fo.date,
+            total: fo.total + (fo.shippingFee || 0),
+            status: fo.status,
+            customer: fo.customer,
+            phone: fo.phone,
+            address: fo.address,
+            itemsCount: fo.items ? fo.items.length : undefined
+          });
+        }
+      });
+
+      if (combinedList.length === 0) {
+        setSearchError('NOT_FOUND');
+        setNotFoundTerm(rawTerm);
+        setIsLoading(false);
+        return;
+      }
+
+      // KHI TRA CỨU BẰNG SỐ ĐIỆN THOẠI: LUÔN HIỂN THỊ DANH SÁCH CÁC ĐƠN MÀ SỐ ĐT ĐÓ ĐÃ ĐẶT
+      setPhoneOrdersList(combinedList);
+      toast.success(`Tìm thấy ${combinedList.length} đơn hàng của số điện thoại ${rawTerm}`);
+      setIsLoading(false);
+      return;
+    }
+
+    // TRƯỜNG HỢP 2: NGƯỜI DÙNG NHẬP MÃ ĐƠN HÀNG (VD: GF284910, GF..., mã GHN)
+    const cleanCode = rawTerm.replace('#', '').toUpperCase();
     let orderData = await trackOrder(cleanCode);
 
     if (!orderData) {
@@ -121,21 +195,7 @@ export default function TrackingPage() {
 
     if (!orderData) {
       setSearchError('NOT_FOUND');
-      setIsLoading(false);
-      return;
-    }
-
-    // Logic kiểm tra quyền sở hữu đơn hàng (Ownership Check):
-    // 1. Quản trị viên (admin) được phép xem tất cả đơn hàng
-    // 2. Người dùng thông thường chỉ được xem đơn hàng có số điện thoại trùng khớp với tài khoản
-    const userPhoneNorm = normalizePhone(user?.phone);
-    const orderPhoneNorm = normalizePhone(orderData.phone);
-    const isOwner = user?.role === 'admin' || (userPhoneNorm && userPhoneNorm === orderPhoneNorm);
-
-    if (!isOwner) {
-      setSearchError('FORBIDDEN');
-      setForbiddenCode(cleanCode);
-      toast.error('Bạn không có quyền xem đơn hàng này!');
+      setNotFoundTerm(cleanCode);
       setIsLoading(false);
       return;
     }
@@ -144,50 +204,26 @@ export default function TrackingPage() {
     setIsLoading(false);
   };
 
-  // Màn hình chờ khi chưa mount (tránh hydration mismatch)
+  const handleSelectOrderFromList = async (code: string) => {
+    setIsLoading(true);
+    const cleanCode = code.replace('#', '').toUpperCase();
+    let orderData = await trackOrder(cleanCode);
+    if (!orderData) {
+      orderData = fallbackOrders[cleanCode] || null;
+    }
+
+    if (orderData) {
+      setCurrentOrder(orderData);
+    } else {
+      toast.error('Không thể tải chi tiết đơn hàng này!');
+    }
+    setIsLoading(false);
+  };
+
   if (!mounted) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center bg-gray-50">
         <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  // Phương án 1: BẮT BUỘC ĐĂNG NHẬP MỚI ĐƯỢC TRA CỨU ĐƠN HÀNG
-  if (!isAuthenticated || !user) {
-    return (
-      <div className="min-h-[80vh] bg-gray-50 flex items-center justify-center px-4 py-16">
-        <div className="max-w-md w-full bg-white rounded-3xl p-8 sm:p-10 shadow-xl border border-gray-100 text-center">
-          <div className="w-20 h-20 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-emerald-600 border border-emerald-100 shadow-inner">
-            <Lock size={36} />
-          </div>
-
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-800 text-xs font-bold rounded-full mb-3 border border-amber-200">
-            <Shield size={13} /> Bảo vệ quyền riêng tư cá nhân
-          </span>
-
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">Yêu Cầu Đăng Nhập</h1>
-          <p className="text-gray-500 text-sm leading-relaxed mb-8">
-            Để bảo vệ thông tin cá nhân và lộ trình vận chuyển của người nhận, GreenFood yêu cầu quý khách đăng nhập để tra cứu các đơn hàng thuộc tài khoản của mình.
-          </p>
-
-          <div className="space-y-3">
-            <Link
-              href="/login"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 text-sm"
-            >
-              <span>Đăng nhập ngay</span>
-              <ArrowRight size={16} />
-            </Link>
-
-            <Link
-              href="/register"
-              className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-colors border border-gray-200 block text-sm"
-            >
-              Chưa có tài khoản? Đăng ký
-            </Link>
-          </div>
-        </div>
       </div>
     );
   }
@@ -201,75 +237,125 @@ export default function TrackingPage() {
       <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white py-12">
         <div className="container mx-auto px-4 text-center max-w-2xl">
           <div className="inline-flex items-center gap-2 bg-emerald-900/60 px-4 py-1.5 rounded-full text-xs font-semibold mb-3 border border-emerald-600">
-            <Package size={14} /> Hệ Thống Theo Dõi Đơn Hàng Cá Nhân
+            <Package size={14} /> Hệ Thống Theo Dõi Đơn Hàng
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold mb-3">Theo Dõi Đơn Hàng</h1>
           <p className="text-emerald-100 text-sm md:text-base mb-6">
-            Nhập mã đơn hàng của bạn để kiểm tra vị trí shipper và tiến độ giao hàng thời gian thực.
+            Nhập <strong>mã đơn hàng</strong> hoặc <strong>số điện thoại</strong> để kiểm tra danh sách đơn và tiến độ giao hàng thời gian thực.
           </p>
 
-          {/* Badge thông tin tài khoản đang tra cứu */}
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl text-xs text-emerald-50 mb-6 border border-white/15">
-            <UserCheck size={14} className="text-emerald-300" />
-            <span>
-              Tài khoản: <strong>{user.name}</strong> ({user.phone || 'Chưa có SĐT'})
-              {user.role === 'admin' && <span className="ml-2 bg-purple-500 text-white px-2 py-0.5 rounded text-[10px] font-bold">Admin</span>}
-            </span>
-          </div>
-
+          {/* Search Box */}
           <div className="flex gap-2 max-w-lg mx-auto bg-white p-1.5 rounded-2xl shadow-xl">
             <input
               type="text"
-              placeholder="Nhập mã đơn hàng (VD: GF284910)..."
-              value={orderCode}
-              onChange={(e) => setOrderCode(e.target.value)}
+              placeholder="Nhập mã đơn hàng hoặc số điện thoại..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               className="flex-1 px-4 py-3 text-gray-800 text-sm focus:outline-none rounded-xl font-medium"
             />
             <button
               onClick={() => handleSearch()}
               disabled={isLoading}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors flex items-center gap-2 shrink-0 disabled:opacity-50 shadow-md"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors flex items-center gap-2 shrink-0 disabled:opacity-50 shadow-md cursor-pointer"
             >
               {isLoading ? <RefreshCw size={16} className="animate-spin" /> : <Search size={16} />}
               {isLoading ? 'Đang tìm...' : 'Tra cứu'}
             </button>
           </div>
-
-          {/* Gợi ý đơn hàng cá nhân phù hợp theo tài khoản */}
-          <div className="flex items-center justify-center gap-2 mt-4 text-xs text-emerald-200">
-            {user.role === 'admin' ? (
-              <>
-                <span>Mã đơn hệ thống (Admin):</span>
-                {['GF284910', 'GF285020'].map((code) => (
-                  <button
-                    key={code}
-                    onClick={() => { setOrderCode(code); handleSearch(code); }}
-                    className="underline hover:text-white font-mono font-medium"
-                  >
-                    {code}
-                  </button>
-                ))}
-              </>
-            ) : (
-              <>
-                <span>Đơn hàng gần đây của bạn:</span>
-                <button
-                  onClick={() => { setOrderCode('GF284910'); handleSearch('GF284910'); }}
-                  className="underline hover:text-white font-mono font-bold bg-white/10 px-2 py-0.5 rounded"
-                >
-                  GF284910
-                </button>
-              </>
-            )}
-          </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 max-w-4xl -mt-6">
+        {/* TH1: HIỂN THỊ DANH SÁCH CÁC ĐƠN HÀNG KHI TRA CỨU BẰNG SỐ ĐIỆN THOẠI */}
+        {phoneOrdersList.length > 0 && !currentOrder && (
+          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-gray-100">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Phone size={18} className="text-emerald-600" />
+                  Đơn hàng của số điện thoại: <span className="font-mono text-emerald-700">{searchInput}</span>
+                </h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Đã tìm thấy <strong>{phoneOrdersList.length}</strong> đơn hàng được đặt bởi số điện thoại này.
+                </p>
+              </div>
+              <span className="self-start sm:self-auto text-xs bg-emerald-50 text-emerald-800 font-semibold px-3 py-1 rounded-full border border-emerald-200">
+                {phoneOrdersList.length} đơn hàng
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {phoneOrdersList.map((item, idx) => {
+                const sInfo = statusLabels[item.status] || statusLabels.pending;
+                const SIcon = sInfo.icon;
+                return (
+                  <div
+                    key={idx}
+                    className="p-5 rounded-2xl border border-gray-100 hover:border-emerald-300 hover:shadow-md transition-all bg-white flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="font-mono font-bold text-gray-900 text-base">#{item.code}</span>
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${sInfo.color}`}>
+                          <SIcon size={12} />
+                          {sInfo.label}
+                        </span>
+                        <span className="text-xs text-gray-400">• Ngày đặt: {item.date}</span>
+                      </div>
+
+                      <div className="text-xs text-gray-600 space-y-1">
+                        <p>
+                          <span className="text-gray-400">Người nhận:</span>{' '}
+                          <strong>{item.customer}</strong> ({item.phone})
+                        </p>
+                        {item.address && (
+                          <p className="text-gray-500 line-clamp-1">
+                            <span className="text-gray-400">Địa chỉ:</span> {item.address}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between md:justify-end gap-5 pt-3 md:pt-0 border-t md:border-t-0 border-gray-100 shrink-0">
+                      <div className="text-left md:text-right">
+                        <span className="text-[11px] text-gray-400 block">Tổng thanh toán</span>
+                        <span className="text-lg font-bold text-emerald-600">
+                          {item.total.toLocaleString('vi-VN')}đ
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => handleSelectOrderFromList(item.code)}
+                        className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5 cursor-pointer shrink-0"
+                      >
+                        <Truck size={14} />
+                        <span>Theo dõi lộ trình</span>
+                        <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* TH2: HIỂN THỊ CHI TIẾT LỘ TRÌNH ĐƠN HÀNG */}
         {currentOrder ? (
           <div className="space-y-6">
+            {/* Nút quay lại danh sách các đơn của SĐT đã tra cứu */}
+            {phoneOrdersList.length > 0 && (
+              <button
+                onClick={() => setCurrentOrder(null)}
+                className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-xl border border-emerald-200 shadow-sm transition-colors cursor-pointer"
+              >
+                <ArrowLeft size={15} />
+                Quay lại danh sách đơn hàng của SĐT {searchInput} ({phoneOrdersList.length} đơn)
+              </button>
+            )}
+
             {/* Header info card */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-100">
@@ -322,68 +408,25 @@ export default function TrackingPage() {
               </div>
             </div>
 
-            {/* Map & Shipper Info (if shipping) */}
-            {currentOrder.status === 'shipping' && currentOrder.shipperLat && (
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
-                    <Truck size={18} className="text-indigo-600" />
-                    Vị trí Shipper đang giao
-                  </h3>
-                  <span className="text-xs text-indigo-600 font-medium bg-indigo-50 px-2.5 py-1 rounded-full animate-pulse">
-                    Đang cập nhật thời gian thực
-                  </span>
-                </div>
-
-                <div className="h-64 rounded-xl overflow-hidden mb-4 border border-gray-200">
-                  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-                  <MapContainer
-                    center={[currentOrder.shipperLat, currentOrder.shipperLng]}
-                    zoom={15}
-                    style={{ height: '100%', width: '100%' }}
-                    scrollWheelZoom={false}
-                  >
-                    <TileLayer
-                      attribution='&copy; Google Maps'
-                      url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-                      subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
-                      maxZoom={20}
-                    />
-                    <Marker position={[currentOrder.shipperLat, currentOrder.shipperLng]}>
-                      <Popup>
-                        <div className="text-xs font-bold">🛵 Shipper: {currentOrder.shipperName}</div>
-                      </Popup>
-                    </Marker>
-                    {currentOrder.destLat && (
-                      <Marker position={[currentOrder.destLat, currentOrder.destLng]}>
-                        <Popup>
-                          <div className="text-xs font-bold">📍 Điểm nhận hàng</div>
-                        </Popup>
-                      </Marker>
-                    )}
-                  </MapContainer>
-                </div>
-
-                {currentOrder.shipperName && (
-                  <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
-                        🛵
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Shipper phụ trách</p>
-                        <p className="font-bold text-gray-800 text-sm">{currentOrder.shipperName}</p>
-                      </div>
-                    </div>
-                    {currentOrder.shipperPhone && (
-                      <a
-                        href={`tel:${currentOrder.shipperPhone}`}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-colors"
-                      >
-                        <Phone size={14} /> Gọi điện
-                      </a>
-                    )}
+            {/* Thông tin Shipper (khi đơn hàng đang giao và có shipper phụ trách) */}
+            {currentOrder.status === 'shipping' && currentOrder.shipperName && (
+              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 text-lg border border-indigo-100">
+                    🛵
                   </div>
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium">Shipper phụ trách giao hàng</p>
+                    <p className="font-bold text-gray-900 text-sm">{currentOrder.shipperName}</p>
+                  </div>
+                </div>
+                {currentOrder.shipperPhone && (
+                  <a
+                    href={`tel:${currentOrder.shipperPhone}`}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm shadow-emerald-600/20"
+                  >
+                    <Phone size={14} /> Gọi điện
+                  </a>
                 )}
               </div>
             )}
@@ -432,26 +475,6 @@ export default function TrackingPage() {
               </div>
             </div>
           </div>
-        ) : searchError === 'FORBIDDEN' ? (
-          /* Thông báo bảo vệ quyền sở hữu - Không có quyền xem đơn hàng của người khác */
-          <div className="bg-white rounded-2xl p-10 text-center shadow-sm border border-amber-200">
-            <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-amber-600 border border-amber-200">
-              <ShieldAlert size={32} />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Truy Cập Bị Từ Chối</h3>
-            <p className="text-sm text-gray-600 max-w-lg mx-auto mb-4 leading-relaxed">
-              Đơn hàng <strong className="font-mono text-gray-900">#{forbiddenCode}</strong> không thuộc về số điện thoại (<strong className="font-mono text-emerald-700">{user.phone}</strong>) của tài khoản bạn đang đăng nhập.
-            </p>
-            <p className="text-xs text-gray-500 max-w-md mx-auto mb-6">
-              Vì chính sách bảo mật thông tin và quyền riêng tư, khách hàng chỉ có thể tra cứu đơn hàng do chính mình đặt.
-            </p>
-            <button
-              onClick={() => { setSearchError(null); setOrderCode(''); }}
-              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors"
-            >
-              Thử tra cứu mã khác
-            </button>
-          </div>
         ) : searchError === 'NOT_FOUND' ? (
           <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
             <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
@@ -459,17 +482,44 @@ export default function TrackingPage() {
             </div>
             <h3 className="text-lg font-bold text-gray-800 mb-2">Không Tìm Thấy Đơn Hàng</h3>
             <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
-              Mã đơn hàng <strong>&quot;{orderCode}&quot;</strong> không tồn tại trong hệ thống. Vui lòng kiểm tra lại mã trên hóa đơn hoặc tin nhắn xác nhận.
+              Không tìm thấy đơn hàng nào tương ứng với <strong>&quot;{notFoundTerm}&quot;</strong>. Vui lòng kiểm tra lại mã đơn hàng hoặc số điện thoại đã điền khi đặt hàng.
             </p>
-            <button
-              onClick={() => { setSearchError(null); setOrderCode(''); }}
-              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors"
-            >
-              Nhập lại mã đơn hàng
-            </button>
+            <div className="flex justify-center">
+              <button
+                onClick={() => { setSearchError(null); setSearchInput(''); }}
+                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              >
+                Nhập lại
+              </button>
+            </div>
+          </div>
+        ) : !hasSearched ? (
+          /* Màn hình ban đầu khi chưa tra cứu */
+          <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100 max-w-lg mx-auto">
+            <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto mb-4 text-emerald-600 border border-emerald-100">
+              <Package size={36} />
+            </div>
+            <h3 className="text-base font-bold text-gray-800 mb-2">Sẵn Sàng Tra Cứu Đơn Hàng</h3>
+            <p className="text-gray-500 text-xs leading-relaxed">
+              Nhập mã đơn hàng hoặc số điện thoại người nhận đã điền khi đặt hàng vào ô phía trên để tra cứu.
+            </p>
           </div>
         ) : null}
       </div>
     </div>
+  );
+}
+
+export default function TrackingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[70vh] flex items-center justify-center bg-gray-50">
+          <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+    >
+      <TrackingContent />
+    </Suspense>
   );
 }

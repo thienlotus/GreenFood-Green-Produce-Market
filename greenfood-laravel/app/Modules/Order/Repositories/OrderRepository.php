@@ -33,7 +33,17 @@ class OrderRepository
 
     public function getByPhone(string $phone): Collection
     {
-        return Order::where('customer_phone', $phone)->latest()->get();
+        $cleanPhone = preg_replace('/\D/', '', $phone);
+        $variants = array_filter(array_unique([
+            $phone,
+            $cleanPhone,
+            str_starts_with($cleanPhone, '84') ? '0' . substr($cleanPhone, 2) : null,
+            str_starts_with($cleanPhone, '84') ? '+' . $cleanPhone : null,
+            str_starts_with($cleanPhone, '0') ? '84' . substr($cleanPhone, 1) : null,
+            str_starts_with($cleanPhone, '0') ? '+84' . substr($cleanPhone, 1) : null,
+        ]));
+
+        return Order::whereIn('customer_phone', $variants)->latest()->get();
     }
 
     public function getFiltered(array $filters): Collection

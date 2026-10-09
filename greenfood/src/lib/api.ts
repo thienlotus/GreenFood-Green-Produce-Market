@@ -823,11 +823,26 @@ export async function processCardPayment(
   payload: CardPaymentRequest
 ): Promise<CardPaymentResponse> {
   try {
-    const res = await fetchApi<CardPaymentResponse>('/payment/card/process', {
+    const url = `${getApiBaseUrl()}/payment/card/process`;
+    const res = await fetch(url, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
       body: JSON.stringify(payload),
     });
-    return res || { success: false, message: 'Không thể kết nối đến máy chủ thanh toán thẻ' };
+
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data) {
+      return data;
+    }
+
+    return {
+      success: false,
+      message: data?.message || `Lỗi thanh toán (${res.status}): Vui lòng thử lại.`
+    };
   } catch (error) {
     console.error('[API] processCardPayment error:', error);
     return { success: false, message: 'Lỗi khi gọi API thanh toán thẻ' };

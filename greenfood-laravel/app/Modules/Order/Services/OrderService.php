@@ -311,9 +311,14 @@ class OrderService
         return $orders->map(function ($order) {
             return [
                 'code' => $order->tracking_number,
-                'date' => $order->created_at->toIso8601String(),
+                'ghn_order_code' => $order->ghn_order_code,
+                'customer_name' => $order->customer_name,
+                'customer_phone' => $order->customer_phone,
+                'shipping_address' => $order->shipping_address,
+                'date' => $order->created_at->format('Y-m-d H:i'),
                 'total' => (float)$order->total_amount,
-                'status' => $order->status
+                'status' => strtolower($order->status),
+                'items_count' => $order->items ? $order->items->count() : 0,
             ];
         });
     }

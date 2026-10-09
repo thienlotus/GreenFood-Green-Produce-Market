@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { processCardPayment } from '@/lib/api';
 import { useCartStore } from '@/store/useCartStore';
+import { useNotificationStore } from '@/store/useNotificationStore';
 
 const BANKS = [
   { code: 'NCB', name: 'Ngân hàng Quốc Dân (NCB)', short: 'NCB', color: 'bg-blue-600' },
@@ -135,6 +136,20 @@ function CardPaymentContent() {
         const finalTracking = res.data?.tracking_number || orderId;
         const ghnCode = res.data?.ghn_order_code || '';
         const transId = res.data?.trans_id || '';
+
+        try {
+          useNotificationStore.getState().addNotification({
+            type: 'payment',
+            title: `Thanh toán ATM thành công: #${finalTracking}`,
+            message: `Giao dịch thẻ ATM nội địa ${Number(amount).toLocaleString('vi-VN')}đ cho đơn #${finalTracking} đã được xử lý thành công qua cổng Napas.`,
+            link: `/tracking?order=${encodeURIComponent(finalTracking)}`,
+            orderCode: finalTracking,
+            tag: 'Napas 247',
+          });
+        } catch (err) {
+          console.warn('Failed to add payment notification:', err);
+        }
+
         router.push(
           `/payment/atm-card/success/?orderId=${encodeURIComponent(finalTracking)}&ghnCode=${encodeURIComponent(ghnCode)}&transId=${encodeURIComponent(transId)}&amount=${amount}`
         );

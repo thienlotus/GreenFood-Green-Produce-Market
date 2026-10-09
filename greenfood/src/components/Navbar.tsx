@@ -12,6 +12,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import BrandLogo from '@/components/BrandLogo';
+import NotificationDropdown from '@/components/NotificationDropdown';
 
 export default function Navbar() {
   const router = useRouter();
@@ -156,6 +157,9 @@ export default function Navbar() {
             <div onClick={() => toast('Tính năng tải ứng dụng đang phát triển')} className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 cursor-pointer transition-colors text-[11px]">
               <Download size={13} /> Tải ứng dụng
             </div>
+            <Link href="/notifications" className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 transition-colors text-[11px]">
+              <Bell size={13} /> Thông Báo
+            </Link>
             <Link href="/farmer" className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 transition-colors text-[11px]">
               <Store size={13} /> Kênh Người Bán
             </Link>
@@ -212,16 +216,8 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 shrink-0">
-            {/* Notification Icon - Thu gọn thành icon tròn nhỏ tinh tế (không còn chữ Thông báo) */}
-            <button 
-              onClick={() => toast('Tính năng thông báo đang phát triển', { icon: '🔔' })}
-              className="relative p-2.5 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-full transition-all cursor-pointer border border-slate-200/80 hover:border-emerald-300 shrink-0 group"
-              aria-label="Thông báo"
-              title="Thông báo"
-            >
-              <Bell size={19} className="text-emerald-700 group-hover:scale-110 transition-transform" />
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            </button>
+            {/* Notification Icon & Dropdown - Kiểu Shopee hiện đại */}
+            <NotificationDropdown />
 
             {/* Auth Button / Profile Badge */}
             {mounted && isAuthenticated && user ? (
@@ -668,6 +664,7 @@ export default function Navbar() {
                 { name: 'Gian hàng nông hộ', href: '/farmers/', icon: Store, color: 'text-emerald-700' },
                 { name: 'Bản đồ nhà vườn', href: '/map/', icon: Map, color: 'text-emerald-600' },
                 { name: 'Theo dõi đơn hàng', href: '/tracking/', icon: Package, color: 'text-amber-600' },
+                { name: 'Thông báo của tôi', href: '/notifications/', icon: Bell, color: 'text-emerald-600' },
                 { name: 'Hồ sơ cá nhân & VIP', href: '/profile/', icon: User, color: 'text-teal-600' },
               ].map((link) => {
                 const IconComp = link.icon;
