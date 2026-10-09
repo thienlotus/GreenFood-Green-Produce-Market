@@ -50,35 +50,35 @@ export const CATEGORIES: CategoryInfo[] = [
     slug: 'di-cho-online',
     description: 'Thực phẩm tươi sạch, rau củ quả hữu cơ thu hoạch trong ngày giao hỏa tốc 2H tận cửa.',
     icon: 'ShoppingBag',
-    bannerImage: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1920&auto=format&fit=crop'
+    bannerImage: '/banners/banner-di-cho.jpg'
   },
   {
     name: 'Trái cây tươi ngon',
     slug: 'trai-cay',
     description: 'Trái cây nhiệt đới chín cây tự nhiên, mọng nước ngọt thanh, chuẩn VietGAP từ các nhà vườn trứ danh.',
     icon: 'Apple',
-    bannerImage: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=1920&auto=format&fit=crop'
+    bannerImage: '/banners/banner-trai-cay.jpg'
   },
   {
     name: 'Trà - Cà phê - Socola',
     slug: 'tra-ca-phe',
     description: 'Trà Thái Nguyên thượng hạng, Cà phê Robusta & Arabica rang mộc nguyên chất, Cacao Bến Tre truyền thống.',
     icon: 'Coffee',
-    bannerImage: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=1920&auto=format&fit=crop'
+    bannerImage: '/banners/banner-tra-cafe.jpg'
   },
   {
     name: 'Đặc sản vùng miền',
     slug: 'dac-san',
     description: 'Tinh hoa đặc sản quà tặng 3 miền: Sầu riêng Ri6, Mật ong hoa tràm nguyên chất, Bưởi da xanh Bến Tre chuẩn OCOP.',
     icon: 'Sparkles',
-    bannerImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1920&auto=format&fit=crop'
+    bannerImage: '/banners/banner-dac-san.jpg'
   },
   {
     name: 'Agrishow Triển Lãm',
     slug: 'agrishow',
     description: 'Triển lãm nông nghiệp công nghệ cao, kết nối trực tiếp nhà vườn hữu cơ và người tiêu dùng thông thái.',
     icon: 'Store',
-    bannerImage: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1920&auto=format&fit=crop'
+    bannerImage: '/banners/banner-agrishow.jpg'
   }
 ];
 
@@ -410,12 +410,16 @@ export const ALL_PRODUCTS: ProductItem[] = [
 export const STATIC_CATEGORY_SLUGS = [
   'di-cho-online',
   'di_cho_online',
+  'di cho online',
   'trai-cay',
   'trai_cay',
+  'trai cay',
   'dac-san',
   'dac_san',
+  'dac san',
   'tra-ca-phe',
   'tra_ca_phe',
+  'tra ca phe',
   'agrishow'
 ];
 

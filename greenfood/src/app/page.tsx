@@ -29,7 +29,7 @@ const BANNERS = [
   },
   {
     id: 2,
-    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1600&auto=format&fit=crop',
+    image: '/banners/banner-dac-san.jpg',
     tag: 'Đặc sản trứ danh 3 miền',
     title: 'Đặc sản tinh hoa\nquà biếu sang trọng',
     desc: 'Sầu riêng Ri6, bưởi da xanh Bến Tre, mật ong rừng Tràm — tuyển chọn từ hợp tác xã đạt chuẩn OCOP.',
@@ -38,7 +38,7 @@ const BANNERS = [
   },
   {
     id: 3,
-    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1600&auto=format&fit=crop',
+    image: '/banners/banner-di-cho.jpg',
     tag: 'Chuẩn VietGAP & Bản đồ GIS',
     title: 'Rau củ hữu cơ\ntươi mới mỗi ngày',
     desc: 'Truy xuất nguồn gốc từng liếp vườn, minh bạch 100% tọa độ nhà vườn trên bản đồ vệ tinh.',
@@ -869,7 +869,7 @@ export default function Home() {
           href: '/category/trai-cay/',
           items: fruits,
           banner: {
-            image: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?q=80&w=800&auto=format&fit=crop',
+            image: '/banners/banner-trai-cay.jpg',
             overlay: 'from-orange-950/90 via-orange-900/40 to-transparent',
             kicker: 'Chín cây tự nhiên',
             title: 'Trái cây\nmiệt vườn',
@@ -883,7 +883,7 @@ export default function Home() {
           href: '/category/dac-san/',
           items: specialties,
           banner: {
-            image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800&auto=format&fit=crop',
+            image: '/banners/banner-dac-san.jpg',
             overlay: 'from-emerald-950/90 via-emerald-900/40 to-transparent',
             kicker: 'Hộp quà sang trọng',
             title: 'Đặc sản\nba miền',
