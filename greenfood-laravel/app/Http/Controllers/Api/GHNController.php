@@ -65,25 +65,125 @@ class GHNController extends Controller
             $request->validate([
                 'to_district_id' => 'required|integer',
                 'to_ward_code' => 'required|string',
+                'from_district_id' => 'nullable|integer',
                 'weight' => 'nullable|integer',
                 'items' => 'nullable|array'
             ]);
 
-            // 2. Tính tổng khối lượng kiện hàng
-            $weight = 200; // Mặc định
-            if ($request->has('weight')) {
-                $weight = $request->input('weight');
-            } elseif ($request->has('items') && is_array($request->items)) {
-                $weight = collect($request->items)->sum(
-                    fn ($item) => (int) config('services.ghn.default_weight', 200) * (int) ($item['quantity'] ?? 1)
-                );
+            $toDistrictId = (int) $request->to_district_id;
+            $toWardCode = (string) $request->to_ward_code;
+            $items = $request->input('items', []);
+
+            // Nếu frontend truyền trực tiếp from_district_id (ví dụ từ đơn hàng 1 nông hộ hoặc override)
+            if ($request->filled('from_district_id') && empty($items)) {
+                $weight = (int) ($request->input('weight') ?? 200);
+                $res = $ghn->calculateFee(array_merge([
+                    'from_district_id' => (int) $request->from_district_id,
+                    'to_district_id' => $toDistrictId,
+                    'to_ward_code' => $toWardCode,
+                ], $ghn->packageParameters($weight)));
+                return response()->json($res);
             }
 
-            // 3. Gọi GHNService gửi request tính phí tới cổng GHN
+            // Nếu có danh sách items -> Tách gói hàng theo từng Nông Hộ (Chuẩn Sàn Shopee)
+            if (!empty($items) && is_array($items)) {
+                // Nhóm sản phẩm theo nhà vườn / nông hộ
+                $grouped = [];
+                foreach ($items as $item) {
+                    $farmerKey = $item['farmer_id'] ?? ($item['farmer']['id'] ?? ($item['farmer']['name'] ?? ($item['farmer'] ?? 'default')));
+                    if (is_array($farmerKey)) {
+                        $farmerKey = $farmerKey['name'] ?? 'default';
+                    }
+                    $grouped[(string) $farmerKey][] = $item;
+                }
+
+                $packages = [];
+                $totalShippingFee = 0;
+
+                // Load danh sách nông hộ có sẵn để tra cứu nhanh
+                $farmersCache = \App\Models\Farmer::all()->keyBy('id');
+                $farmersByName = \App\Models\Farmer::all()->keyBy(fn ($f) => mb_strtolower($f->farm_name, 'UTF-8'));
+
+                foreach ($grouped as $key => $pkgItems) {
+                    $farmer = $farmersCache->get($key) ?? $farmersByName->get(mb_strtolower((string) $key, 'UTF-8'));
+
+                    // Xác định kho gửi hàng của Nông Hộ (from_district_id)
+                    $fromDistrictId = null;
+                    $fromWardCode = null;
+                    $farmerName = $farmer ? $farmer->farm_name : (string) $key;
+                    $fromLocation = $farmer ? ($farmer->ghn_address ?: $farmer->address) : 'Kho GreenFood';
+
+                    // 1. Kiểm tra trong model Farmer
+                    if ($farmer && !empty($farmer->ghn_district_id)) {
+                        $fromDistrictId = (int) $farmer->ghn_district_id;
+                        $fromWardCode = $farmer->ghn_ward_code;
+                    }
+
+                    // 2. Kiểm tra nếu item truyền sẵn from_district_id
+                    if (!$fromDistrictId && !empty($pkgItems[0]['from_district_id'])) {
+                        $fromDistrictId = (int) $pkgItems[0]['from_district_id'];
+                    }
+
+                    // 3. Fallback theo cấu hình kho mặc định
+                    if (!$fromDistrictId) {
+                        $fromDistrictId = (int) config('services.ghn.from_district_id', 3440);
+                    }
+
+                    // Tính khối lượng kiện hàng của nhà vườn này
+                    $pkgWeight = collect($pkgItems)->sum(function ($it) {
+                        $itemWeight = (int) ($it['weight'] ?? config('services.ghn.default_weight', 200));
+                        $qty = (int) ($it['quantity'] ?? 1);
+                        return $itemWeight * $qty;
+                    });
+                    if ($pkgWeight <= 0) $pkgWeight = 200;
+
+                    // Gọi GHN tính phí vận chuyển từ kho của nhà vườn này tới khách hàng
+                    $feeParams = array_merge([
+                        'from_district_id' => $fromDistrictId,
+                        'to_district_id' => $toDistrictId,
+                        'to_ward_code' => $toWardCode,
+                    ], $ghn->packageParameters($pkgWeight));
+
+                    if ($fromWardCode) {
+                        $feeParams['from_ward_code'] = $fromWardCode;
+                    }
+
+                    $pkgRes = $ghn->calculateFee($feeParams);
+                    $pkgFee = (int) ($pkgRes['data']['total'] ?? $pkgRes['data']['service_fee'] ?? 28000);
+                    $totalShippingFee += $pkgFee;
+
+                    $packages[] = [
+                        'farmer_key' => $key,
+                        'farmer_id' => $farmer ? $farmer->id : null,
+                        'farmer_name' => $farmerName,
+                        'from_district_id' => $fromDistrictId,
+                        'from_ward_code' => $fromWardCode,
+                        'from_location' => $fromLocation,
+                        'weight' => $pkgWeight,
+                        'shipping_fee' => $pkgFee,
+                        'items_count' => count($pkgItems),
+                        'items' => $pkgItems
+                    ];
+                }
+
+                return response()->json([
+                    'code' => 200,
+                    'message' => 'Success',
+                    'data' => [
+                        'total' => $totalShippingFee,
+                        'service_fee' => $totalShippingFee,
+                        'package_count' => count($packages),
+                        'packages' => $packages
+                    ]
+                ]);
+            }
+
+            // 3. Trường hợp đơn lẻ không truyền items
+            $weight = (int) ($request->input('weight') ?? 200);
             $res = $ghn->calculateFee(array_merge([
-                'from_district_id' => (int) config('services.ghn.from_district_id', 3440),
-                'to_district_id' => (int) $request->to_district_id,
-                'to_ward_code' => (string) $request->to_ward_code,
+                'from_district_id' => (int) ($request->from_district_id ?: config('services.ghn.from_district_id', 3440)),
+                'to_district_id' => $toDistrictId,
+                'to_ward_code' => $toWardCode,
             ], $ghn->packageParameters($weight)));
 
             return response()->json($res);

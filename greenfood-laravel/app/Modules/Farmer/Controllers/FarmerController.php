@@ -123,6 +123,10 @@ class FarmerController extends Controller
             'longitude' => 'nullable|numeric',
             'region_id' => 'nullable|integer',
             'is_verified' => 'nullable|boolean',
+            'ghn_province_id' => 'nullable|integer',
+            'ghn_district_id' => 'nullable|integer',
+            'ghn_ward_code' => 'nullable|string|max:30',
+            'ghn_address' => 'nullable|string|max:255',
         ]);
 
         $farmer = $this->farmerService->updateFarmer($id, $validated);

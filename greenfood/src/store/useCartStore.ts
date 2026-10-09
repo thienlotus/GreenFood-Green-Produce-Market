@@ -12,6 +12,12 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: string;
+  farmer?: {
+    id?: string;
+    name?: string;
+    farmName?: string;
+    region?: string;
+  };
 }
 
 /**

@@ -151,10 +151,13 @@ class FarmerService
         if (isset($data['address'])) $updateData['address'] = $address;
         if (isset($data['specialty'])) $updateData['specialty'] = $data['specialty'];
         if (isset($data['image_url'])) $updateData['image_url'] = $data['image_url'];
-        if (isset($data['is_verified'])) $updateData['is_verified'] = (bool) $data['is_verified'];
         $updateData['latitude'] = $lat;
         $updateData['longitude'] = $lng;
         $updateData['region_id'] = $regionId;
+        if (isset($data['ghn_province_id'])) $updateData['ghn_province_id'] = (int) $data['ghn_province_id'];
+        if (isset($data['ghn_district_id'])) $updateData['ghn_district_id'] = (int) $data['ghn_district_id'];
+        if (isset($data['ghn_ward_code'])) $updateData['ghn_ward_code'] = (string) $data['ghn_ward_code'];
+        if (isset($data['ghn_address'])) $updateData['ghn_address'] = (string) $data['ghn_address'];
 
         $this->farmerRepository->update($farmer, $updateData);
 

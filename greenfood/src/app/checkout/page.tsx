@@ -6,8 +6,9 @@ import { useAuthStore, VoucherItem } from '@/store/useAuthStore';
 import { ChevronLeft, CheckCircle, ChevronRight, MapPin, CreditCard, Smartphone, Building2, Banknote, ShieldCheck, Truck, Package, Copy, Check, QrCode, RefreshCw, Tag, Ticket, X, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getGhnProvinces, getGhnDistricts, getGhnWards, calculateGhnShippingFee, createOrder, createMomoPayment, createSepayPayment, checkSepayStatus, SepayPaymentResponse, checkVoucherApi } from '@/lib/api';
+import { getGhnProvinces, getGhnDistricts, getGhnWards, calculateGhnShippingFee, calculateGhnShippingFeeDetail, ShippingPackageDetail, createOrder, createMomoPayment, createSepayPayment, checkSepayStatus, SepayPaymentResponse, checkVoucherApi } from '@/lib/api';
 import { cleanVietnameseMojibake, FALLBACK_PROVINCES, getFallbackDistricts, getFallbackWards } from '@/data/vietnamAddress';
+import { ALL_PRODUCTS } from '@/data/products';
 import { toast } from 'react-hot-toast';
 
 // Fallback zones logic removed since we use GHN directly
@@ -33,6 +34,7 @@ export default function CheckoutPage() {
   const [selectedDistrictId, setSelectedDistrictId] = useState<number | ''>('');
   const [selectedWardCode, setSelectedWardCode] = useState<string | ''>('');
   const [ghnShippingFee, setGhnShippingFee] = useState<number | null>(null);
+  const [shippingPackages, setShippingPackages] = useState<ShippingPackageDetail[]>([]);
   const [isCalculatingFee, setIsCalculatingFee] = useState(false);
 
   // Voucher states
@@ -163,11 +165,13 @@ export default function CheckoutPage() {
     async function fetchFee() {
       if (selectedDistrictId && selectedWardCode && items.length > 0) {
         setIsCalculatingFee(true);
-        const fee = await calculateGhnShippingFee(selectedDistrictId as number, selectedWardCode as string, items);
-        setGhnShippingFee(fee);
+        const feeDetail = await calculateGhnShippingFeeDetail(selectedDistrictId as number, selectedWardCode as string, items);
+        setGhnShippingFee(feeDetail.total);
+        setShippingPackages(feeDetail.packages || []);
         setIsCalculatingFee(false);
       } else {
         setGhnShippingFee(null);
+        setShippingPackages([]);
       }
     }
     fetchFee();
@@ -734,23 +738,76 @@ export default function CheckoutPage() {
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Tóm tắt đơn hàng</h2>
 
-              <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2">
-                {items.map((item) => (
-                  <div key={`${item.id}-${item.variantId}`} className="flex gap-3">
-                    <div className="relative">
-                      <img src={item.image} alt={cleanVietnameseMojibake(item.name)} className="w-16 h-16 object-cover rounded-md border border-gray-200" />
-                      <span className="absolute -top-2 -right-2 bg-emerald-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                        {item.quantity}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium text-gray-800 line-clamp-2">{cleanVietnameseMojibake(item.name)}</h4>
-                      <p className="text-xs text-gray-500">{cleanVietnameseMojibake(item.unit)}</p>
-                      <p className="text-sm font-bold text-gray-700 mt-1">{(item.price * item.quantity).toLocaleString('vi-VN')}đ</p>
+              {/* PHÂN BỔ KIỆN HÀNG NÔNG HỘ CHUẨN SÀN SHOPEE */}
+              {shippingPackages.length > 1 ? (
+                <div className="space-y-3 mb-6 max-h-[350px] overflow-y-auto pr-1">
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-800 flex items-start gap-2">
+                    <Truck size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold">Đơn hàng gồm {shippingPackages.length} kiện hàng:</span>
+                      <p className="text-[11px] text-amber-700 mt-0.5">Mỗi kiện xuất phát từ kho của nhà vườn độc lập (Bắc/Trung/Nam) tới bạn qua GHN.</p>
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  {shippingPackages.map((pkg, pIdx) => (
+                    <div key={pkg.farmer_key || pIdx} className="border border-emerald-100 bg-emerald-50/40 rounded-xl p-3">
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-emerald-100">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Package size={14} className="text-emerald-600 shrink-0" />
+                          <span className="text-xs font-bold text-gray-800 truncate">{pkg.farmer_name}</span>
+                        </div>
+                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
+                          Ship: {pkg.shipping_fee.toLocaleString('vi-VN')}đ
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-gray-500 mb-2 flex items-center gap-1">
+                        <MapPin size={10} className="text-gray-400 shrink-0" />
+                        <span className="truncate">Gửi từ: {pkg.from_location}</span>
+                      </p>
+                      <div className="space-y-2">
+                        {pkg.items.map((item: any, iIdx: number) => (
+                          <div key={`${item.id}-${item.variantId || iIdx}`} className="flex gap-2 text-xs">
+                            <img src={item.image} alt={cleanVietnameseMojibake(item.name)} className="w-10 h-10 object-cover rounded border border-gray-200 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <h5 className="font-medium text-gray-800 truncate">{cleanVietnameseMojibake(item.name)}</h5>
+                              <p className="text-[10px] text-gray-500">{cleanVietnameseMojibake(item.unit)} • x{item.quantity}</p>
+                              <p className="text-xs font-bold text-gray-700 mt-0.5">{(item.price * item.quantity).toLocaleString('vi-VN')}đ</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2">
+                  {items.map((item) => (
+                    <div key={`${item.id}-${item.variantId}`} className="flex gap-3">
+                      <div className="relative">
+                        <img src={item.image} alt={cleanVietnameseMojibake(item.name)} className="w-16 h-16 object-cover rounded-md border border-gray-200" />
+                        <span className="absolute -top-2 -right-2 bg-emerald-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                          {item.quantity}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-gray-800 line-clamp-2">{cleanVietnameseMojibake(item.name)}</h4>
+                        <p className="text-xs text-gray-500">{cleanVietnameseMojibake(item.unit)}</p>
+                        {(() => {
+                          const product = ALL_PRODUCTS.find(p => p.id === item.id || p.slug === item.slug);
+                          const farmerName = item.farmer?.name || item.farmer?.farmName || product?.farmer?.name;
+                          const farmerRegion = item.farmer?.region || product?.farmer?.region;
+                          return farmerName ? (
+                            <p className="text-[10px] text-emerald-600 flex items-center gap-0.5 mt-0.5">
+                              <MapPin size={9} /> {farmerName} {farmerRegion ? `(${farmerRegion})` : ''}
+                            </p>
+                          ) : null;
+                        })()}
+                        <p className="text-sm font-bold text-gray-700 mt-1">{(item.price * item.quantity).toLocaleString('vi-VN')}đ</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* KHỐI ÁP DỤNG VOUCHER & MÃ KHUYẾN MÃI */}
               <div className="border-t border-gray-100 pt-4 mb-4">
@@ -907,7 +964,9 @@ export default function CheckoutPage() {
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Phí giao hàng</span>
+                  <span className="text-gray-600">
+                    Phí giao hàng {shippingPackages.length > 1 ? `(${shippingPackages.length} kiện nhà vườn)` : 'GHN'}
+                  </span>
                   <span className={isFreeShipping ? 'text-emerald-600 font-medium' : 'text-gray-700 font-medium'}>
                     {!selectedWardCode
                       ? 'Chọn địa chỉ'

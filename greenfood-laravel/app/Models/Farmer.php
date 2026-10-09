@@ -27,7 +27,11 @@ class Farmer extends Model
         'bank_account_name',
         'balance_available',
         'commission_rate',
-        'total_sales_count'
+        'total_sales_count',
+        'ghn_province_id',
+        'ghn_district_id',
+        'ghn_ward_code',
+        'ghn_address'
     ];
 
     protected $casts = [
@@ -37,7 +41,9 @@ class Farmer extends Model
         'is_verified' => 'boolean',
         'balance_available' => 'float',
         'commission_rate' => 'float',
-        'total_sales_count' => 'integer'
+        'total_sales_count' => 'integer',
+        'ghn_province_id' => 'integer',
+        'ghn_district_id' => 'integer',
     ];
 
     public function user()

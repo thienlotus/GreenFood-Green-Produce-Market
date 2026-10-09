@@ -687,7 +687,30 @@ export async function getGhnWards(districtId: number): Promise<any[]> {
   return fallback;
 }
 
-export async function calculateGhnShippingFee(districtId: number, wardCode: string, items: any[]): Promise<number | null> {
+export interface ShippingPackageDetail {
+  farmer_key: string;
+  farmer_id?: string;
+  farmer_name: string;
+  from_district_id: number;
+  from_ward_code?: string;
+  from_location: string;
+  weight: number;
+  shipping_fee: number;
+  items_count: number;
+  items: any[];
+}
+
+export interface ShippingFeeResult {
+  total: number;
+  package_count: number;
+  packages: ShippingPackageDetail[];
+}
+
+export async function calculateGhnShippingFeeDetail(
+  districtId: number, 
+  wardCode: string, 
+  items: any[]
+): Promise<ShippingFeeResult> {
   const totalOrder = Array.isArray(items) 
     ? items.reduce((sum, it) => sum + (Number(it.price || 0) * Number(it.quantity || 1)), 0)
     : 0;
@@ -703,14 +726,36 @@ export async function calculateGhnShippingFee(districtId: number, wardCode: stri
     });
 
     if (res && res.code === 200 && res.data && typeof res.data.total === 'number') {
-      return res.data.total;
+      return {
+        total: res.data.total,
+        package_count: res.data.package_count || (res.data.packages?.length ?? 1),
+        packages: res.data.packages || []
+      };
     }
   } catch (error) {
-    console.warn('[API] calculateGhnShippingFee error, using fallback fee rule:', error);
+    console.warn('[API] calculateGhnShippingFeeDetail error, using fallback fee rule:', error);
   }
 
-  // Tự động tính phí tiêu chuẩn (Miễn phí từ 300.000đ, hoặc 25k-35k)
-  return calculateFallbackShippingFee(totalOrder);
+  const fallback = calculateFallbackShippingFee(totalOrder) || 28000;
+  return {
+    total: fallback,
+    package_count: 1,
+    packages: [{
+      farmer_key: 'default',
+      farmer_name: 'Kho GreenFood Nông Sản',
+      from_district_id: 3440,
+      from_location: 'Tổng kho GreenFood',
+      weight: 200,
+      shipping_fee: fallback,
+      items_count: items.length,
+      items
+    }]
+  };
+}
+
+export async function calculateGhnShippingFee(districtId: number, wardCode: string, items: any[]): Promise<number | null> {
+  const detail = await calculateGhnShippingFeeDetail(districtId, wardCode, items);
+  return detail ? detail.total : null;
 }
 
 // 7. CART & PROMOTION API (Phụ trách: Lương Văn Quý)
@@ -909,6 +954,10 @@ export interface FarmerDetailData {
   specialty?: string;
   rating?: number;
   is_verified?: boolean;
+  ghn_province_id?: number;
+  ghn_district_id?: number;
+  ghn_ward_code?: string;
+  ghn_address?: string;
   region?: {
     id: number;
     name: string;
@@ -1022,6 +1071,10 @@ export async function updateFarmerProfileApi(id: string, payload: {
   region_id?: number;
   image_url?: string;
   is_verified?: boolean;
+  ghn_province_id?: number;
+  ghn_district_id?: number;
+  ghn_ward_code?: string;
+  ghn_address?: string;
 }): Promise<{ success: boolean; message: string; data?: any }> {
   try {
     const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/farmers/${id}`, {

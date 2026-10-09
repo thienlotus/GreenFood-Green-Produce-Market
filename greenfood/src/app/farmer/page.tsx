@@ -57,9 +57,52 @@ export default function FarmerPortalPage() {
     latitude: '',
     longitude: '',
     specialty: '',
-    story: ''
+    story: '',
+    ghn_province_id: '',
+    ghn_district_id: '',
+    ghn_ward_code: '',
+    ghn_address: ''
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  // 3 Nông hộ đại diện 3 miền chuẩn mã Giao Hàng Nhanh (GHN)
+  const GHN_DEMO_PRESETS = [
+    {
+      region: 'Miền Bắc',
+      name: 'Trang Trại Mộc Châu (Sơn La)',
+      province_id: 266,
+      district_id: 1976,
+      ward_code: '90792',
+      address: 'Thị trấn Nông trường Mộc Châu, Huyện Mộc Châu, Tỉnh Sơn La'
+    },
+    {
+      region: 'Miền Trung / Tây Nguyên',
+      name: 'Nông Trại Xanh Đà Lạt (Lâm Đồng)',
+      province_id: 209,
+      district_id: 1550,
+      ward_code: '420101',
+      address: 'Phường 1, Thành phố Đà Lạt, Tỉnh Lâm Đồng'
+    },
+    {
+      region: 'Miền Nam',
+      name: 'Vườn Trái Cây Chú Ba (Bến Tre)',
+      province_id: 213,
+      district_id: 3158,
+      ward_code: '560311',
+      address: 'Xã Vĩnh Thành, Huyện Chợ Lách, Tỉnh Bến Tre'
+    }
+  ];
+
+  const handleApplyGhnPreset = (preset: typeof GHN_DEMO_PRESETS[0]) => {
+    setProfileForm(prev => ({
+      ...prev,
+      ghn_province_id: String(preset.province_id),
+      ghn_district_id: String(preset.district_id),
+      ghn_ward_code: preset.ward_code,
+      ghn_address: preset.address
+    }));
+    toast.success(`Đã áp dụng vị trí GHN ${preset.region}: ${preset.name}`);
+  };
 
   // Load và phân quyền bảo mật dữ liệu gian hàng
   useEffect(() => {
@@ -174,7 +217,11 @@ export default function FarmerPortalPage() {
         latitude: currentFarmer.latitude ? String(currentFarmer.latitude) : '',
         longitude: currentFarmer.longitude ? String(currentFarmer.longitude) : '',
         specialty: currentFarmer.specialty || '',
-        story: currentFarmer.story || ''
+        story: currentFarmer.story || '',
+        ghn_province_id: currentFarmer.ghn_province_id ? String(currentFarmer.ghn_province_id) : '',
+        ghn_district_id: currentFarmer.ghn_district_id ? String(currentFarmer.ghn_district_id) : '',
+        ghn_ward_code: currentFarmer.ghn_ward_code ? String(currentFarmer.ghn_ward_code) : '',
+        ghn_address: currentFarmer.ghn_address || ''
       });
     }
   }, [currentFarmer]);
@@ -277,6 +324,11 @@ export default function FarmerPortalPage() {
         lng = geo.lng;
       }
 
+      const ghnProvince = profileForm.ghn_province_id ? parseInt(profileForm.ghn_province_id) : undefined;
+      const ghnDistrict = profileForm.ghn_district_id ? parseInt(profileForm.ghn_district_id) : undefined;
+      const ghnWard = profileForm.ghn_ward_code.trim() || undefined;
+      const ghnAddress = profileForm.ghn_address.trim() || undefined;
+
       const res = await updateFarmerProfileApi(currentFarmer.id, {
         farm_name: profileForm.farm_name.trim(),
         address: profileForm.address.trim(),
@@ -284,6 +336,10 @@ export default function FarmerPortalPage() {
         longitude: lng,
         specialty: profileForm.specialty.trim() || undefined,
         story: profileForm.story.trim() || undefined,
+        ghn_province_id: ghnProvince,
+        ghn_district_id: ghnDistrict,
+        ghn_ward_code: ghnWard,
+        ghn_address: ghnAddress,
         is_verified: false
       });
 
@@ -309,7 +365,11 @@ export default function FarmerPortalPage() {
           latitude: lat,
           longitude: lng,
           specialty: profileForm.specialty.trim(),
-          story: profileForm.story.trim()
+          story: profileForm.story.trim(),
+          ghn_province_id: ghnProvince,
+          ghn_district_id: ghnDistrict,
+          ghn_ward_code: ghnWard,
+          ghn_address: ghnAddress
         } : f));
       } else {
         toast.error(res.message || 'Cập nhật thất bại');
@@ -1113,6 +1173,125 @@ export default function FarmerPortalPage() {
                           placeholder="Ví dụ: 105.7852"
                           className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 font-mono"
                         />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Vị Trí Kho Xuất Hàng GHN (Tính phí ship sàn Shopee) */}
+                  <div className="bg-gradient-to-br from-amber-50/70 via-orange-50/50 to-emerald-50/60 p-4 sm:p-5 rounded-2xl border border-amber-200/80 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-orange-600 text-white flex items-center justify-center font-black text-xs shadow-xs">
+                          GHN
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wide flex items-center gap-1.5">
+                            <Truck size={14} className="text-orange-600" />
+                            Vị Trí Kho Xuất Hàng Giao Hàng Nhanh (GHN)
+                          </h4>
+                          <p className="text-[11px] text-gray-600">
+                            Căn cứ tính phí ship động từ kho của bạn đến người mua theo từng kiện (chuẩn Shopee)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Nút Demo nhanh 3 Nông hộ 3 Miền */}
+                    <div className="space-y-2">
+                      <span className="text-[11px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1">
+                        <Sparkles size={12} className="text-amber-600" />
+                        Nạp Vị Trí Mẫu 3 Miền (Demo Sàn TMĐT):
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {GHN_DEMO_PRESETS.map((p, idx) => {
+                          const isSelected = 
+                            profileForm.ghn_district_id === String(p.district_id) &&
+                            profileForm.ghn_province_id === String(p.province_id);
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleApplyGhnPreset(p)}
+                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                                isSelected 
+                                  ? 'border-orange-500 bg-orange-50/90 ring-2 ring-orange-500/20 shadow-xs' 
+                                  : 'border-amber-200/90 bg-white hover:bg-amber-50/50 hover:border-orange-300'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                                  idx === 0 ? 'bg-blue-100 text-blue-700' :
+                                  idx === 1 ? 'bg-emerald-100 text-emerald-700' :
+                                  'bg-purple-100 text-purple-700'
+                                }`}>
+                                  {p.region}
+                                </span>
+                                {isSelected && (
+                                  <span className="text-[10px] font-bold text-orange-600 flex items-center gap-0.5">
+                                    <Check size={12} /> Đang chọn
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-xs font-bold text-gray-900 line-clamp-1">{p.name}</span>
+                              <span className="text-[10px] text-gray-500 line-clamp-1 mt-0.5">Mã Huyện: {p.district_id}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Chi tiết thông tin cấu hình kho */}
+                    <div className="space-y-3 pt-1 border-t border-amber-200/60">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                          Địa chỉ kho xuất hàng (GHN Address)
+                        </label>
+                        <input
+                          type="text"
+                          value={profileForm.ghn_address}
+                          onChange={e => setProfileForm({ ...profileForm, ghn_address: e.target.value })}
+                          placeholder="Ví dụ: Thị trấn Nông trường Mộc Châu, Huyện Mộc Châu, Sơn La"
+                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Mã Tỉnh (Province ID) *
+                          </label>
+                          <input
+                            type="number"
+                            value={profileForm.ghn_province_id}
+                            onChange={e => setProfileForm({ ...profileForm, ghn_province_id: e.target.value })}
+                            placeholder="Ví dụ: 266"
+                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Mã Quận/Huyện (District ID) *
+                          </label>
+                          <input
+                            type="number"
+                            value={profileForm.ghn_district_id}
+                            onChange={e => setProfileForm({ ...profileForm, ghn_district_id: e.target.value })}
+                            placeholder="Ví dụ: 1976"
+                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Mã Phường/Xã (Ward Code)
+                          </label>
+                          <input
+                            type="text"
+                            value={profileForm.ghn_ward_code}
+                            onChange={e => setProfileForm({ ...profileForm, ghn_ward_code: e.target.value })}
+                            placeholder="Ví dụ: 90792"
+                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -83,12 +83,13 @@ class DatabaseSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // 4. Farmers (Nông hộ với Tọa độ GIS)
+        // 4. Farmers (Nông hộ với Tọa độ GIS & Kho GHN xuất phát 3 miền)
         $farmersData = [
             [
                 'name' => 'Vườn Trái Cây Chú Ba', 'owner' => 'Nguyễn Văn Ba', 'phone' => '0901234567', 'email' => 'chuba@greenfood.vn',
-                'address' => 'Chợ Lách, Bến Tre', 'region' => 'dong-bang-song-cuu-long',
+                'address' => 'Xã Vĩnh Thành, Huyện Chợ Lách, Bến Tre', 'region' => 'dong-bang-song-cuu-long',
                 'latitude' => 10.2348, 'longitude' => 106.3485,
+                'ghn_province_id' => 213, 'ghn_district_id' => 3158, 'ghn_ward_code' => '560311', 'ghn_address' => 'Xã Vĩnh Thành, Huyện Chợ Lách, Bến Tre',
                 'image' => 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600',
                 'specialty' => 'Sầu riêng Ri6, Bưởi da xanh', 'rating' => 4.8, 'is_verified' => true,
                 'story' => 'Hơn 20 năm gắn bó với cây sầu riêng và bưởi da xanh. Nông sản đạt chuẩn VietGAP mang lại vị ngọt béo ngậy an toàn nhất.'
@@ -97,14 +98,16 @@ class DatabaseSeeder extends Seeder
                 'name' => 'HTX Bưởi Da Xanh', 'owner' => 'Trần Văn Năm', 'phone' => '0902345678', 'email' => 'bentre@greenfood.vn',
                 'address' => 'Bình Minh, Vĩnh Long', 'region' => 'dong-bang-song-cuu-long',
                 'latitude' => 10.0772, 'longitude' => 105.9545,
+                'ghn_province_id' => 213, 'ghn_district_id' => 3158, 'ghn_ward_code' => '560311', 'ghn_address' => 'Bình Minh, Vĩnh Long',
                 'image' => 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600',
                 'specialty' => 'Bưởi da xanh ruột hồng', 'rating' => 4.6, 'is_verified' => true,
                 'story' => 'Hợp tác xã quy tụ 50 hộ gia đình trồng bưởi truyền thống với tiêu chuẩn sinh học sạch.'
             ],
             [
                 'name' => 'Nông Trại Xanh Đà Lạt', 'owner' => 'Phạm Thị Lan', 'phone' => '0903456789', 'email' => 'dalatfarm@greenfood.vn',
-                'address' => 'Đơn Dương, Lâm Đồng', 'region' => 'tay-nguyen-da-lat',
+                'address' => 'Phường 1, Thành phố Đà Lạt, Lâm Đồng', 'region' => 'tay-nguyen-da-lat',
                 'latitude' => 11.8188, 'longitude' => 108.4933,
+                'ghn_province_id' => 209, 'ghn_district_id' => 1550, 'ghn_ward_code' => '420101', 'ghn_address' => 'Phường 1, TP. Đà Lạt, Lâm Đồng',
                 'image' => 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600',
                 'specialty' => 'Dâu tây, Dưa lưới hữu cơ', 'rating' => 4.9, 'is_verified' => true,
                 'story' => 'Nông trại ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100% trong nhà kính thông minh.'
@@ -113,14 +116,16 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Vườn Xoài Ông Năm', 'owner' => 'Lê Văn Năm', 'phone' => '0904567891', 'email' => 'ongnam@greenfood.vn',
                 'address' => 'Cao Lãnh, Đồng Tháp', 'region' => 'dong-bang-song-cuu-long',
                 'latitude' => 10.4563, 'longitude' => 105.6409,
+                'ghn_province_id' => 213, 'ghn_district_id' => 3158, 'ghn_ward_code' => '560311', 'ghn_address' => 'Cao Lãnh, Đồng Tháp',
                 'image' => 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=600',
                 'specialty' => 'Xoài cát Hòa Lộc', 'rating' => 4.5, 'is_verified' => false,
                 'story' => 'Truyền thống 3 đời canh tác giống xoài quý trên đất phù sa bồi đắp màu mỡ ven sông Tiền.'
             ],
             [
                 'name' => 'Trang Trại Mộc Châu', 'owner' => 'Hoàng Văn Minh', 'phone' => '0905678902', 'email' => 'mocchau@greenfood.vn',
-                'address' => 'Mộc Châu, Sơn La', 'region' => 'mien-bac',
+                'address' => 'Thị Trấn Nông Trường, Huyện Mộc Châu, Sơn La', 'region' => 'mien-bac',
                 'latitude' => 20.8332, 'longitude' => 104.6724,
+                'ghn_province_id' => 266, 'ghn_district_id' => 1976, 'ghn_ward_code' => '90792', 'ghn_address' => 'Thị Trấn Nông Trường, Huyện Mộc Châu, Sơn La',
                 'image' => 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600',
                 'specialty' => 'Mận hậu, Cà phê Robusta', 'rating' => 4.7, 'is_verified' => true,
                 'story' => 'Đặc sản mận hậu, cà phê rang mộc và mật ong vùng cao Tây Bắc ở độ cao trên 1000m.'
@@ -129,6 +134,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'HTX Chè Thái Nguyên', 'owner' => 'Nguyễn Thị Mai', 'phone' => '0906789013', 'email' => 'chetn@greenfood.vn',
                 'address' => 'Tân Cương, Thái Nguyên', 'region' => 'mien-bac',
                 'latitude' => 21.5546, 'longitude' => 105.8008,
+                'ghn_province_id' => 244, 'ghn_district_id' => 1976, 'ghn_ward_code' => '90792', 'ghn_address' => 'Tân Cương, Thái Nguyên',
                 'image' => 'https://images.unsplash.com/photo-1556881286-fc6915169721?w=600',
                 'specialty' => 'Chè Tân Cương, Trà xanh nõn tôm', 'rating' => 4.4, 'is_verified' => true,
                 'story' => 'Búp chè hái tay 1 tôm 2 lá lúc sáng sớm giữ trọn hương sương mai thơm ngát.'
@@ -159,6 +165,10 @@ class DatabaseSeeder extends Seeder
                 'region_id' => $regionMap[$f['region']],
                 'latitude' => $f['latitude'],
                 'longitude' => $f['longitude'],
+                'ghn_province_id' => $f['ghn_province_id'] ?? null,
+                'ghn_district_id' => $f['ghn_district_id'] ?? null,
+                'ghn_ward_code' => $f['ghn_ward_code'] ?? null,
+                'ghn_address' => $f['ghn_address'] ?? null,
                 'image_url' => $f['image'],
                 'specialty' => $f['specialty'],
                 'rating' => $f['rating'],

@@ -32,8 +32,51 @@ export default function FarmerStorefrontPage() {
     latitude: '',
     longitude: '',
     specialty: '',
-    story: ''
+    story: '',
+    ghn_province_id: '',
+    ghn_district_id: '',
+    ghn_ward_code: '',
+    ghn_address: ''
   });
+
+  // 3 Nông hộ đại diện 3 miền chuẩn mã Giao Hàng Nhanh (GHN)
+  const GHN_DEMO_PRESETS = [
+    {
+      region: 'Miền Bắc',
+      name: 'Trang Trại Mộc Châu (Sơn La)',
+      province_id: 266,
+      district_id: 1976,
+      ward_code: '90792',
+      address: 'Thị trấn Nông trường Mộc Châu, Huyện Mộc Châu, Tỉnh Sơn La'
+    },
+    {
+      region: 'Miền Trung / Tây Nguyên',
+      name: 'Nông Trại Xanh Đà Lạt (Lâm Đồng)',
+      province_id: 209,
+      district_id: 1550,
+      ward_code: '420101',
+      address: 'Phường 1, Thành phố Đà Lạt, Tỉnh Lâm Đồng'
+    },
+    {
+      region: 'Miền Nam',
+      name: 'Vườn Trái Cây Chú Ba (Bến Tre)',
+      province_id: 213,
+      district_id: 3158,
+      ward_code: '560311',
+      address: 'Xã Vĩnh Thành, Huyện Chợ Lách, Tỉnh Bến Tre'
+    }
+  ];
+
+  const handleApplyGhnPreset = (preset: typeof GHN_DEMO_PRESETS[0]) => {
+    setEditFormData(prev => ({
+      ...prev,
+      ghn_province_id: String(preset.province_id),
+      ghn_district_id: String(preset.district_id),
+      ghn_ward_code: preset.ward_code,
+      ghn_address: preset.address
+    }));
+    toast.success(`Đã chọn vị trí kho GHN ${preset.region}: ${preset.name}`);
+  };
 
   const fetchFarmer = async () => {
     if (!farmerId) return;
@@ -48,7 +91,11 @@ export default function FarmerStorefrontPage() {
           latitude: data.latitude ? String(data.latitude) : '',
           longitude: data.longitude ? String(data.longitude) : '',
           specialty: data.specialty || '',
-          story: data.story || ''
+          story: data.story || '',
+          ghn_province_id: data.ghn_province_id ? String(data.ghn_province_id) : '',
+          ghn_district_id: data.ghn_district_id ? String(data.ghn_district_id) : '',
+          ghn_ward_code: data.ghn_ward_code ? String(data.ghn_ward_code) : '',
+          ghn_address: data.ghn_address || ''
         });
       }
     } catch (err) {
@@ -104,7 +151,11 @@ export default function FarmerStorefrontPage() {
         latitude: farmer.latitude ? String(farmer.latitude) : '',
         longitude: farmer.longitude ? String(farmer.longitude) : '',
         specialty: farmer.specialty || '',
-        story: farmer.story || ''
+        story: farmer.story || '',
+        ghn_province_id: farmer.ghn_province_id ? String(farmer.ghn_province_id) : '',
+        ghn_district_id: farmer.ghn_district_id ? String(farmer.ghn_district_id) : '',
+        ghn_ward_code: farmer.ghn_ward_code ? String(farmer.ghn_ward_code) : '',
+        ghn_address: farmer.ghn_address || ''
       });
       setIsEditModalOpen(true);
     }
@@ -139,6 +190,10 @@ export default function FarmerStorefrontPage() {
     try {
       const lat = editFormData.latitude ? parseFloat(editFormData.latitude) : undefined;
       const lng = editFormData.longitude ? parseFloat(editFormData.longitude) : undefined;
+      const ghnProvince = editFormData.ghn_province_id ? parseInt(editFormData.ghn_province_id) : undefined;
+      const ghnDistrict = editFormData.ghn_district_id ? parseInt(editFormData.ghn_district_id) : undefined;
+      const ghnWard = editFormData.ghn_ward_code.trim() || undefined;
+      const ghnAddress = editFormData.ghn_address.trim() || undefined;
 
       // Cập nhật vào backend và chuyển trạng thái is_verified = false để Admin duyệt
       const res = await updateFarmerProfileApi(farmer.id, {
@@ -148,6 +203,10 @@ export default function FarmerStorefrontPage() {
         story: editFormData.story,
         latitude: lat,
         longitude: lng,
+        ghn_province_id: ghnProvince,
+        ghn_district_id: ghnDistrict,
+        ghn_ward_code: ghnWard,
+        ghn_address: ghnAddress,
         is_verified: false // Yêu cầu admin phê duyệt lại
       });
 
@@ -174,6 +233,10 @@ export default function FarmerStorefrontPage() {
           story: editFormData.story,
           latitude: lat,
           longitude: lng,
+          ghn_province_id: ghnProvince,
+          ghn_district_id: ghnDistrict,
+          ghn_ward_code: ghnWard,
+          ghn_address: ghnAddress,
           is_verified: false
         }));
         setIsEditModalOpen(false);
@@ -572,6 +635,120 @@ export default function FarmerStorefrontPage() {
                     onChange={e => setEditFormData({ ...editFormData, longitude: e.target.value })}
                     className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
                   />
+                </div>
+              </div>
+
+              {/* Vị Trí Kho Xuất Hàng GHN (Tính phí ship sàn Shopee) */}
+              <div className="bg-gradient-to-br from-amber-50/70 via-orange-50/50 to-emerald-50/60 p-4 rounded-2xl border border-amber-200/80 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-orange-600 text-white flex items-center justify-center font-black text-[11px] shadow-xs">
+                    GHN
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wide">
+                      Vị Trí Kho Xuất Hàng Giao Hàng Nhanh (GHN)
+                    </h4>
+                    <p className="text-[11px] text-gray-600">
+                      Căn cứ tính phí ship từ kho đến khách hàng theo từng kiện (chuẩn Shopee)
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3 Nút Demo 3 Miền */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1">
+                    <Sparkles size={11} className="text-amber-600" />
+                    Nạp nhanh vị trí 3 Miền (Demo Sàn TMĐT):
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {GHN_DEMO_PRESETS.map((p, idx) => {
+                      const isSelected = 
+                        editFormData.ghn_district_id === String(p.district_id) &&
+                        editFormData.ghn_province_id === String(p.province_id);
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleApplyGhnPreset(p)}
+                          className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                            isSelected 
+                              ? 'border-orange-500 bg-orange-50/90 ring-2 ring-orange-500/20 shadow-xs' 
+                              : 'border-amber-200/90 bg-white hover:bg-amber-50/50 hover:border-orange-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                              idx === 0 ? 'bg-blue-100 text-blue-700' :
+                              idx === 1 ? 'bg-emerald-100 text-emerald-700' :
+                              'bg-purple-100 text-purple-700'
+                            }`}>
+                              {p.region}
+                            </span>
+                            {isSelected && (
+                              <span className="text-[9px] font-bold text-orange-600">✓ Chọn</span>
+                            )}
+                          </div>
+                          <span className="text-[11px] font-bold text-gray-900 line-clamp-1">{p.name}</span>
+                          <span className="text-[10px] text-gray-500 line-clamp-1">Mã Huyện: {p.district_id}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Chi tiết thông tin cấu hình kho */}
+                <div className="space-y-2 pt-1 border-t border-amber-200/60">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-gray-700 mb-0.5">
+                      Địa chỉ kho xuất hàng (GHN Address)
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.ghn_address}
+                      onChange={e => setEditFormData({ ...editFormData, ghn_address: e.target.value })}
+                      placeholder="Ví dụ: Phường 1, Thành phố Đà Lạt, Tỉnh Lâm Đồng"
+                      className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-gray-700 mb-0.5">
+                        Mã Tỉnh (Province ID) *
+                      </label>
+                      <input
+                        type="number"
+                        value={editFormData.ghn_province_id}
+                        onChange={e => setEditFormData({ ...editFormData, ghn_province_id: e.target.value })}
+                        placeholder="Ví dụ: 209"
+                        className="w-full px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-gray-700 mb-0.5">
+                        Mã Quận/Huyện (District ID) *
+                      </label>
+                      <input
+                        type="number"
+                        value={editFormData.ghn_district_id}
+                        onChange={e => setEditFormData({ ...editFormData, ghn_district_id: e.target.value })}
+                        placeholder="Ví dụ: 1550"
+                        className="w-full px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-gray-700 mb-0.5">
+                        Mã Phường/Xã (Ward Code)
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.ghn_ward_code}
+                        onChange={e => setEditFormData({ ...editFormData, ghn_ward_code: e.target.value })}
+                        placeholder="Ví dụ: 420101"
+                        className="w-full px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
