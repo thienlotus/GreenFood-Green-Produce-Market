@@ -391,8 +391,8 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* 2. Cột bên phải: Chiếm col-span-8 xl:col-span-9 - Gồm Dải các danh mục chính & Nút Tiện ích */}
-            <div className="col-span-8 xl:col-span-9 flex items-center justify-between gap-2 min-w-0">
+            {/* 2. Cột bên phải: Chiếm col-span-8 xl:col-span-9 - Gồm Dải các danh mục chính căn đều & Nút Tiện ích */}
+            <div className="col-span-8 xl:col-span-9 flex items-center gap-2 min-w-0">
               <nav
                 ref={navRef}
                 onWheel={handleNavWheel}
@@ -400,12 +400,12 @@ export default function Navbar() {
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUpOrLeave}
                 onMouseLeave={handleMouseUpOrLeave}
-                className="flex items-center gap-1 xl:gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 min-w-0"
+                className="flex-1 flex items-center justify-evenly overflow-x-auto no-scrollbar scroll-smooth py-1 min-w-0 px-1 xl:px-3"
               >
                 <Link 
                   href="/category/di-cho-online/" 
                   onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
                   <ShoppingBag size={14} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Đi chợ online</span>
@@ -413,7 +413,7 @@ export default function Navbar() {
                 <Link 
                   href="/category/trai-cay/" 
                   onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
                   <Apple size={14} className="text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Trái cây tươi</span>
@@ -421,7 +421,7 @@ export default function Navbar() {
                 <Link 
                   href="/category/tra-ca-phe/" 
                   onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
                   <Coffee size={14} className="text-amber-700 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Trà & Cà phê</span>
@@ -429,7 +429,7 @@ export default function Navbar() {
                 <Link 
                   href="/category/dac-san/" 
                   onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
                   <Gift size={14} className="text-purple-600 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Đặc sản</span>
@@ -437,7 +437,7 @@ export default function Navbar() {
                 <Link 
                   href="/category/agrishow/" 
                   onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-3 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-teal-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-teal-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
                 >
                   <Sparkles size={14} className="text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Triển lãm Agrishow</span>
@@ -447,7 +447,7 @@ export default function Navbar() {
               {/* 3. NÚT DROPDOWN "TIỆN ÍCH ▾" (Thay thế cho "... Thêm" - Tên gọi sang trọng, dễ nghe) */}
               <div 
                 ref={moreMenuRef}
-                className="relative shrink-0 flex items-center z-40 group ml-auto"
+                className="relative shrink-0 flex items-center z-40 group"
                 onMouseEnter={() => setIsMoreMenuOpen(true)}
                 onMouseLeave={() => setIsMoreMenuOpen(false)}
               >
