@@ -193,10 +193,12 @@ Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
 Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
 Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
 
-// 10. Chat Module (Live Chat Support)
+// 10. Chat Module (Live Chat Multi-Vendor Support - Shopee Logic)
 Route::prefix('chat')->group(function () {
     Route::get('/conversations', [ChatController::class, 'index']);
     Route::post('/conversations', [ChatController::class, 'store']);
+    Route::post('/customer/conversations/farmer', [ChatController::class, 'startCustomerFarmerChat']);
+    Route::post('/farmer/conversations/admin', [ChatController::class, 'startFarmerAdminChat']);
     Route::get('/conversations/{id}', [ChatController::class, 'show']);
     Route::get('/conversations/{id}/customer', [ChatController::class, 'customerMessages']);
     Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']);

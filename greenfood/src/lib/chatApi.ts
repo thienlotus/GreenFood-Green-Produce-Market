@@ -1,4 +1,4 @@
-// Chat API Client — GreenFood Live Chat
+// Chat API Client — GreenFood Live Chat (Shopee Multi-Vendor Logic)
 import { getApiBaseUrl } from '@/lib/api';
 
 // ── Helper fetch for chat ──
@@ -24,16 +24,41 @@ async function chatFetch<T>(endpoint: string, options: RequestInit = {}): Promis
 }
 
 // ── Types ──
+export type ChatConversationType = 'customer_admin' | 'customer_farmer' | 'farmer_admin';
+
+export interface ChatFarmerInfo {
+  id: string;
+  farm_name: string;
+  address?: string;
+  image_url?: string;
+  rating?: number;
+  user?: {
+    id: string;
+    name: string;
+    phone?: string;
+  } | null;
+}
+
+export interface ChatProductInfo {
+  id: string;
+  name: string;
+  slug?: string;
+  image_url?: string;
+}
+
 export interface ChatConversation {
   id: string;
-  customer: {
+  type: ChatConversationType;
+  customer?: {
     id: string;
     name: string;
     email?: string;
     phone?: string;
     avatar?: string;
-  };
-  admin: {
+  } | null;
+  farmer?: ChatFarmerInfo | null;
+  product?: ChatProductInfo | null;
+  admin?: {
     id: string;
     name: string;
   } | null;
@@ -42,7 +67,7 @@ export interface ChatConversation {
   unread_count: number;
   last_message: {
     message: string;
-    sender_role: string;
+    sender_role: 'customer' | 'admin' | 'farmer' | string;
     created_at: string;
   } | null;
   created_at: string;
@@ -52,7 +77,7 @@ export interface ChatConversation {
 export interface ChatMessageItem {
   id: string;
   sender_id?: string;
-  sender_role: 'customer' | 'admin';
+  sender_role: 'customer' | 'admin' | 'farmer';
   sender_name?: string;
   message: string;
   message_type: 'text' | 'image' | 'system';
@@ -64,12 +89,15 @@ export interface ChatMessageItem {
 export interface ConversationDetail {
   conversation: {
     id: string;
+    type: ChatConversationType;
     customer?: {
       id: string;
       name: string;
       email?: string;
       phone?: string;
-    };
+    } | null;
+    farmer?: ChatFarmerInfo | null;
+    product?: ChatProductInfo | null;
     admin?: {
       id: string;
       name: string;
@@ -83,7 +111,7 @@ export interface ConversationDetail {
 
 /**
  * Định dạng thời gian chat chuẩn theo múi giờ Việt Nam (UTC+7 / Asia/Ho_Chi_Minh)
- * Tự động chuyển đổi các timestamp UTC cũ (ví dụ 00:22) về đúng giờ thực tế (07:22)
+ * Tự động chuyển đổi các timestamp UTC cũ về đúng giờ thực tế
  */
 export function formatChatTime(msgOrTime: { created_at?: string; created_at_iso?: string } | string | undefined | null): string {
   if (!msgOrTime) return '';
@@ -123,9 +151,8 @@ export function formatChatTime(msgOrTime: { created_at?: string; created_at_iso?
     }
   }
 
-  // 2. Nếu fallbackStr có dạng ngày giờ:
+  // 2. Nếu fallbackStr có dạng ngày giờ
   if (fallbackStr) {
-    // Nếu là dạng ISO hay có dấu gạch ngang ngày tháng
     if (fallbackStr.includes('T') || (fallbackStr.includes('-') && fallbackStr.length > 10)) {
       try {
         const d = new Date(fallbackStr);
@@ -150,15 +177,11 @@ export function formatChatTime(msgOrTime: { created_at?: string; created_at_iso?
       }
     }
 
-    // Nếu chuỗi là dạng "00:22 06/10" (do server cũ sinh ra trước đây):
-    // Nếu giờ < 7 mà tin nhắn ngày hôm nay, ta cộng +7 giờ để đồng bộ với thực tế nếu chưa được convert
     const timeMatch = fallbackStr.match(/^(\d{1,2}):(\d{2})\s+(\d{1,2}\/\d{1,2})$/);
     if (timeMatch && !iso) {
-      let h = parseInt(timeMatch[1], 10);
+      const h = parseInt(timeMatch[1], 10);
       const m = timeMatch[2];
       const dm = timeMatch[3];
-      // Nếu giờ từ 0 đến 6 sáng (khả năng cao do lệch UTC lúc 7h-13h VN)
-      // có thể là tin nhắn cũ lúc server chạy UTC
       return `${String(h).padStart(2, '0')}:${m} ${dm}`;
     }
 
@@ -170,10 +193,17 @@ export function formatChatTime(msgOrTime: { created_at?: string; created_at_iso?
 
 // ── API Functions ──
 
-export async function getChatConversations(params?: { status?: string; customer_id?: string }): Promise<ChatConversation[]> {
+export async function getChatConversations(params?: {
+  status?: string;
+  customer_id?: string;
+  farmer_id?: string;
+  type?: string;
+}): Promise<ChatConversation[]> {
   const queryParams = new URLSearchParams();
   if (params?.status && params.status !== 'all') queryParams.set('status', params.status);
   if (params?.customer_id) queryParams.set('customer_id', params.customer_id);
+  if (params?.farmer_id) queryParams.set('farmer_id', params.farmer_id);
+  if (params?.type && params.type !== 'all') queryParams.set('type', params.type);
 
   const queryStr = queryParams.toString() ? `?${queryParams.toString()}` : '';
   const res = await chatFetch<{ success: boolean; data: ChatConversation[] }>(`/chat/conversations${queryStr}`);
@@ -184,7 +214,11 @@ export async function getChatConversations(params?: { status?: string; customer_
   return [];
 }
 
-export async function createChatConversation(customerId: string, subject?: string, message?: string): Promise<{ success: boolean; data?: { id: string; status: string } }> {
+export async function createChatConversation(
+  customerId: string,
+  subject?: string,
+  message?: string
+): Promise<{ success: boolean; data?: { id: string; status: string } }> {
   const res = await chatFetch<{ success: boolean; data?: { id: string; status: string } }>('/chat/conversations', {
     method: 'POST',
     body: JSON.stringify({
@@ -196,16 +230,70 @@ export async function createChatConversation(customerId: string, subject?: strin
   return { success: res?.success || false, data: res?.data };
 }
 
-export async function getChatMessages(conversationId: string): Promise<ConversationDetail | null> {
-  const res = await chatFetch<{ success: boolean; data: ConversationDetail }>(`/chat/conversations/${conversationId}`);
+/**
+ * Khách hàng mở chat với Nông hộ (Shopee Shop Chat)
+ */
+export async function startCustomerFarmerChat(
+  customerId: string,
+  farmerId: string,
+  productId?: string,
+  message?: string
+): Promise<{ success: boolean; data?: { id: string; type: string; status: string } }> {
+  const res = await chatFetch<{ success: boolean; data?: { id: string; type: string; status: string } }>(
+    '/chat/customer/conversations/farmer',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        customer_id: customerId,
+        farmer_id: farmerId,
+        product_id: productId,
+        message,
+      }),
+    }
+  );
+  return { success: res?.success || false, data: res?.data };
+}
+
+/**
+ * Nông hộ mở chat với Admin Sàn GreenFood
+ */
+export async function startFarmerAdminChat(
+  farmerId: string,
+  message?: string
+): Promise<{ success: boolean; data?: { id: string; type: string; status: string } }> {
+  const res = await chatFetch<{ success: boolean; data?: { id: string; type: string; status: string } }>(
+    '/chat/farmer/conversations/admin',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        farmer_id: farmerId,
+        message,
+      }),
+    }
+  );
+  return { success: res?.success || false, data: res?.data };
+}
+
+export async function getChatMessages(
+  conversationId: string,
+  viewerRole: 'admin' | 'customer' | 'farmer' = 'admin'
+): Promise<ConversationDetail | null> {
+  const res = await chatFetch<{ success: boolean; data: ConversationDetail }>(
+    `/chat/conversations/${conversationId}?viewer_role=${viewerRole}`
+  );
   if (res && res.success && res.data) {
     return res.data;
   }
   return null;
 }
 
-export async function getCustomerChatMessages(conversationId: string, customerId: string): Promise<ConversationDetail | null> {
-  const res = await chatFetch<{ success: boolean; data: ConversationDetail }>(`/chat/conversations/${conversationId}/customer?customer_id=${customerId}`);
+export async function getCustomerChatMessages(
+  conversationId: string,
+  customerId: string
+): Promise<ConversationDetail | null> {
+  const res = await chatFetch<{ success: boolean; data: ConversationDetail }>(
+    `/chat/conversations/${conversationId}/customer?customer_id=${customerId}`
+  );
   if (res && res.success && res.data) {
     return res.data;
   }
@@ -216,16 +304,24 @@ export interface ChatSendResponseData extends ChatMessageItem {
   bot_reply?: ChatMessageItem | null;
 }
 
-export async function sendChatMessage(conversationId: string, senderId: string, senderRole: 'customer' | 'admin', message: string): Promise<{ success: boolean; data?: ChatSendResponseData }> {
-  const res = await chatFetch<{ success: boolean; data?: ChatSendResponseData }>(`/chat/conversations/${conversationId}/messages`, {
-    method: 'POST',
-    body: JSON.stringify({
-      sender_id: senderId,
-      sender_role: senderRole,
-      message,
-      message_type: 'text',
-    }),
-  });
+export async function sendChatMessage(
+  conversationId: string,
+  senderId: string,
+  senderRole: 'customer' | 'admin' | 'farmer',
+  message: string
+): Promise<{ success: boolean; data?: ChatSendResponseData }> {
+  const res = await chatFetch<{ success: boolean; data?: ChatSendResponseData }>(
+    `/chat/conversations/${conversationId}/messages`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        sender_id: senderId,
+        sender_role: senderRole,
+        message,
+        message_type: 'text',
+      }),
+    }
+  );
   return { success: res?.success || false, data: res?.data };
 }
 
@@ -244,8 +340,17 @@ export async function closeChatConversation(conversationId: string): Promise<{ s
   return { success: res?.success || false };
 }
 
-export async function getChatUnreadCount(userId: string, role: 'admin' | 'customer'): Promise<number> {
-  const res = await chatFetch<{ success: boolean; data: { count: number } }>(`/chat/unread-count?user_id=${userId}&role=${role}`);
+export async function getChatUnreadCount(
+  userId?: string,
+  role: 'admin' | 'customer' | 'farmer' = 'admin',
+  farmerId?: string
+): Promise<number> {
+  const query = new URLSearchParams();
+  if (userId) query.set('user_id', userId);
+  query.set('role', role);
+  if (farmerId) query.set('farmer_id', farmerId);
+
+  const res = await chatFetch<{ success: boolean; data: { count: number } }>(`/chat/unread-count?${query.toString()}`);
   if (res && res.success && res.data) {
     return res.data.count;
   }

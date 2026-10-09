@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\Chat\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Chat\Services\ChatService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -15,13 +18,15 @@ class ChatController extends Controller
 
     /**
      * GET /api/chat/conversations
-     * List all conversations (Admin) or customer's conversations
+     * List all conversations with filters (Admin, Customer, or Farmer)
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $filters = [
             'status' => $request->get('status'),
             'customer_id' => $request->get('customer_id'),
+            'farmer_id' => $request->get('farmer_id'),
+            'type' => $request->get('type'),
         ];
 
         $conversations = $this->chatService->getConversations($filters);
@@ -35,9 +40,9 @@ class ChatController extends Controller
 
     /**
      * POST /api/chat/conversations
-     * Create a new conversation (Customer)
+     * Create a new conversation between Customer and Admin/AI Bot
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'customer_id' => 'required|uuid|exists:users,id',
@@ -53,9 +58,9 @@ class ChatController extends Controller
         }
 
         $result = $this->chatService->createConversation(
-            $request->customer_id,
-            $request->subject ?? 'Hỗ trợ khách hàng',
-            $request->message
+            (string) $request->customer_id,
+            (string) ($request->subject ?? 'Hỗ trợ khách hàng'),
+            $request->message ? (string) $request->message : null
         );
 
         return response()->json([
@@ -66,12 +71,77 @@ class ChatController extends Controller
     }
 
     /**
-     * GET /api/chat/conversations/{id}
-     * Get conversation detail with messages (Admin view)
+     * POST /api/chat/customer/conversations/farmer
+     * Create or retrieve conversation between Customer and Farmer Shop (Shopee style)
      */
-    public function show(string $id)
+    public function startCustomerFarmerChat(Request $request): JsonResponse
     {
-        $result = $this->chatService->getConversationMessages($id);
+        $validator = Validator::make($request->all(), [
+            'customer_id' => 'required|uuid|exists:users,id',
+            'farmer_id' => 'required|uuid|exists:farmers,id',
+            'product_id' => 'nullable|uuid|exists:products,id',
+            'message' => 'nullable|string|max:2000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $result = $this->chatService->createCustomerFarmerConversation(
+            (string) $request->customer_id,
+            (string) $request->farmer_id,
+            $request->product_id ? (string) $request->product_id : null,
+            $request->message ? (string) $request->message : null
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã kết nối với gian hàng nông hộ!',
+            'data' => $result,
+        ], 200);
+    }
+
+    /**
+     * POST /api/chat/farmer/conversations/admin
+     * Create or retrieve conversation between Farmer and Marketplace Admin
+     */
+    public function startFarmerAdminChat(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'farmer_id' => 'required|uuid|exists:farmers,id',
+            'message' => 'nullable|string|max:2000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $result = $this->chatService->createFarmerAdminConversation(
+            (string) $request->farmer_id,
+            $request->message ? (string) $request->message : null
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã kết nối với Ban Quản Trị Sàn GreenFood!',
+            'data' => $result,
+        ], 200);
+    }
+
+    /**
+     * GET /api/chat/conversations/{id}
+     * Get conversation detail with messages
+     */
+    public function show(Request $request, string $id): JsonResponse
+    {
+        $viewerRole = $request->get('viewer_role', 'admin');
+        $result = $this->chatService->getConversationMessages($id, $viewerRole);
 
         if (!$result) {
             return response()->json([
@@ -90,7 +160,7 @@ class ChatController extends Controller
      * GET /api/chat/conversations/{id}/customer
      * Get conversation messages for customer view
      */
-    public function customerMessages(Request $request, string $id)
+    public function customerMessages(Request $request, string $id): JsonResponse
     {
         $customerId = $request->get('customer_id');
         if (!$customerId) {
@@ -100,7 +170,7 @@ class ChatController extends Controller
             ], 400);
         }
 
-        $result = $this->chatService->getCustomerMessages($customerId, $id);
+        $result = $this->chatService->getCustomerMessages((string) $customerId, $id);
 
         if (!$result) {
             return response()->json([
@@ -117,13 +187,13 @@ class ChatController extends Controller
 
     /**
      * POST /api/chat/conversations/{id}/messages
-     * Send a message
+     * Send a message (Roles: customer, farmer, admin)
      */
-    public function sendMessage(Request $request, string $id)
+    public function sendMessage(Request $request, string $id): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'sender_id' => 'required|uuid|exists:users,id',
-            'sender_role' => 'required|in:customer,admin',
+            'sender_role' => 'required|in:customer,admin,farmer',
             'message' => 'required|string|max:2000',
             'message_type' => 'nullable|in:text,image,system',
         ]);
@@ -137,10 +207,10 @@ class ChatController extends Controller
 
         $result = $this->chatService->sendMessage(
             $id,
-            $request->sender_id,
-            $request->sender_role,
-            $request->message,
-            $request->message_type ?? 'text'
+            (string) $request->sender_id,
+            (string) $request->sender_role,
+            (string) $request->message,
+            (string) ($request->message_type ?? 'text')
         );
 
         if (!$result) {
@@ -161,7 +231,7 @@ class ChatController extends Controller
      * PUT /api/chat/conversations/{id}/assign
      * Admin assigns themselves to a conversation
      */
-    public function assign(Request $request, string $id)
+    public function assign(Request $request, string $id): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'admin_id' => 'required|uuid|exists:users,id',
@@ -174,7 +244,7 @@ class ChatController extends Controller
             ], 422);
         }
 
-        $success = $this->chatService->assignAdmin($id, $request->admin_id);
+        $success = $this->chatService->assignAdmin($id, (string) $request->admin_id);
 
         if (!$success) {
             return response()->json([
@@ -193,7 +263,7 @@ class ChatController extends Controller
      * PUT /api/chat/conversations/{id}/close
      * Close a conversation
      */
-    public function close(string $id)
+    public function close(string $id): JsonResponse
     {
         $success = $this->chatService->closeConversation($id);
 
@@ -212,21 +282,26 @@ class ChatController extends Controller
 
     /**
      * GET /api/chat/unread-count
-     * Get unread messages count
+     * Get unread messages count for Admin, Customer, or Farmer
      */
-    public function unreadCount(Request $request)
+    public function unreadCount(Request $request): JsonResponse
     {
         $userId = $request->get('user_id');
-        $role = $request->get('role', 'admin');
+        $role = (string) $request->get('role', 'admin');
+        $farmerId = $request->get('farmer_id');
 
-        if (!$userId) {
+        if (!$userId && !$farmerId) {
             return response()->json([
                 'success' => true,
                 'data' => ['count' => 0],
             ]);
         }
 
-        $count = $this->chatService->getUnreadCount($userId, $role);
+        $count = $this->chatService->getUnreadCount(
+            (string) ($userId ?? ''),
+            $role,
+            $farmerId ? (string) $farmerId : null
+        );
 
         return response()->json([
             'success' => true,

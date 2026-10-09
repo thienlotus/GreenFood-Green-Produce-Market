@@ -67,4 +67,9 @@ class Farmer extends Model
     {
         return $this->hasMany(VendorOrder::class);
     }
+
+    public function conversations()
+    {
+        return $this->hasMany(ChatConversation::class, 'farmer_id');
+    }
 }

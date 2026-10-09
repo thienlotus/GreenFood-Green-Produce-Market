@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ShoppingCart, Star, MapPin, ShieldCheck, ChevronRight, Truck, Leaf, Check } from 'lucide-react';
+import { ShoppingCart, Star, MapPin, ShieldCheck, ChevronRight, Truck, Leaf, Check, MessageCircle } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { getProductBySlug, getProducts } from '@/lib/api';
 import { ALL_PRODUCTS, ProductItem, getProductBySlug as getMockProductBySlug } from '@/data/products';
 import Link from 'next/link';
@@ -31,6 +32,29 @@ export default function ProductClient({ initialSlug }: ProductClientProps) {
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const { addItem } = useCartStore();
+  const { user } = useAuthStore();
+
+  const handleChatWithShop = () => {
+    if (!product.farmer?.id) {
+      toast.error('Gian hàng chưa kích hoạt kênh chat trực tuyến');
+      return;
+    }
+    if (!user) {
+      toast.error('Vui lòng đăng nhập để chat với chủ gian hàng!');
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('gf-open-chat', {
+        detail: {
+          farmer_id: product.farmer.id,
+          farmer_name: product.farmer.name,
+          product_id: product.id,
+          product_name: product.name,
+          initial_message: `Dạ chào shop, mình muốn hỏi tư vấn về sản phẩm "${product.name}" (${selectedVariant?.unit || ''}) ạ!`
+        }
+      }));
+    }
+  };
 
   useEffect(() => {
     async function loadProduct() {
@@ -275,7 +299,14 @@ export default function ProductClient({ initialSlug }: ProductClientProps) {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button 
+                        onClick={handleChatWithShop}
+                        className="text-xs font-bold text-amber-800 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-full border border-amber-300 shadow-2xs transition-colors flex items-center gap-1 cursor-pointer"
+                        title="Chat trực tiếp với chủ gian hàng nông sản"
+                      >
+                        <MessageCircle size={13} /> Chat với Shop 💬
+                      </button>
                       {product.farmer.id && (
                         <Link 
                           href={`/farmers/${product.farmer.id}`}

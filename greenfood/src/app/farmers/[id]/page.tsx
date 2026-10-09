@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { 
   ChevronRight, MapPin, Star, ShieldCheck, Phone, Mail, 
   Leaf, Package, ArrowLeft, Share2, Award, Clock, Edit3,
-  Compass, AlertCircle, RefreshCw, CheckCircle, Sparkles
+  Compass, AlertCircle, RefreshCw, CheckCircle, Sparkles, MessageCircle
 } from 'lucide-react';
 import { getFarmerDetailApi, updateFarmerProfileApi } from '@/lib/api';
 import { resolveCoordinatesFromAddress } from '@/lib/geoUtils';
@@ -119,6 +119,27 @@ export default function FarmerStorefrontPage() {
     if (typeof window !== 'undefined') {
       navigator.clipboard.writeText(window.location.href);
       toast.success('Đã sao chép liên kết gian hàng nhà vườn!');
+    }
+  };
+
+  const handleChatWithFarmer = () => {
+    if (!user) {
+      toast.error('Vui lòng đăng nhập để nhắn tin trực tiếp với nhà vườn!');
+      return;
+    }
+    if (isOwner) {
+      toast('Đây là gian hàng của bạn. Đang chuyển tới Kênh Người Bán...', { icon: '👨‍🌾' });
+      window.location.href = '/farmer';
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('gf-open-chat', {
+        detail: {
+          farmer_id: farmer.id,
+          farmer_name: farmer.farm_name,
+          initial_message: `Dạ chào nhà vườn ${farmer.farm_name}, mình muốn tư vấn mua nông sản sạch của vườn ạ!`
+        }
+      }));
     }
   };
 
@@ -395,6 +416,15 @@ export default function FarmerStorefrontPage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto self-end md:self-center">
+              {/* Nút Chat Shopee với Nhà Vườn */}
+              <button
+                onClick={handleChatWithFarmer}
+                className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-3 rounded-xl text-sm transition-all shadow-md active:scale-95 border border-amber-400"
+                title="Chat trực tiếp với chủ nông trại"
+              >
+                <MessageCircle size={16} /> Chat với Nhà Vườn
+              </button>
+
               {/* Nút Chỉnh Sửa Gian Hàng (Hiển thị nếu là chủ gian hàng hoặc admin) */}
               {isOwner && (
                 <button

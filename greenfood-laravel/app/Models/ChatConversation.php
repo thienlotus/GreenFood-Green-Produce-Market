@@ -12,7 +12,7 @@ class ChatConversation extends Model
     use HasUuids;
 
     protected $fillable = [
-        'id', 'customer_id', 'admin_id', 'subject', 'status'
+        'id', 'customer_id', 'admin_id', 'farmer_id', 'type', 'product_id', 'subject', 'status'
     ];
 
     public function customer(): BelongsTo
@@ -23,6 +23,16 @@ class ChatConversation extends Model
     public function admin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'admin_id');
+    }
+
+    public function farmer(): BelongsTo
+    {
+        return $this->belongsTo(Farmer::class, 'farmer_id');
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function messages(): HasMany
@@ -37,10 +47,21 @@ class ChatConversation extends Model
 
     public function unreadMessagesCount(string $role = 'admin'): int
     {
-        $senderRole = $role === 'admin' ? 'customer' : 'admin';
-        return $this->messages()
-            ->where('sender_role', $senderRole)
-            ->where('is_read', false)
-            ->count();
+        if ($role === 'admin') {
+            return $this->messages()
+                ->where('sender_role', '!=', 'admin')
+                ->where('is_read', false)
+                ->count();
+        } elseif ($role === 'farmer') {
+            return $this->messages()
+                ->where('sender_role', '!=', 'farmer')
+                ->where('is_read', false)
+                ->count();
+        } else {
+            return $this->messages()
+                ->where('sender_role', '!=', 'customer')
+                ->where('is_read', false)
+                ->count();
+        }
     }
 }

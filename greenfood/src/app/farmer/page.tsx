@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { 
   Tractor, Package, TrendingUp, DollarSign, Plus, Eye, 
   CheckCircle, AlertCircle, RefreshCw, Store, Settings, 
   MapPin, Phone, ShieldCheck, Leaf, Sparkles, Lock, ArrowLeft,
   Truck, Clock, CreditCard, Wallet, ArrowUpRight, FileText,
-  Building2, Check, X, Search, Filter
+  Building2, Check, X, Search, Filter, MessageCircle, Send,
+  User as UserIcon, ShoppingBag, HeadphonesIcon
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { 
@@ -20,6 +21,16 @@ import {
   VendorOrderData,
   FarmerWalletData
 } from '@/lib/api';
+import { 
+  getChatConversations, 
+  getChatMessages, 
+  sendChatMessage, 
+  startFarmerAdminChat, 
+  formatChatTime,
+  ChatConversation, 
+  ChatMessageItem 
+} from '@/lib/chatApi';
+import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 import { resolveCoordinatesFromAddress } from '@/lib/geoUtils';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -30,7 +41,18 @@ export default function FarmerPortalPage() {
   const [farmers, setFarmers] = useState<any[]>([]);
   const [selectedFarmerId, setSelectedFarmerId] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'wallet' | 'products' | 'profile'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'wallet' | 'products' | 'profile' | 'chat'>('dashboard');
+
+  // Shopee Chat State cho Kênh Người Bán Nông Hộ
+  const [chatConversations, setChatConversations] = useState<ChatConversation[]>([]);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>([]);
+  const [newChatMessage, setNewChatMessage] = useState<string>('');
+  const [chatTabFilter, setChatTabFilter] = useState<'all' | 'customer_farmer' | 'farmer_admin'>('all');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatSending, setChatSending] = useState(false);
+  const [farmerUnreadChatCount, setFarmerUnreadChatCount] = useState<number>(0);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Vendor Orders State
   const [orders, setOrders] = useState<VendorOrderData[]>([]);
@@ -231,6 +253,102 @@ export default function FarmerPortalPage() {
       });
     }
   }, [currentFarmer]);
+
+  // Load danh sách hội thoại của Nông Hộ (Shopee Multi-Vendor Chat)
+  const loadFarmerChats = useCallback(async () => {
+    if (!currentFarmer?.id) return;
+    try {
+      const data = await getChatConversations({ farmer_id: currentFarmer.id });
+      setChatConversations(data);
+      const unread = data.reduce((acc, cur) => acc + (cur.unread_count || 0), 0);
+      setFarmerUnreadChatCount(unread);
+      if (!selectedChatId && data.length > 0) {
+        setSelectedChatId(data[0].id);
+      }
+    } catch (err) {
+      console.error('Lỗi tải chat nông hộ:', err);
+    }
+  }, [currentFarmer?.id, selectedChatId]);
+
+  useEffect(() => {
+    if (currentFarmer?.id) {
+      loadFarmerChats();
+    }
+  }, [currentFarmer?.id, loadFarmerChats]);
+
+  // Tự động làm mới tin nhắn khi ở tab chat
+  useEffect(() => {
+    if (activeTab === 'chat' && currentFarmer?.id) {
+      const interval = setInterval(loadFarmerChats, 6000);
+      return () => clearInterval(interval);
+    }
+  }, [activeTab, currentFarmer?.id, loadFarmerChats]);
+
+  // Load tin nhắn chi tiết của hội thoại đang chọn
+  const loadFarmerChatMessages = useCallback(async (convId: string) => {
+    try {
+      const res = await getChatMessages(convId, 'farmer');
+      if (res) {
+        setChatMessages(res.messages);
+      }
+    } catch (err) {
+      console.error('Lỗi tải tin nhắn nông hộ:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedChatId && activeTab === 'chat') {
+      loadFarmerChatMessages(selectedChatId);
+      const interval = setInterval(() => loadFarmerChatMessages(selectedChatId), 3500);
+      return () => clearInterval(interval);
+    }
+  }, [selectedChatId, activeTab, loadFarmerChatMessages]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  // Nông hộ gửi tin nhắn
+  const handleSendFarmerMessage = async () => {
+    if (!newChatMessage.trim() || !selectedChatId || !user?.id || chatSending) return;
+    setChatSending(true);
+    try {
+      const res = await sendChatMessage(selectedChatId, user.id, 'farmer', newChatMessage.trim());
+      if (res.success && res.data) {
+        setChatMessages(prev => [...prev, res.data!]);
+        setNewChatMessage('');
+        loadFarmerChats();
+      } else {
+        toast.error('Gửi tin nhắn thất bại!');
+      }
+    } catch {
+      toast.error('Lỗi kết nối khi gửi tin nhắn');
+    } finally {
+      setChatSending(false);
+    }
+  };
+
+  // Nông hộ chủ động mở chat với Admin Sàn (Shopee Vendor Support)
+  const handleStartAdminSupportChat = async () => {
+    if (!currentFarmer?.id) return;
+    try {
+      toast.loading('Đang kết nối Ban Quản Trị Sàn...');
+      const res = await startFarmerAdminChat(
+        currentFarmer.id,
+        `Xin chào Ban Quản Trị GreenFood, gian hàng ${currentFarmer.farm_name} cần hỗ trợ vận hành sàn.`
+      );
+      toast.dismiss();
+      if (res.success && res.data) {
+        toast.success('Đã kết nối với Ban Quản Trị Sàn!');
+        await loadFarmerChats();
+        setSelectedChatId(res.data.id);
+        setActiveTab('chat');
+      }
+    } catch {
+      toast.dismiss();
+      toast.error('Không thể kết nối Ban Quản Trị');
+    }
+  };
 
   // Cập nhật trạng thái đơn hàng (Đóng gói, giao hàng, v.v.)
   const handleUpdateOrderStatus = async (orderId: string, nextStatus: string) => {
@@ -516,6 +634,21 @@ export default function FarmerPortalPage() {
                 }`}
               >
                 <Store size={14} /> Hồ sơ nhà vườn & GPS
+              </button>
+              <button
+                onClick={() => setActiveTab('chat')}
+                className={`px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'chat' 
+                    ? 'bg-white text-emerald-900 shadow-sm' 
+                    : 'text-emerald-200 hover:text-white hover:bg-emerald-800/50'
+                }`}
+              >
+                <MessageCircle size={14} /> Tin nhắn Shopee Chat
+                {farmerUnreadChatCount > 0 && (
+                  <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                    {farmerUnreadChatCount}
+                  </span>
+                )}
               </button>
             </div>
           )}
@@ -1374,6 +1507,334 @@ export default function FarmerPortalPage() {
                   </span>
                 </div>
               </form>
+            )}
+
+            {/* ── TAB 6: TIN NHẮN SHOPEE CHAT (KHÁCH HÀNG & BAN QUẢN TRỊ SÀN) ── */}
+            {activeTab === 'chat' && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:flex-row h-[720px]">
+                {/* Cột trái: Danh sách hội thoại */}
+                <div className="w-full md:w-80 lg:w-96 border-r border-gray-200 flex flex-col bg-gray-50/40">
+                  <div className="p-3.5 border-b border-gray-200 bg-white space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                          <MessageCircle size={18} />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-gray-900">Shopee Chat Nông Hộ</h3>
+                          <p className="text-[11px] text-gray-500">Trao đổi khách mua & Sàn</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={loadFarmerChats}
+                        className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-emerald-600 transition-colors"
+                        title="Làm mới"
+                      >
+                        <RefreshCw size={15} />
+                      </button>
+                    </div>
+
+                    {/* Nút hành động nhanh: Nhắn tin cho Admin Sàn */}
+                    <button
+                      onClick={handleStartAdminSupportChat}
+                      className="w-full py-2 px-3 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                    >
+                      <HeadphonesIcon size={14} />
+                      <span>Chat với Ban Quản Trị Sàn GreenFood</span>
+                    </button>
+
+                    {/* Lọc loại tin nhắn */}
+                    <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 rounded-lg text-[11px] font-medium">
+                      <button
+                        onClick={() => setChatTabFilter('all')}
+                        className={`py-1 rounded-md transition-all text-center ${
+                          chatTabFilter === 'all' ? 'bg-white text-emerald-800 font-bold shadow-2xs' : 'text-gray-500'
+                        }`}
+                      >
+                        Tất cả
+                      </button>
+                      <button
+                        onClick={() => setChatTabFilter('customer_farmer')}
+                        className={`py-1 rounded-md transition-all text-center flex items-center justify-center gap-0.5 ${
+                          chatTabFilter === 'customer_farmer' ? 'bg-white text-blue-700 font-bold shadow-2xs' : 'text-gray-500'
+                        }`}
+                      >
+                        <UserIcon size={11} /> Khách mua
+                      </button>
+                      <button
+                        onClick={() => setChatTabFilter('farmer_admin')}
+                        className={`py-1 rounded-md transition-all text-center flex items-center justify-center gap-0.5 ${
+                          chatTabFilter === 'farmer_admin' ? 'bg-white text-purple-700 font-bold shadow-2xs' : 'text-gray-500'
+                        }`}
+                      >
+                        <ShieldCheck size={11} /> Sàn Admin
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Danh sách các cuộc chat */}
+                  <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                    {(() => {
+                      const filteredList = chatConversations.filter(c => {
+                        if (chatTabFilter === 'all') return true;
+                        return c.type === chatTabFilter;
+                      });
+
+                      if (filteredList.length === 0) {
+                        return (
+                          <div className="p-8 text-center text-gray-400 text-xs">
+                            <MessageCircle size={32} className="mx-auto mb-2 opacity-30" />
+                            Chưa có cuộc trò chuyện nào trong mục này.
+                          </div>
+                        );
+                      }
+
+                      return filteredList.map((conv) => {
+                        const isAdminChat = conv.type === 'farmer_admin';
+                        const title = isAdminChat
+                          ? 'Ban Quản Trị Sàn GreenFood'
+                          : (conv.customer?.name || 'Khách Mua Hàng');
+                        const isSelected = selectedChatId === conv.id;
+
+                        return (
+                          <div
+                            key={conv.id}
+                            onClick={() => setSelectedChatId(conv.id)}
+                            className={`p-3 cursor-pointer transition-all hover:bg-emerald-50/40 ${
+                              isSelected ? 'bg-emerald-50/80 border-l-4 border-l-emerald-600' : 'bg-white'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
+                                  isAdminChat
+                                    ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                                    : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                }`}>
+                                  {isAdminChat ? <ShieldCheck size={16} /> : cleanVietnameseMojibake(title).charAt(0).toUpperCase()}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <p className="text-xs font-bold text-gray-900 truncate">
+                                      {cleanVietnameseMojibake(title)}
+                                    </p>
+                                    {isAdminChat && (
+                                      <span className="bg-purple-100 text-purple-700 text-[9px] px-1.5 py-0.2 rounded font-semibold">
+                                        Admin
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[11px] text-gray-500 truncate mt-0.5">
+                                    {cleanVietnameseMojibake(conv.last_message?.message || conv.subject)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {conv.unread_count > 0 && (
+                                <span className="bg-red-500 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center shrink-0">
+                                  {conv.unread_count}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center justify-between mt-1.5 text-[10px] text-gray-400">
+                              <span>{conv.type === 'farmer_admin' ? 'Hỗ trợ sàn' : 'Tư vấn sản phẩm'}</span>
+                              <span>{conv.updated_at}</span>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+
+                {/* Cột phải: Khung Chat */}
+                <div className="flex-1 flex flex-col bg-white">
+                  {(() => {
+                    const currentConv = chatConversations.find(c => c.id === selectedChatId);
+
+                    if (!currentConv) {
+                      return (
+                        <div className="flex-1 flex items-center justify-center text-gray-400 bg-gray-50/30">
+                          <div className="text-center max-w-sm px-4">
+                            <div className="w-14 h-14 rounded-full bg-emerald-100/60 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+                              <MessageCircle size={28} />
+                            </div>
+                            <p className="text-sm font-bold text-gray-700">Chọn cuộc trò chuyện</p>
+                            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                              Nông hộ có thể giải đáp cho người mua hoặc nhận hỗ trợ từ Ban Quản Trị Sàn để kinh doanh hiệu quả hơn.
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    const isAdminChat = currentConv.type === 'farmer_admin';
+                    const convTitle = isAdminChat
+                      ? 'Ban Quản Trị Sàn GreenFood'
+                      : (currentConv.customer?.name || 'Khách Mua Hàng');
+                    const convSub = isAdminChat
+                      ? 'Hỗ trợ hồ sơ VietGAP, đối soát doanh thu & mở rộng gian hàng'
+                      : (currentConv.customer?.phone || currentConv.customer?.email || 'Khách hàng quan tâm nông sản');
+
+                    return (
+                      <>
+                        {/* Header phòng chat */}
+                        <div className="p-3.5 border-b border-gray-200 bg-white flex items-center justify-between shadow-2xs">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                              isAdminChat
+                                ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                                : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                            }`}>
+                              {isAdminChat ? <ShieldCheck size={20} /> : cleanVietnameseMojibake(convTitle).charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-bold text-sm text-gray-900">
+                                  {cleanVietnameseMojibake(convTitle)}
+                                </h4>
+                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                  isAdminChat ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                }`}>
+                                  {isAdminChat ? 'Kênh Hỗ Trợ Sàn' : 'Khách Mua Hàng'}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-0.5">{convSub}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Thẻ sản phẩm nếu khách bấm hỏi từ sản phẩm cụ thể */}
+                        {currentConv.product && (
+                          <div className="p-2.5 bg-amber-50/80 border-b border-amber-200/60 flex items-center justify-between gap-3 text-xs">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="p-1.5 bg-amber-100 text-amber-800 rounded-lg shrink-0">
+                                <ShoppingBag size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">
+                                  Ngữ cảnh sản phẩm khách hỏi:
+                                </span>
+                                <p className="font-bold text-gray-900 truncate">
+                                  {currentConv.product.name}
+                                </p>
+                              </div>
+                            </div>
+                            {currentConv.product.slug && (
+                              <Link
+                                href={`/products/${currentConv.product.slug}`}
+                                target="_blank"
+                                className="px-2.5 py-1 bg-white hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg text-[11px] font-semibold shrink-0 transition-colors"
+                              >
+                                Xem nông sản
+                              </Link>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Nội dung danh sách tin nhắn */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
+                          {chatMessages.length === 0 ? (
+                            <div className="text-center py-10 text-gray-400 text-xs">
+                              Chưa có tin nhắn nào. Hãy gửi lời chào đầu tiên!
+                            </div>
+                          ) : (
+                            chatMessages.map((msg) => {
+                              const isMe = msg.sender_role === 'farmer';
+                              const isAdmin = msg.sender_role === 'admin';
+
+                              return (
+                                <div
+                                  key={msg.id}
+                                  className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                                >
+                                  <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-xs shadow-2xs ${
+                                    isMe
+                                      ? 'bg-emerald-600 text-white rounded-br-2xs'
+                                      : isAdmin
+                                      ? 'bg-purple-100 text-purple-950 border border-purple-200 rounded-bl-2xs'
+                                      : 'bg-white text-gray-800 border border-gray-200 rounded-bl-2xs'
+                                  }`}>
+                                    {!isMe && (
+                                      <div className="flex items-center gap-1 font-bold text-[10px] mb-1 opacity-75">
+                                        {isAdmin ? <ShieldCheck size={11} className="text-purple-600" /> : <UserIcon size={11} />}
+                                        <span>{msg.sender_name || (isAdmin ? 'Ban Quản Trị Sàn' : 'Khách Mua')}</span>
+                                      </div>
+                                    )}
+
+                                    <p className="whitespace-pre-wrap leading-relaxed break-words font-normal">
+                                      {cleanVietnameseMojibake(msg.message)}
+                                    </p>
+
+                                    <div className={`text-[9px] mt-1 text-right ${
+                                      isMe ? 'text-white/70' : 'text-gray-400'
+                                    }`}>
+                                      {formatChatTime(msg)}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                          <div ref={chatEndRef} />
+                        </div>
+
+                        {/* Mẫu tin nhắn phản hồi nhanh chuẩn Shopee */}
+                        <div className="px-3 pt-2 bg-white flex items-center gap-1.5 overflow-x-auto text-[11px] pb-1">
+                          <span className="text-gray-400 shrink-0 text-[10px]">Gợi ý nhanh:</span>
+                          <button
+                            type="button"
+                            onClick={() => setNewChatMessage('Dạ chào bạn, nông sản bên nhà vườn vừa thu hái tươi mới 100% ạ!')}
+                            className="px-2.5 py-1 bg-gray-100 hover:bg-emerald-50 hover:text-emerald-700 text-gray-600 rounded-full shrink-0 transition-colors"
+                          >
+                            🌿 Nông sản tươi mới 100%
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setNewChatMessage('Shop đã tiếp nhận đơn và chuẩn bị giao cho đối tác GHN ngay ạ!')}
+                            className="px-2.5 py-1 bg-gray-100 hover:bg-emerald-50 hover:text-emerald-700 text-gray-600 rounded-full shrink-0 transition-colors"
+                          >
+                            📦 Đang chuẩn bị gửi GHN
+                          </button>
+                        </div>
+
+                        {/* Ô nhập tin nhắn */}
+                        <div className="p-3 border-t border-gray-200 bg-white">
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              handleSendFarmerMessage();
+                            }}
+                            className="flex items-center gap-2"
+                          >
+                            <input
+                              type="text"
+                              value={newChatMessage}
+                              onChange={(e) => setNewChatMessage(e.target.value)}
+                              placeholder={
+                                isAdminChat
+                                  ? 'Nhập nội dung trao đổi với Ban Quản Trị Sàn...'
+                                  : 'Nhập nội dung tư vấn khách hàng...'
+                              }
+                              className="flex-1 border border-gray-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 focus:bg-white transition-all"
+                              disabled={chatSending}
+                            />
+                            <button
+                              type="submit"
+                              disabled={chatSending || !newChatMessage.trim()}
+                              className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-1 shadow-2xs"
+                            >
+                              <Send size={14} />
+                              <span>Gửi</span>
+                            </button>
+                          </form>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
             )}
           </>
         )}
