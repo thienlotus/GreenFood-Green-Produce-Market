@@ -146,81 +146,58 @@ export default function CategoryClient({ initialSlug }: CategoryClientProps) {
     switch (slug) {
       case 'dac-san':
         return {
-          main: 'Đặc sản vùng miền.',
-          sub: 'Tinh hoa 3 miền Tổ quốc.',
-          accent: 'text-emerald-700',
-          kicker: 'MÙA VỤ ĐẶC SẢN 2026'
+          main: 'Đặc sản ba miền.',
+          sub: 'Hương vị đượm tình quê.',
+          accent: 'text-emerald-800',
+          kicker: 'GREENFOOD · TINH HOA NÔNG SẢN VIỆT',
+          edition: '01 / ĐẶC SẢN VÙNG MIỀN',
+          desc: 'Sầu riêng Ri6 Chợ Lách, bưởi da xanh Bến Tre, mật ong rừng Tràm U Minh — tuyển chọn từ các hợp tác xã đạt chuẩn OCOP 4-5 sao.',
         };
       case 'trai-cay':
         return {
-          main: 'Trái cây miệt vườn.',
-          sub: 'Chín cây ngọt thanh VietGAP.',
-          accent: 'text-emerald-700',
-          kicker: 'VƯỜN TRÁI CÂY TRỨ DANH'
+          main: 'Trái cây chín cây.',
+          sub: 'Vị ngọt lành thanh khiết.',
+          accent: 'text-rose-800',
+          kicker: 'GREENFOOD · MIỆT VƯỜN TRĨU CÀNH',
+          edition: '02 / TRÁI CÂY MIỆT VƯỜN',
+          desc: 'Xoài cát Hòa Lộc, dâu tây New Zealand Đơn Dương, dưa lưới hoàng kim — hái chín tự nhiên rạng sáng, an toàn cho cả gia đình.',
         };
       case 'di-cho-online':
         return {
-          main: 'Đi chợ tươi mỗi ngày.',
-          sub: 'Rau củ hữu cơ giao hỏa tốc 2H.',
-          accent: 'text-emerald-700',
-          kicker: 'NÔNG SẢN TƯƠI MỖI SÁNG'
+          main: 'Đi chợ mỗi sớm.',
+          sub: 'Trọn vẹn vị tươi non.',
+          accent: 'text-emerald-800',
+          kicker: 'GREENFOOD · NÔNG SẢN TƯƠI MỖI SÁNG',
+          edition: '03 / NÔNG SẢN TƯƠI SÁNG',
+          desc: 'Rau củ hữu cơ thu hoạch trong ngày từ các nhà vườn đối tác, bảo quản lạnh tự nhiên và giao hỏa tốc 2H tận cửa.',
         };
       case 'tra-ca-phe':
         return {
-          main: 'Trà & Cà phê Việt.',
-          sub: 'Đậm đà hương vị truyền thống.',
-          accent: 'text-amber-800',
-          kicker: 'CAO NGUYÊN & ĐỒI CHÈ'
+          main: 'Dấu ấn cao nguyên.',
+          sub: 'Đậm đà hương vị mộc.',
+          accent: 'text-amber-900',
+          kicker: 'GREENFOOD · TINH HOA TRÀ & CÀ PHÊ',
+          edition: '04 / CAO NGUYÊN & ĐỒI CHÈ',
+          desc: 'Trà nõn tôm Tân Cương tiền chát hậu ngọt, cà phê Robusta Mộc Châu rang mộc sánh mịn đượm hương truyền thống.',
         };
       case 'agrishow':
         return {
           main: 'Agrishow 2026.',
-          sub: 'Triển lãm nông nghiệp công nghệ cao.',
-          accent: 'text-teal-700',
-          kicker: 'CÔNG NGHỆ NHÀ MÀNG 4.0'
+          sub: 'Nông trại thông minh 4.0.',
+          accent: 'text-teal-800',
+          kicker: 'GREENFOOD · TRIỂN LÃM NÔNG NGHIỆP',
+          edition: '05 / CÔNG NGHỆ NHÀ MÀNG',
+          desc: 'Kết nối trực tiếp người tiêu dùng và các trang trại hữu cơ ứng dụng công nghệ cao, minh bạch nguồn gốc bản đồ GIS.',
         };
       default:
         return {
           main: 'Nông sản chọn lọc.',
-          sub: 'Thực phẩm sạch từ nông hộ đến bếp.',
-          accent: 'text-emerald-700',
-          kicker: 'GREENFOOD NÔNG SẢN SẠCH'
+          sub: 'Thực phẩm sạch từ tâm.',
+          accent: 'text-emerald-800',
+          kicker: 'GREENFOOD · NÔNG SẢN CHUẨN SẠCH',
+          edition: '01 / TINH HOA VỤ MÙA',
+          desc: 'Thực phẩm sạch từ các nông hộ đạt chuẩn VietGAP & OCOP, an tâm cho mọi bữa ăn gia đình.',
         };
-    }
-  }, [slug]);
-
-  const categoryHighlights = useMemo(() => {
-    switch (slug) {
-      case 'dac-san':
-        return [
-          { title: 'Sầu riêng Ri6 Chợ Lách', desc: 'Cơm vàng béo ngậy, hạt lép chín cây', icon: '👑', tag: 'Tây Nam Bộ' },
-          { title: 'Bưởi da xanh Bến Tre', desc: 'Mọng nước, tép hồng ngọt thanh', icon: '🍈', tag: 'OCOP 4 sao' },
-          { title: 'Mật ong rừng Tràm U Minh', desc: '100% mật hoa tràm nguyên chất', icon: '🍯', tag: 'Dược liệu quý' },
-        ];
-      case 'trai-cay':
-        return [
-          { title: 'Xoài cát Hòa Lộc', desc: 'Thơm lừng ngọt đậm, chuẩn VietGAP', icon: '🥭', tag: 'Chín cây' },
-          { title: 'Dâu tây New Zealand', desc: 'Hái rạng sáng tại Đơn Dương, Đà Lạt', icon: '🍓', tag: 'VietGAP' },
-          { title: 'Dưa lưới hoàng kim', desc: 'Giòn tan mọng nước, nhà kính Israel', icon: '🍈', tag: '15° Brix' },
-        ];
-      case 'di-cho-online':
-        return [
-          { title: 'Rau xanh thủy canh hữu cơ', desc: 'Thu hoạch rạng sáng mỗi ngày', icon: '🥬', tag: 'Tươi 100%' },
-          { title: 'Cà chua cherry Đà Lạt', desc: 'Mọng nước ngọt thanh hữu cơ', icon: '🍅', tag: 'Hái tươi' },
-          { title: 'Giao hỏa tốc 2H tận cửa', desc: 'Thùng giữ nhiệt lạnh bảo quản chuẩn', icon: '⚡', tag: 'Nhanh 2H' },
-        ];
-      case 'tra-ca-phe':
-        return [
-          { title: 'Trà nõn tôm Tân Cương', desc: 'Tiền chát hậu ngọt, nước xanh ngắt', icon: '🍵', tag: 'Thái Nguyên' },
-          { title: 'Cà phê Robusta Mộc Châu', desc: 'Hạt mộc rang vừa, đậm đà sánh mịn', icon: '☕', tag: 'Tây Bắc' },
-          { title: 'Bột Cacao Bến Tre', desc: 'Béo ngậy thơm lừng lên men tự nhiên', icon: '🍫', tag: 'Thủ công' },
-        ];
-      default:
-        return [
-          { title: 'Nông trại thông minh 4.0', desc: 'Tưới nhỏ giọt và cảm biến tự động', icon: '🌱', tag: 'GlobalGAP' },
-          { title: 'Minh bạch nguồn gốc GIS', desc: 'Xem trực tiếp tọa độ nhà vườn vệ tinh', icon: '📍', tag: 'Bản đồ GIS' },
-          { title: 'Nông sản trực tiếp nhà vườn', desc: 'Bảo hộ giá và chất lượng tốt nhất', icon: '🤝', tag: 'Giá tận gốc' },
-        ];
     }
   }, [slug]);
 
@@ -242,78 +219,76 @@ export default function CategoryClient({ initialSlug }: CategoryClientProps) {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* 1. Category Hero Banner - Phong cách Editorial Atelier / soopi.site */}
-      <section className="relative bg-[#faf8f5] text-[#142e23] border-b border-[#e8dfd5] overflow-hidden py-10 lg:py-14">
+      <section className="relative bg-[#faf8f5] text-[#142e23] border-b border-[#e8dfd5] overflow-hidden py-12 lg:py-16">
         {/* Soft Organic Ambient Backdrops */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-          <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[520px] h-[520px] bg-emerald-300/15 rounded-full blur-3xl" />
-          <div className="absolute top-1/3 left-10 w-[380px] h-[380px] bg-amber-200/20 rounded-full blur-3xl" />
-          {/* Subtle botanical line grid pattern */}
-          <div className="absolute inset-0 opacity-[0.035] bg-[radial-gradient(#142e23_1px,transparent_1px)] [background-size:24px_24px]" />
+          <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[540px] h-[540px] bg-emerald-300/15 rounded-full blur-3xl" />
+          <div className="absolute top-1/3 left-10 w-[400px] h-[400px] bg-amber-200/20 rounded-full blur-3xl" />
+          <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#142e23_1px,transparent_1px)] [background-size:24px_24px]" />
         </div>
 
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
-          {/* Breadcrumb */}
-          <div className="flex items-center text-xs text-gray-500 mb-5 font-medium">
-            <Link href="/" className="hover:text-emerald-800 transition-colors">Trang chủ</Link>
+          {/* Breadcrumb - Clean, subtle */}
+          <nav aria-label="Breadcrumb" className="flex items-center text-xs text-[#718579] mb-6 font-medium tracking-wide">
+            <Link href="/" className="hover:text-emerald-900 transition-colors">Trang chủ</Link>
             <ChevronRight size={13} className="mx-1.5 text-gray-400" />
-            <span className="text-gray-500">Danh mục nông sản</span>
+            <span className="text-[#718579]">Danh mục nông sản</span>
             <ChevronRight size={13} className="mx-1.5 text-gray-400" />
-            <span className="text-emerald-800 font-semibold">{categoryName}</span>
-          </div>
+            <span className="text-[#064e3b] font-semibold">{categoryName}</span>
+          </nav>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Left Column (5/12): Editorial Headline & Information (style soopi.site bloom-copy) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+            {/* Left Column (5/12): Editorial Typography (style soopi.site bloom-copy) */}
             <div className="lg:col-span-5 flex flex-col justify-center">
-              {/* Kicker tag with refined horizontal line */}
-              <div className="flex items-center gap-3 text-[11px] font-semibold tracking-widest uppercase text-emerald-800 mb-3.5">
-                <span className="w-8 h-[1.5px] bg-emerald-600/70" />
+              {/* Kicker tag with refined horizontal hairline */}
+              <div className="flex items-center gap-3 text-[10px] font-semibold tracking-[0.2em] uppercase text-[#064e3b] mb-4">
+                <span className="w-8 h-[1.5px] bg-[#064e3b]" />
                 <span>{categoryHeadline.kicker}</span>
               </div>
 
-              {/* Editorial Large Heading */}
-              <h1 className="text-3xl sm:text-4xl lg:text-[46px] font-normal tracking-tight text-[#142e23] leading-[1.18] mb-4">
+              {/* Editorial Large Heading - 100% Playfair Display (font-editorial) */}
+              <h1 className="font-editorial text-4xl sm:text-5xl lg:text-[50px] font-normal tracking-[-0.02em] text-[#142e23] leading-[1.14] mb-4">
                 {categoryHeadline.main}<br />
-                <em className={`font-serif italic font-normal ${categoryHeadline.accent}`}>
+                <em className={`italic font-normal ${categoryHeadline.accent} block mt-1`}>
                   {categoryHeadline.sub}
                 </em>
               </h1>
 
               {/* Subtitle / Description */}
-              <p className="text-gray-600 text-sm sm:text-base leading-relaxed font-normal max-w-lg mb-6">
-                {categoryDesc}
+              <p className="text-[#55695e] text-xs sm:text-sm leading-[1.8] font-normal max-w-md mb-6">
+                {categoryHeadline.desc}
               </p>
 
-              {/* Action Buttons & Trust Badges */}
-              <div className="flex flex-wrap items-center gap-3 mb-6">
+              {/* Action Buttons & Trust Highlights in a neat, professional layout */}
+              <div className="flex flex-wrap items-center gap-3.5 mb-7">
                 <a 
                   href="#products-grid" 
-                  className="inline-flex items-center gap-2 bg-[#064e3b] hover:bg-emerald-800 text-white font-medium text-xs sm:text-sm px-5 py-2.5 rounded-full transition-all duration-300 shadow-sm hover:shadow hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-2 bg-[#064e3b] hover:bg-[#0c3c2e] text-[#fffcf9] font-medium text-xs sm:text-sm px-6 py-3 rounded-full transition-all duration-300 shadow-sm hover:shadow hover:-translate-y-0.5"
                 >
-                  <span>Khám phá sản phẩm</span>
+                  <span>Khám phá vụ mùa</span>
                   <span className="text-xs">↓</span>
                 </a>
-                <div className="flex items-center gap-1.5 bg-white border border-[#e2d9cd] text-emerald-900 text-xs font-semibold px-3.5 py-2 rounded-full shadow-2xs">
-                  <ShieldCheck size={15} className="text-emerald-600" />
-                  <span>100% Chuẩn VietGAP</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-white border border-[#e2d9cd] text-amber-900 text-xs font-semibold px-3.5 py-2 rounded-full shadow-2xs">
-                  <Truck size={15} className="text-amber-600" />
-                  <span>Giao 2H</span>
+
+                <div className="inline-flex items-center gap-3 bg-white border border-[#e5dcd0] text-[#142e23] text-xs font-medium px-4 py-2.5 rounded-full shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-emerald-800 font-semibold">
+                    <ShieldCheck size={14} className="text-emerald-600" />
+                    <span>Chuẩn VietGAP</span>
+                  </div>
+                  <span className="text-[#d8cdbf]">|</span>
+                  <div className="flex items-center gap-1.5 text-amber-900 font-semibold">
+                    <Truck size={14} className="text-amber-600" />
+                    <span>Giao 2H</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Scent-like discovery chips (inspired by soopi.site palette) */}
-              <div className="pt-4 border-t border-[#e8dfd5] flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-                <span className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold shrink-0">Nổi bật:</span>
-                {categoryHighlights.map((item, idx) => (
-                  <span 
-                    key={idx}
-                    className="inline-flex items-center gap-1.5 bg-white/90 hover:bg-white border border-[#e0d6c8] text-[#142e23] px-2.5 py-1 rounded-lg text-xs font-medium shrink-0 shadow-2xs transition-colors cursor-default"
-                  >
-                    <span>{item.icon}</span>
-                    <span className="font-semibold">{item.title.split(' ')[0]} {item.title.split(' ')[1] || ''}</span>
-                  </span>
-                ))}
+              {/* Edition Indicator (Style soopi.site bloom-edition) */}
+              <div className="pt-5 border-t border-[#e8dfd5] flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-[#788a80] font-semibold">
+                <span className="font-editorial text-sm normal-case tracking-normal text-[#142e23] font-medium">
+                  {categoryHeadline.edition}
+                </span>
+                <span className="w-10 h-[1px] bg-[#064e3b]/35" />
+                <span>NÔNG SẢN CHỌN LỌC</span>
               </div>
             </div>
 
