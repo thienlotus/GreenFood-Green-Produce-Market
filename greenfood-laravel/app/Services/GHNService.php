@@ -28,8 +28,10 @@ class GHNService
     /**
      * Khởi tạo đối tượng HTTP Client kèm các Header bắt buộc của GHN
      */
-    protected function client()
+    protected function client(?int $customShopId = null)
     {
+        $activeShopId = ($customShopId && $customShopId > 0) ? $customShopId : $this->shopId;
+
         return Http::baseUrl($this->baseUrl)
             ->withOptions([
                 'verify' => filter_var(config('services.ghn.verify_ssl', true), FILTER_VALIDATE_BOOLEAN),
@@ -38,7 +40,7 @@ class GHNService
             ->timeout(15) // Hết thời gian chờ sau 15 giây
             ->withHeaders([
                 'Token' => $this->token,          // Token chứng thực của shop
-                'ShopId' => $this->shopId,        // Mã cửa hàng GHN
+                'ShopId' => $activeShopId,        // Mã cửa hàng GHN (hỗ trợ đa nông hộ)
                 'Content-Type' => 'application/json',
             ]);
     }
@@ -155,10 +157,11 @@ class GHNService
         }
 
         // 2. Nếu có service_id, gọi cổng tính cước GHN chính thức
+        $shopId = (int) ($params['shop_id'] ?? $this->shopId);
         if (!empty($params['service_id'])) {
             $res = $this->post('/v2/shipping-order/fee', array_merge([
-                'shop_id' => $this->shopId,
-            ], $params));
+                'shop_id' => $shopId,
+            ], $params), $shopId);
 
             if (($res['code'] ?? 0) === 200 && isset($res['data']['total'])) {
                 return $res;
@@ -166,10 +169,10 @@ class GHNService
         }
 
         // 3. Fallback thông minh: Tính cước giao hàng chuẩn theo khu vực địa lý
-        // - Cùng quận/huyện kho gửi (3440 Nam Từ Liêm): 20.000đ
-        // - Nội thành Hà Nội: 22.000đ
-        // - Tỉnh lân cận (Hưng Yên, Bắc Ninh, Hà Nam, Hải Dương...): 28.000đ
-        // - Các tỉnh thành khác toàn quốc: 35.000đ
+        // - Cùng quận/huyện kho gửi: 20.000đ
+        // - Nội thành gần: 22.000đ
+        // - Tuyến liên tỉnh lân cận: 28.000đ
+        // - Tuyến liên miền xa: 35.000đ
         $fallbackFee = 28000;
         if ($toDistrict === $fromDistrict) {
             $fallbackFee = 20000;
@@ -197,10 +200,11 @@ class GHNService
     }
 
     /**
-     * Gọi API tạo đơn giao hàng mới sang hệ thống GHN
+     * Gọi API tạo đơn giao hàng mới sang hệ thống GHN (hỗ trợ shop_id động cho từng nông hộ)
      */
-    public function createOrder(array $orderData): array
+    public function createOrder(array $orderData, ?int $customShopId = null): array
     {
+        $shopId = $customShopId ?: (int) ($orderData['shop_id'] ?? $this->shopId);
         $fromDistrict = (int) ($orderData['from_district_id'] ?? config('services.ghn.from_district_id', 3440));
         $toDistrict = (int) ($orderData['to_district_id'] ?? 0);
 
@@ -220,28 +224,29 @@ class GHNService
         }
 
         return $this->post('/v2/shipping-order/create', array_merge([
-            'shop_id' => $this->shopId,
-        ], $orderData));
+            'shop_id' => $shopId,
+        ], $orderData), $shopId);
     }
 
     /**
      * Gọi API yêu cầu hủy đơn hàng trên GHN
      */
-    public function cancelOrder(array $orderCodes): array
+    public function cancelOrder(array $orderCodes, ?int $customShopId = null): array
     {
+        $shopId = $customShopId ?: $this->shopId;
         return $this->post('/v2/switch-status/cancel', [
             'order_codes' => $orderCodes,
-            'shop_id' => $this->shopId,
-        ]);
+            'shop_id' => $shopId,
+        ], $shopId);
     }
 
     /**
      * Hàm dùng chung để thực hiện các yêu cầu HTTP GET tới GHN
      */
-    protected function get(string $uri, array $query = []): array
+    protected function get(string $uri, array $query = [], ?int $customShopId = null): array
     {
         try {
-            $response = $this->client()->get($uri, $query);
+            $response = $this->client($customShopId)->get($uri, $query);
 
             if (!$response->successful()) {
                 $body = $response->json();
@@ -267,10 +272,10 @@ class GHNService
     /**
      * Hàm dùng chung để thực hiện các yêu cầu HTTP POST tới GHN
      */
-    protected function post(string $uri, array $payload): array
+    protected function post(string $uri, array $payload, ?int $customShopId = null): array
     {
         try {
-            $response = $this->client()->post($uri, $payload);
+            $response = $this->client($customShopId)->post($uri, $payload);
 
             if (!$response->successful()) {
                 $body = $response->json();

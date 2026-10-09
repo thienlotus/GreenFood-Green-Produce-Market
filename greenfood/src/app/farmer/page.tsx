@@ -61,47 +61,52 @@ export default function FarmerPortalPage() {
     ghn_province_id: '',
     ghn_district_id: '',
     ghn_ward_code: '',
-    ghn_address: ''
+    ghn_address: '',
+    ghn_shop_id: ''
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  // 3 Nông hộ đại diện 3 miền chuẩn mã Giao Hàng Nhanh (GHN)
+  // 3 Nông hộ đại diện 3 miền chuẩn mã Giao Hàng Nhanh (GHN) từ app 5sao.dev
   const GHN_DEMO_PRESETS = [
     {
       region: 'Miền Bắc',
-      name: 'Trang Trại Mộc Châu (Sơn La)',
+      name: 'Trang Trại Mộc Châu',
+      shop_id: 217561,
       province_id: 266,
       district_id: 1976,
-      ward_code: '90792',
-      address: 'Thị trấn Nông trường Mộc Châu, Huyện Mộc Châu, Tỉnh Sơn La'
+      ward_code: '141015',
+      address: 'Trang Trại Cờ Đỏ Mộc Châu, Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La'
     },
     {
       region: 'Miền Trung / Tây Nguyên',
-      name: 'Nông Trại Xanh Đà Lạt (Lâm Đồng)',
+      name: 'Nông Trại Xanh Đà Lạt',
+      shop_id: 227221,
       province_id: 209,
-      district_id: 1550,
-      ward_code: '420101',
-      address: 'Phường 1, Thành phố Đà Lạt, Tỉnh Lâm Đồng'
+      district_id: 2104,
+      ward_code: '91597',
+      address: 'Nhà Văn Hóa Thôn Đạ Nhar Thôn Đạ Nhar, Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng'
     },
     {
       region: 'Miền Nam',
-      name: 'Vườn Trái Cây Chú Ba (Bến Tre)',
+      name: 'Vườn Trái Cây Chú Ba',
+      shop_id: 217559,
       province_id: 213,
       district_id: 3158,
-      ward_code: '560311',
-      address: 'Xã Vĩnh Thành, Huyện Chợ Lách, Tỉnh Bến Tre'
+      ward_code: '560301',
+      address: 'Khu Pho 2 Thi Tran Cho Lach Huyen Cho Lach Tinh Ben Tre, Thị trấn Chợ Lách, Huyện Chợ Lách, Bến Tre'
     }
   ];
 
   const handleApplyGhnPreset = (preset: typeof GHN_DEMO_PRESETS[0]) => {
     setProfileForm(prev => ({
       ...prev,
+      ghn_shop_id: String(preset.shop_id),
       ghn_province_id: String(preset.province_id),
       ghn_district_id: String(preset.district_id),
       ghn_ward_code: preset.ward_code,
       ghn_address: preset.address
     }));
-    toast.success(`Đã áp dụng vị trí GHN ${preset.region}: ${preset.name}`);
+    toast.success(`Đã chọn kho GHN #${preset.shop_id} (${preset.region}): ${preset.name}`);
   };
 
   // Load và phân quyền bảo mật dữ liệu gian hàng
@@ -221,7 +226,8 @@ export default function FarmerPortalPage() {
         ghn_province_id: currentFarmer.ghn_province_id ? String(currentFarmer.ghn_province_id) : '',
         ghn_district_id: currentFarmer.ghn_district_id ? String(currentFarmer.ghn_district_id) : '',
         ghn_ward_code: currentFarmer.ghn_ward_code ? String(currentFarmer.ghn_ward_code) : '',
-        ghn_address: currentFarmer.ghn_address || ''
+        ghn_address: currentFarmer.ghn_address || '',
+        ghn_shop_id: currentFarmer.ghn_shop_id ? String(currentFarmer.ghn_shop_id) : ''
       });
     }
   }, [currentFarmer]);
@@ -328,6 +334,7 @@ export default function FarmerPortalPage() {
       const ghnDistrict = profileForm.ghn_district_id ? parseInt(profileForm.ghn_district_id) : undefined;
       const ghnWard = profileForm.ghn_ward_code.trim() || undefined;
       const ghnAddress = profileForm.ghn_address.trim() || undefined;
+      const ghnShopId = profileForm.ghn_shop_id ? parseInt(profileForm.ghn_shop_id) : undefined;
 
       const res = await updateFarmerProfileApi(currentFarmer.id, {
         farm_name: profileForm.farm_name.trim(),
@@ -340,6 +347,7 @@ export default function FarmerPortalPage() {
         ghn_district_id: ghnDistrict,
         ghn_ward_code: ghnWard,
         ghn_address: ghnAddress,
+        ghn_shop_id: ghnShopId,
         is_verified: false
       });
 
@@ -369,7 +377,8 @@ export default function FarmerPortalPage() {
           ghn_province_id: ghnProvince,
           ghn_district_id: ghnDistrict,
           ghn_ward_code: ghnWard,
-          ghn_address: ghnAddress
+          ghn_address: ghnAddress,
+          ghn_shop_id: ghnShopId
         } : f));
       } else {
         toast.error(res.message || 'Cập nhật thất bại');
@@ -1226,14 +1235,12 @@ export default function FarmerPortalPage() {
                                 }`}>
                                   {p.region}
                                 </span>
-                                {isSelected && (
-                                  <span className="text-[10px] font-bold text-orange-600 flex items-center gap-0.5">
-                                    <Check size={12} /> Đang chọn
-                                  </span>
-                                )}
+                                <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-1 py-0.5 rounded">
+                                  #{p.shop_id}
+                                </span>
                               </div>
                               <span className="text-xs font-bold text-gray-900 line-clamp-1">{p.name}</span>
-                              <span className="text-[10px] text-gray-500 line-clamp-1 mt-0.5">Mã Huyện: {p.district_id}</span>
+                              <span className="text-[10px] text-gray-500 line-clamp-1 mt-0.5">Mã Huyện: {p.district_id} | Xã: {p.ward_code}</span>
                             </button>
                           );
                         })}
@@ -1242,17 +1249,31 @@ export default function FarmerPortalPage() {
 
                     {/* Chi tiết thông tin cấu hình kho */}
                     <div className="space-y-3 pt-1 border-t border-amber-200/60">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                          Địa chỉ kho xuất hàng (GHN Address)
-                        </label>
-                        <input
-                          type="text"
-                          value={profileForm.ghn_address}
-                          onChange={e => setProfileForm({ ...profileForm, ghn_address: e.target.value })}
-                          placeholder="Ví dụ: Thị trấn Nông trường Mộc Châu, Huyện Mộc Châu, Sơn La"
-                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                        />
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2">
+                          <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Địa chỉ kho xuất hàng (GHN Address)
+                          </label>
+                          <input
+                            type="text"
+                            value={profileForm.ghn_address}
+                            onChange={e => setProfileForm({ ...profileForm, ghn_address: e.target.value })}
+                            placeholder="Ví dụ: Khu Phố 2, Thị trấn Chợ Lách, Huyện Chợ Lách, Bến Tre"
+                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Mã Cửa Hàng GHN (Shop ID) *
+                          </label>
+                          <input
+                            type="number"
+                            value={profileForm.ghn_shop_id}
+                            onChange={e => setProfileForm({ ...profileForm, ghn_shop_id: e.target.value })}
+                            placeholder="Ví dụ: 217559"
+                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-orange-700 font-mono font-bold focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                          />
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1264,7 +1285,7 @@ export default function FarmerPortalPage() {
                             type="number"
                             value={profileForm.ghn_province_id}
                             onChange={e => setProfileForm({ ...profileForm, ghn_province_id: e.target.value })}
-                            placeholder="Ví dụ: 266"
+                            placeholder="Ví dụ: 213"
                             className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                           />
                         </div>
@@ -1276,7 +1297,7 @@ export default function FarmerPortalPage() {
                             type="number"
                             value={profileForm.ghn_district_id}
                             onChange={e => setProfileForm({ ...profileForm, ghn_district_id: e.target.value })}
-                            placeholder="Ví dụ: 1976"
+                            placeholder="Ví dụ: 3158"
                             className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                           />
                         </div>
@@ -1288,7 +1309,7 @@ export default function FarmerPortalPage() {
                             type="text"
                             value={profileForm.ghn_ward_code}
                             onChange={e => setProfileForm({ ...profileForm, ghn_ward_code: e.target.value })}
-                            placeholder="Ví dụ: 90792"
+                            placeholder="Ví dụ: 560301"
                             className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                           />
                         </div>

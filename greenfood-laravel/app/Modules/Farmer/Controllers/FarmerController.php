@@ -127,6 +127,7 @@ class FarmerController extends Controller
             'ghn_district_id' => 'nullable|integer',
             'ghn_ward_code' => 'nullable|string|max:30',
             'ghn_address' => 'nullable|string|max:255',
+            'ghn_shop_id' => 'nullable|integer',
         ]);
 
         $farmer = $this->farmerService->updateFarmer($id, $validated);

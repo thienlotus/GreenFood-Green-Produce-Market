@@ -16,6 +16,7 @@ export interface FarmerInfo {
   ghn_district_id?: number;
   ghn_ward_code?: string;
   ghn_address?: string;
+  ghn_shop_id?: number;
 }
 
 export interface ProductItem {
@@ -93,11 +94,12 @@ export const ALL_PRODUCTS: ProductItem[] = [
       name: "Vườn Trái Cây Chú Ba",
       region: "Bến Tre",
       rating: 4.8,
-      address: "Xã Vĩnh Thành, Huyện Chợ Lách, Bến Tre",
+      address: "Khu Phố 2, Thị trấn Chợ Lách, Huyện Chợ Lách, Bến Tre",
+      ghn_shop_id: 217559,
       ghn_province_id: 213,
       ghn_district_id: 3158,
-      ghn_ward_code: "560311",
-      ghn_address: "Xã Vĩnh Thành, Huyện Chợ Lách, Bến Tre",
+      ghn_ward_code: "560301",
+      ghn_address: "Khu Pho 2 Thi Tran Cho Lach Huyen Cho Lach Tinh Ben Tre, Thị trấn Chợ Lách, Huyện Chợ Lách, Bến Tre",
       story: "Hơn 20 năm gắn bó với cây sầu riêng, vườn chú Ba áp dụng chuẩn VietGAP mang lại những trái sầu riêng an toàn nhất."
     },
     images: [
@@ -153,11 +155,12 @@ export const ALL_PRODUCTS: ProductItem[] = [
       name: "Nông Trại Xanh Đà Lạt",
       region: "Lâm Đồng",
       rating: 4.9,
-      address: "Phường 1, TP. Đà Lạt, Lâm Đồng",
+      address: "Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng",
+      ghn_shop_id: 227221,
       ghn_province_id: 209,
-      ghn_district_id: 1550,
-      ghn_ward_code: "420101",
-      ghn_address: "Phường 1, TP. Đà Lạt, Lâm Đồng",
+      ghn_district_id: 2104,
+      ghn_ward_code: "91597",
+      ghn_address: "Nhà Văn Hóa Thôn Đạ Nhar Thôn Đạ Nhar, Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng",
       story: "Nông trại ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100%."
     },
     images: [
@@ -211,11 +214,12 @@ export const ALL_PRODUCTS: ProductItem[] = [
       name: "Nông Trại Xanh Đà Lạt",
       region: "Đà Lạt",
       rating: 4.9,
-      address: "Phường 1, TP. Đà Lạt, Lâm Đồng",
+      address: "Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng",
+      ghn_shop_id: 227221,
       ghn_province_id: 209,
-      ghn_district_id: 1550,
-      ghn_ward_code: "420101",
-      ghn_address: "Phường 1, TP. Đà Lạt, Lâm Đồng",
+      ghn_district_id: 2104,
+      ghn_ward_code: "91597",
+      ghn_address: "Nhà Văn Hóa Thôn Đạ Nhar Thôn Đạ Nhar, Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng",
       story: "Canh tác giá thể xơ dừa treo cao, không tiếp xúc đất, sạch tuyệt đối."
     },
     images: [
@@ -307,11 +311,12 @@ export const ALL_PRODUCTS: ProductItem[] = [
       name: "Trang Trại Mộc Châu",
       region: "Sơn La",
       rating: 4.7,
-      address: "Thị Trấn Nông Trường, Huyện Mộc Châu, Sơn La",
+      address: "Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La",
+      ghn_shop_id: 217561,
       ghn_province_id: 266,
       ghn_district_id: 1976,
-      ghn_ward_code: "90792",
-      ghn_address: "Thị Trấn Nông Trường, Huyện Mộc Châu, Sơn La",
+      ghn_ward_code: "141015",
+      ghn_address: "Trang Trại Cờ Đỏ Mộc Châu, Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La",
       story: "Cà phê trồng ở độ cao trên 1000m cho hương thơm tinh khiết."
     },
     images: [

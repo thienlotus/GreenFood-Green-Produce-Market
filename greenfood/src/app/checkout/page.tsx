@@ -274,25 +274,42 @@ export default function CheckoutPage() {
     return Object.keys(errors).length === 0;
   };
 
-  // Tự động kiểm tra trạng thái thanh toán SePay VietQR (polling 3s/lần)
+  // Tự động kiểm tra trạng thái thanh toán SePay VietQR (polling 2s/lần tự động hoàn tất)
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (showPaymentPopup && paymentMethod === 'BANK_TRANSFER' && tempOrderId && !isSepayPaid) {
       interval = setInterval(async () => {
-        const res = await checkSepayStatus(tempOrderId);
-        if (res && res.isPaid) {
-          setIsSepayPaid(true);
-          toast.success('🎉 SePay đã xác nhận nhận tiền thành công!');
-          setTimeout(() => {
-            processOrder(tempOrderId, true);
-          }, 1200);
+        try {
+          const res = await checkSepayStatus(tempOrderId);
+          if (res && res.isPaid) {
+            setIsSepayPaid(true);
+            toast.success('🎉 SePay đã xác nhận thanh toán thành công!');
+            // Tự động hoàn tất không cần ấn xác nhận
+            setTimeout(() => {
+              setShowPaymentPopup(false);
+              if (appliedVoucher) {
+                markVoucherAsUsed(appliedVoucher.code);
+              }
+              const savedOrders = JSON.parse(localStorage.getItem('my_orders') || '[]');
+              savedOrders.unshift({
+                code: tempOrderId,
+                date: new Date().toISOString(),
+                total: finalTotal
+              });
+              localStorage.setItem('my_orders', JSON.stringify(savedOrders));
+              clearCart();
+              setIsSuccess(true);
+            }, 1000);
+          }
+        } catch (err) {
+          console.debug('Polling SePay status...', err);
         }
-      }, 3000);
+      }, 2000);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [showPaymentPopup, paymentMethod, tempOrderId, isSepayPaid]);
+  }, [showPaymentPopup, paymentMethod, tempOrderId, isSepayPaid, appliedVoucher, finalTotal]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -358,21 +375,66 @@ export default function CheckoutPage() {
     }
 
     if (paymentMethod === 'BANK_TRANSFER') {
-      setShowPaymentPopup(true);
+      setIsSubmitting(true);
       const code = tempOrderId || ('GF' + Math.floor(100000 + Math.random() * 900000));
       if (!tempOrderId) {
         setTempOrderId(code);
       }
-      if (!sepayData) {
+
+      const provinceName = provinces.find(p => p.ProvinceID === selectedProvinceId)?.ProvinceName || '';
+      const districtName = districts.find(d => d.DistrictID === selectedDistrictId)?.DistrictName || '';
+      const wardName = wards.find(w => w.WardCode === selectedWardCode)?.WardName || '';
+      const fullAddress = `${address}, ${wardName}, ${districtName}, ${provinceName}`;
+
+      // 1. Tạo đơn hàng PENDING trong DB ngay để webhook SePay bắt được giao dịch
+      createOrder({
+        customerName: fullName,
+        customerPhone: phone,
+        customerEmail: email,
+        shippingAddress: fullAddress,
+        shippingFee: shippingFee,
+        voucherCode: appliedVoucher ? appliedVoucher.code : undefined,
+        discountAmount: calculatedDiscount > 0 ? calculatedDiscount : undefined,
+        toDistrictId: selectedDistrictId ? Number(selectedDistrictId) : undefined,
+        toWardCode: selectedWardCode ? String(selectedWardCode) : undefined,
+        paymentMethod: 'BANK_TRANSFER',
+        trackingNumber: code,
+        paymentStatus: 'unpaid',
+        status: 'PENDING',
+        note: note,
+        items: items.map(i => ({
+          productId: String(i.id),
+          variantId: i.variantId ? String(i.variantId) : undefined,
+          productName: cleanVietnameseMojibake(i.name),
+          unit: cleanVietnameseMojibake(i.unit),
+          quantity: i.quantity,
+          price: i.price,
+        }))
+      })
+      .then((orderRes) => {
+        const orderTracking = orderRes.trackingNumber || code;
+        setOrderId(orderTracking);
+        setTempOrderId(orderTracking);
+        setShowPaymentPopup(true);
+
+        // 2. Tạo mã VietQR SePay khớp với mã đơn hàng
         setIsGeneratingSepay(true);
-        createSepayPayment(code, finalTotal, `Thanh toán đơn hàng GreenFood #${code}`)
-          .then((res) => {
-            if (res && res.success) {
-              setSepayData(res);
-            }
-          })
-          .finally(() => setIsGeneratingSepay(false));
-      }
+        return createSepayPayment(orderTracking, finalTotal, `Thanh toán đơn hàng GreenFood #${orderTracking}`);
+      })
+      .then((res) => {
+        if (res && res.success) {
+          setSepayData(res);
+        }
+      })
+      .catch((err) => {
+        console.error('Lỗi tạo đơn hàng SePay:', err);
+        setShowPaymentPopup(true);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+        setIsGeneratingSepay(false);
+      });
+
       return;
     }
     processOrder();
@@ -381,6 +443,25 @@ export default function CheckoutPage() {
   const processOrder = async (customTrackingNumber?: string, isPrePaid?: boolean) => {
     setIsSubmitting(true);
     setShowPaymentPopup(false);
+
+    // Nếu đơn SePay đã tạo trước đó hoặc đã thanh toán
+    if (tempOrderId && (isPrePaid || isSepayPaid)) {
+      if (appliedVoucher) {
+        markVoucherAsUsed(appliedVoucher.code);
+      }
+      const savedOrders = JSON.parse(localStorage.getItem('my_orders') || '[]');
+      savedOrders.unshift({
+        code: tempOrderId,
+        date: new Date().toISOString(),
+        total: finalTotal
+      });
+      localStorage.setItem('my_orders', JSON.stringify(savedOrders));
+      setIsSubmitting(false);
+      setIsSuccess(true);
+      clearCart();
+      toast.success('Thanh toán & đặt hàng thành công!');
+      return;
+    }
 
     const provinceName = provinces.find(p => p.ProvinceID === selectedProvinceId)?.ProvinceName || '';
     const districtName = districts.find(d => d.DistrictID === selectedDistrictId)?.DistrictName || '';
@@ -755,6 +836,11 @@ export default function CheckoutPage() {
                         <div className="flex items-center gap-1.5 min-w-0">
                           <Package size={14} className="text-emerald-600 shrink-0" />
                           <span className="text-xs font-bold text-gray-800 truncate">{pkg.farmer_name}</span>
+                          {pkg.ghn_shop_id && (
+                            <span className="text-[10px] font-bold text-orange-700 bg-orange-100 border border-orange-200 px-1.5 py-0.2 rounded shrink-0 font-mono">
+                              Shop #{pkg.ghn_shop_id}
+                            </span>
+                          )}
                         </div>
                         <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
                           Ship: {pkg.shipping_fee.toLocaleString('vi-VN')}đ
@@ -762,7 +848,7 @@ export default function CheckoutPage() {
                       </div>
                       <p className="text-[10px] text-gray-500 mb-2 flex items-center gap-1">
                         <MapPin size={10} className="text-gray-400 shrink-0" />
-                        <span className="truncate">Gửi từ: {pkg.from_location}</span>
+                        <span className="truncate">Gửi từ kho GHN: {pkg.from_location}</span>
                       </p>
                       <div className="space-y-2">
                         {pkg.items.map((item: any, iIdx: number) => (
@@ -1115,16 +1201,17 @@ export default function CheckoutPage() {
                   </div>
 
                   {/* Realtime Waiting Indicator */}
-                  <div className="mt-2.5 flex items-center justify-center gap-2 py-2 px-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-[11px]">
+                  <div className="mt-2.5">
                     {isSepayPaid ? (
-                      <span className="flex items-center gap-1.5 text-emerald-600 font-bold">
-                        <Check size={16} /> Đã nhận tiền thành công! Đang lưu đơn...
-                      </span>
+                      <div className="flex items-center justify-center gap-2 py-2.5 px-3 bg-emerald-100 border border-emerald-300 rounded-xl text-emerald-800 text-xs font-bold animate-pulse shadow-sm">
+                        <Check size={18} className="text-emerald-600 stroke-[3]" />
+                        🎉 ĐÃ NHẬN ĐƯỢC TIỀN! HỆ THỐNG ĐANG TỰ ĐỘNG CHUYỂN TRANG...
+                      </div>
                     ) : (
-                      <span className="flex items-center gap-1.5 text-gray-600">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-[11px]">
                         <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                        Đang chờ quét mã... Hệ thống tự động xác nhận sau khi chuyển
-                      </span>
+                        <span className="text-gray-700 font-medium">Đang đợi quét mã... Hệ thống tự động xác nhận sau khi chuyển khoản</span>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1143,13 +1230,28 @@ export default function CheckoutPage() {
               </div>
             )}
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowPaymentPopup(false)}
-                className="flex-1 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors border border-gray-200">
-                Hủy
+              <button 
+                disabled={isSepayPaid}
+                onClick={() => setShowPaymentPopup(false)}
+                className="flex-1 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors border border-gray-200 disabled:opacity-50">
+                Đóng
               </button>
-              <button onClick={() => processOrder(undefined, true)}
-                className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors">
-                Xác nhận đã thanh toán
+              <button 
+                disabled={isSepayPaid}
+                onClick={() => processOrder(undefined, true)}
+                className={`flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  isSepayPaid
+                    ? 'bg-emerald-500 text-white cursor-wait'
+                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                }`}>
+                {isSepayPaid ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Đang hoàn tất...</span>
+                  </>
+                ) : (
+                  <span>Tự động khớp lệnh 24/7</span>
+                )}
               </button>
             </div>
           </div>

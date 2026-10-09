@@ -90,7 +90,7 @@ class GHNController extends Controller
                 // Nhóm sản phẩm theo nhà vườn / nông hộ
                 $grouped = [];
                 foreach ($items as $item) {
-                    $farmerKey = $item['farmer_id'] ?? ($item['farmer']['id'] ?? ($item['farmer']['name'] ?? ($item['farmer'] ?? 'default')));
+                    $farmerKey = $item['farmer_id'] ?? ($item['farmer']['id'] ?? ($item['farmer_name'] ?? ($item['farmer']['name'] ?? ($item['farmer'] ?? 'default'))));
                     if (is_array($farmerKey)) {
                         $farmerKey = $farmerKey['name'] ?? 'default';
                     }
@@ -144,11 +144,16 @@ class GHNController extends Controller
                         'to_ward_code' => $toWardCode,
                     ], $ghn->packageParameters($pkgWeight));
 
+                    $shopId = $farmer && !empty($farmer->ghn_shop_id) ? (int) $farmer->ghn_shop_id : null;
+                    if ($shopId) {
+                        $feeParams['shop_id'] = $shopId;
+                    }
+
                     if ($fromWardCode) {
                         $feeParams['from_ward_code'] = $fromWardCode;
                     }
 
-                    $pkgRes = $ghn->calculateFee($feeParams);
+                    $pkgRes = $ghn->calculateFee($feeParams, $shopId);
                     $pkgFee = (int) ($pkgRes['data']['total'] ?? $pkgRes['data']['service_fee'] ?? 28000);
                     $totalShippingFee += $pkgFee;
 
@@ -156,6 +161,7 @@ class GHNController extends Controller
                         'farmer_key' => $key,
                         'farmer_id' => $farmer ? $farmer->id : null,
                         'farmer_name' => $farmerName,
+                        'ghn_shop_id' => $shopId,
                         'from_district_id' => $fromDistrictId,
                         'from_ward_code' => $fromWardCode,
                         'from_location' => $fromLocation,

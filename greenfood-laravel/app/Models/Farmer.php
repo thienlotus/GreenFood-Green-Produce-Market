@@ -31,7 +31,8 @@ class Farmer extends Model
         'ghn_province_id',
         'ghn_district_id',
         'ghn_ward_code',
-        'ghn_address'
+        'ghn_address',
+        'ghn_shop_id'
     ];
 
     protected $casts = [
@@ -44,6 +45,7 @@ class Farmer extends Model
         'total_sales_count' => 'integer',
         'ghn_province_id' => 'integer',
         'ghn_district_id' => 'integer',
+        'ghn_shop_id' => 'integer',
     ];
 
     public function user()

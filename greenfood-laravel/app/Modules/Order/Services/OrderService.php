@@ -196,40 +196,41 @@ class OrderService
             DB::commit();
 
             // Tự động đẩy đơn hàng sang Giao Hàng Nhanh (GHN) cho TẤT CẢ các phương thức thanh toán
-            $ghnOrderCode = null;
+            $ghnOrderCodes = [];
             $toDistrictId = !empty($data['to_district_id']) ? (int)$data['to_district_id'] : (int)config('services.ghn.from_district_id', 3440);
-            $toWardCode = !empty($data['to_ward_code']) ? (string)$data['to_ward_code'] : '13010';
+            $toWardCode = !empty($data['to_ward_code']) ? (string)$data['to_ward_code'] : '20101';
+            $isPaid = ($order->payment_status === 'paid' || in_array($data['payment_method'], ['BANK_TRANSFER', 'MOMO', 'VNPAY', 'ATM_CARD']));
 
-            try {
-                $isPaid = ($order->payment_status === 'paid' || in_array($data['payment_method'], ['BANK_TRANSFER', 'MOMO', 'VNPAY']));
-                $ghnRes = $this->ghnOrderService->create(
-                    $order,
-                    $toWardCode,
-                    $toDistrictId,
-                    $isPaid
-                );
-
-                if (($ghnRes['code'] ?? 0) === 200 && !empty($ghnRes['data']['order_code'])) {
-                    $ghnOrderCode = $ghnRes['data']['order_code'];
-                    $order->ghn_order_code = $ghnOrderCode;
-                    $order->to_district_id = $toDistrictId;
-                    $order->to_ward_code = $toWardCode;
-
-                    // Dù thanh toán bằng phương thức nào (COD, Chuyển khoản SePay, MoMo, VNPay), luôn đồng bộ mã GHN làm mã vận đơn chính
-                    $originalCode = $order->tracking_number;
-                    $order->tracking_number = $ghnOrderCode;
-                    $trackingNumber = $ghnOrderCode;
-                    if (!empty($originalCode) && $originalCode !== $ghnOrderCode) {
-                        $order->note = trim(($order->note ? $order->note . ' | ' : '') . "Mã ref: {$originalCode}");
+            // 1. Tạo vận đơn GHN riêng biệt cho từng kiện hàng nông hộ (Multi-vendor GHN Sub-orders)
+            $vendorOrders = \App\Models\VendorOrder::where('order_id', $order->id)->get();
+            foreach ($vendorOrders as $vo) {
+                try {
+                    $voRes = $this->ghnOrderService->createForVendorOrder($vo, $order, $toWardCode, $toDistrictId, $isPaid);
+                    if (!empty($voRes['data']['order_code'])) {
+                        $ghnOrderCodes[] = $voRes['data']['order_code'];
+                        Log::info("GHN Push Success cho kiện #{$vo->sub_order_number}: Mã vận đơn {$voRes['data']['order_code']}");
                     }
-                    $order->save();
-
-                    Log::info("GHN Push Success: Đơn #{$order->id} ({$data['payment_method']}) đã đẩy lên GHN với mã: {$ghnOrderCode}");
-                } else {
-                    Log::warning("GHN Push Failed cho đơn #{$order->id} ({$data['payment_method']}): " . json_encode($ghnRes, JSON_UNESCAPED_UNICODE));
+                } catch (\Throwable $e) {
+                    Log::error("GHN Vendor Order Push Exception cho kiện #{$vo->id}: " . $e->getMessage());
                 }
-            } catch (\Throwable $e) {
-                Log::error("GHN Push Exception cho đơn #{$order->id}: " . $e->getMessage());
+            }
+
+            // 2. Đồng bộ mã vận đơn GHN chính cho đơn hàng
+            $ghnOrderCode = !empty($ghnOrderCodes) ? implode(', ', $ghnOrderCodes) : null;
+            if ($ghnOrderCode) {
+                $order->ghn_order_code = $ghnOrderCode;
+                $order->to_district_id = $toDistrictId;
+                $order->to_ward_code = $toWardCode;
+
+                $originalCode = $order->tracking_number;
+                $firstGhnCode = $ghnOrderCodes[0] ?? $ghnOrderCode;
+                $order->tracking_number = $firstGhnCode;
+                $trackingNumber = $firstGhnCode;
+
+                if (!empty($originalCode) && $originalCode !== $firstGhnCode) {
+                    $order->note = trim(($order->note ? $order->note . ' | ' : '') . "Mã ref: {$originalCode}");
+                }
+                $order->save();
             }
 
             return [

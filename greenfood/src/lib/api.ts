@@ -691,6 +691,7 @@ export interface ShippingPackageDetail {
   farmer_key: string;
   farmer_id?: string;
   farmer_name: string;
+  ghn_shop_id?: number;
   from_district_id: number;
   from_ward_code?: string;
   from_location: string;
@@ -958,6 +959,7 @@ export interface FarmerDetailData {
   ghn_district_id?: number;
   ghn_ward_code?: string;
   ghn_address?: string;
+  ghn_shop_id?: number;
   region?: {
     id: number;
     name: string;
@@ -1075,6 +1077,7 @@ export async function updateFarmerProfileApi(id: string, payload: {
   ghn_district_id?: number;
   ghn_ward_code?: string;
   ghn_address?: string;
+  ghn_shop_id?: number;
 }): Promise<{ success: boolean; message: string; data?: any }> {
   try {
     const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/farmers/${id}`, {
