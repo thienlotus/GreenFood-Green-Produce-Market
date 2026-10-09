@@ -18,6 +18,7 @@ use App\Modules\Dashboard\Controllers\DashboardController;
 use App\Modules\Chat\Controllers\ChatController;
 use App\Http\Controllers\Api\GHNController;
 use App\Http\Controllers\Api\CardPaymentController;
+use App\Http\Controllers\Api\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,6 +87,12 @@ Route::prefix('v1')->group(function () {
     Route::post('/shipping-zones', [ShippingZoneController::class, 'store']);
     Route::put('/shipping-zones/{id}', [ShippingZoneController::class, 'update']);
     Route::delete('/shipping-zones/{id}', [ShippingZoneController::class, 'destroy']);
+
+    // 6.5 Customer Notification Module (Shopee Style)
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications', [NotificationController::class, 'store']);
+    Route::put('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
     // 7. Farmer & GIS Module
     Route::get('/farmers', [FarmerController::class, 'index']);
@@ -206,3 +213,9 @@ Route::prefix('chat')->group(function () {
     Route::put('/conversations/{id}/close', [ChatController::class, 'close']);
     Route::get('/unread-count', [ChatController::class, 'unreadCount']);
 });
+
+// Direct alias for Notifications
+Route::get('/notifications', [NotificationController::class, 'index']);
+Route::post('/notifications', [NotificationController::class, 'store']);
+Route::put('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
