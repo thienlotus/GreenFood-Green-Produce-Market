@@ -33,6 +33,7 @@ export default function Footer() {
     { title: "Điều khoản & Điều kiện sử dụng", href: "/terms" },
     { title: "Chính sách bảo mật thông tin", href: "/privacy" },
     { title: "Dành cho Đối tác & CTV", href: "/partners" },
+    { title: "Khách sỉ & Doanh nghiệp B2B", href: "/b2b" },
     { title: "Tuyển dụng nhân sự", href: "/careers" }
   ];
 

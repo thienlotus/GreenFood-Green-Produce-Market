@@ -273,16 +273,16 @@ export const useAuthStore = create<AuthState>()(
       userVouchers: [
         {
           id: 'vch-welcome-01',
-          code: 'GF-WELCOME50',
-          title: 'Voucher Thành Viên Mới - Giảm 50.000đ',
+          code: 'CHAOBANMOI',
+          title: 'Voucher Chào Bạn Mới - Giảm 50.000đ',
           discountAmount: 50000,
           discountType: 'fixed',
-          minOrder: 250000,
+          minOrder: 200000,
           pointsCost: 0,
-          redeemedAt: '2026-09-01',
+          redeemedAt: '2026-10-01',
           expiryDate: '2026-12-31',
           isUsed: false,
-          description: 'Quà tặng chào mừng thành viên gia nhập gia đình Nông Sản Sạch GreenFood.',
+          description: 'Quà tặng tân thủ đi chợ nông sản sạch GreenFood (áp dụng cho đơn từ 200.000đ).',
         },
       ],
 
@@ -659,12 +659,32 @@ export const useAuthStore = create<AuthState>()(
                 : a
             );
 
+            const currentVouchers = get().userVouchers || [];
+            const hasWelcomeVoucher = currentVouchers.some(v => v.code === 'CHAOBANMOI');
+            const updatedVouchers = hasWelcomeVoucher ? currentVouchers : [
+              {
+                id: `vch-welcome-${Date.now()}`,
+                code: 'CHAOBANMOI',
+                title: 'Voucher Chào Bạn Mới - Giảm 50.000đ',
+                discountAmount: 50000,
+                discountType: 'fixed' as const,
+                minOrder: 200000,
+                pointsCost: 0,
+                redeemedAt: new Date().toISOString().split('T')[0],
+                expiryDate: '2026-12-31',
+                isUsed: false,
+                description: 'Quà tặng tân thủ 50K đi chợ nông sản sạch GreenFood cho đơn từ 200.000đ.',
+              },
+              ...currentVouchers,
+            ];
+
             set({
               user: verifiedUser,
               isAuthenticated: true,
               registeredAccounts: accounts,
               savedAddresses: userAddrs,
               userAddressBook: book,
+              userVouchers: updatedVouchers,
             });
 
             return {

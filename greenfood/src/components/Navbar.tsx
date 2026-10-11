@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, 
   ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, List, Map, Package, LogOut, ShieldCheck, X,
-  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles, LayoutGrid
+  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles, LayoutGrid, Building2
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -516,6 +516,16 @@ export default function Navbar() {
                       >
                         <Users size={16} className="text-blue-600 group-hover:scale-110 transition-transform shrink-0" />
                         <span>Kênh người bán</span>
+                      </Link>
+
+                      {/* Khách Sỉ & Doanh Nghiệp B2B */}
+                      <Link 
+                        href="/b2b/" 
+                        onClick={() => setIsMoreMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:bg-emerald-50 transition-colors group"
+                      >
+                        <Building2 size={16} className="text-emerald-700 group-hover:scale-110 transition-transform shrink-0" />
+                        <span>Khách sỉ & B2B</span>
                       </Link>
 
                       {mounted && isAuthenticated && user && (
