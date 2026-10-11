@@ -84,6 +84,51 @@ class B2bController extends Controller
         ]);
     }
 
+    public function track(Request $request): JsonResponse
+    {
+        $keyword = $request->query('keyword') ?? $request->query('code') ?? $request->query('phone') ?? '';
+        if (empty(trim((string)$keyword))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng cung cấp mã phiếu hoặc số điện thoại để tra cứu.',
+            ], 400);
+        }
+
+        $results = $this->b2bService->trackInquiries((string)$keyword);
+
+        return response()->json([
+            'success' => true,
+            'total' => $results->count(),
+            'data' => B2bInquiryResource::collection($results),
+        ]);
+    }
+
+    public function respond(Request $request, string $id): JsonResponse
+    {
+        $request->validate([
+            'client_response' => 'required|string|max:5000',
+            'assigned_staff' => 'nullable|string|max:150',
+            'status' => 'nullable|string|in:PENDING,CONTACTED,CONTRACTED,CANCELLED',
+            'send_email' => 'nullable|boolean',
+            'admin_notes' => 'nullable|string|max:2000',
+        ]);
+
+        $updated = $this->b2bService->respondToInquiry($id, $request->all());
+
+        if (!$updated) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Phiếu yêu cầu B2B không tồn tại.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã lưu và gửi phản hồi tới doanh nghiệp thành công!',
+            'data' => new B2bInquiryResource($updated),
+        ]);
+    }
+
     public function destroy(string $id): JsonResponse
     {
         $deleted = $this->b2bService->deleteInquiry($id);

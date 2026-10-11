@@ -116,12 +116,15 @@ Route::prefix('v1')->group(function () {
 
     // 10. B2B Wholesale & Partner Inquiries Module
     Route::get('/b2b/inquiries', [B2bController::class, 'index']);
+    Route::get('/b2b/inquiries/track', [B2bController::class, 'track']);
     Route::post('/b2b/inquiries', [B2bController::class, 'store']);
     Route::get('/b2b/inquiries/{id}', [B2bController::class, 'show']);
     Route::put('/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
+    Route::post('/b2b/inquiries/{id}/respond', [B2bController::class, 'respond']);
     Route::delete('/b2b/inquiries/{id}', [B2bController::class, 'destroy']);
     Route::get('/admin/b2b/inquiries', [B2bController::class, 'index']);
     Route::put('/admin/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
+    Route::post('/admin/b2b/inquiries/{id}/respond', [B2bController::class, 'respond']);
 });
 
 // Direct aliases without v1 prefix for backward compatibility
@@ -219,10 +222,13 @@ Route::prefix('chat')->group(function () {
 
 // 11. B2B Direct Aliases
 Route::get('/b2b/inquiries', [B2bController::class, 'index']);
+Route::get('/b2b/inquiries/track', [B2bController::class, 'track']);
 Route::post('/b2b/inquiries', [B2bController::class, 'store']);
 Route::get('/b2b/inquiries/{id}', [B2bController::class, 'show']);
 Route::put('/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
+Route::post('/b2b/inquiries/{id}/respond', [B2bController::class, 'respond']);
 Route::delete('/b2b/inquiries/{id}', [B2bController::class, 'destroy']);
 Route::get('/admin/b2b/inquiries', [B2bController::class, 'index']);
 Route::put('/admin/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
+Route::post('/admin/b2b/inquiries/{id}/respond', [B2bController::class, 'respond']);
 

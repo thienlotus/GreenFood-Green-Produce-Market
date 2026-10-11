@@ -77,6 +77,66 @@ class B2bService
         });
     }
 
+    public function trackInquiries(string $keyword): Collection
+    {
+        return $this->b2bRepository->findByKeyword($keyword);
+    }
+
+    public function respondToInquiry(string $id, array $data): ?B2bInquiry
+    {
+        $inquiry = $this->b2bRepository->findById($id);
+        if (!$inquiry) {
+            return null;
+        }
+
+        return DB::transaction(function () use ($inquiry, $data) {
+            $updateData = [
+                'client_response' => $data['client_response'],
+                'assigned_staff' => $data['assigned_staff'] ?? 'Chuyên viên B2B GreenFood',
+                'responded_at' => now(),
+            ];
+
+            if (!empty($data['status'])) {
+                $updateData['status'] = strtoupper($data['status']);
+            } else {
+                $updateData['status'] = 'CONTACTED';
+            }
+
+            if (!empty($data['admin_notes'])) {
+                $updateData['admin_notes'] = $data['admin_notes'];
+            }
+
+            if (!$inquiry->contacted_at) {
+                $updateData['contacted_at'] = now();
+            }
+
+            $updated = $this->b2bRepository->update($inquiry, $updateData);
+
+            // Gửi Email phản hồi chính thức nếu khách có email và admin chọn gửi email
+            if (!empty($data['send_email']) && !empty($inquiry->email)) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($inquiry->email)->send(
+                        new \App\Mail\B2bResponseEmail(
+                            $updated,
+                            (string)$data['client_response'],
+                            (string)($data['assigned_staff'] ?? 'Chuyên viên B2B GreenFood')
+                        )
+                    );
+                    Log::info("Đã gửi email phản hồi B2B tới [{$inquiry->email}] thành công");
+                } catch (\Throwable $mailErr) {
+                    Log::warning("Gửi email phản hồi B2B tới [{$inquiry->email}] thất bại: " . $mailErr->getMessage());
+                }
+            }
+
+            Log::info("Đã lưu phản hồi cho phiếu B2B [{$inquiry->inquiry_code}]", [
+                'assigned_staff' => $updateData['assigned_staff'],
+                'client_response' => $updateData['client_response'],
+            ]);
+
+            return $updated;
+        });
+    }
+
     public function deleteInquiry(string $id): bool
     {
         $inquiry = $this->b2bRepository->findById($id);

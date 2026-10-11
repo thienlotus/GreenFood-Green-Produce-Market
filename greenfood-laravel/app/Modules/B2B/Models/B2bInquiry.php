@@ -29,12 +29,16 @@ class B2bInquiry extends Model
         'note',
         'status',
         'admin_notes',
+        'client_response',
+        'assigned_staff',
         'contacted_at',
+        'responded_at',
     ];
 
     protected $casts = [
         'categories' => 'array',
         'contacted_at' => 'datetime',
+        'responded_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

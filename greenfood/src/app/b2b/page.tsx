@@ -4,12 +4,16 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { 
   Building2, ChevronRight, CheckCircle2, ShieldCheck, FileSpreadsheet, 
-  Truck, Receipt, PhoneCall, Send, ArrowRight, Award, Users, Clock, Sparkles, Copy, Check
+  Truck, Receipt, PhoneCall, Send, Award, Clock, Sparkles, Copy, Check,
+  Search, MessageSquare, AlertCircle, RefreshCw, Mail, Calendar, ArrowRight
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { createB2bInquiryApi } from '@/lib/api';
+import { createB2bInquiryApi, trackB2bInquiriesApi, B2bInquiryItem } from '@/lib/api';
 
 export default function B2BPage() {
+  const [activeTab, setActiveTab] = useState<'register' | 'track'>('register');
+
+  // Form Đăng ký
   const [formData, setFormData] = useState({
     companyName: '',
     taxId: '',
@@ -26,6 +30,12 @@ export default function B2BPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedCode, setSubmittedCode] = useState('');
   const [hasCopiedCode, setHasCopiedCode] = useState(false);
+
+  // Tra cứu hồ sơ
+  const [trackKeyword, setTrackKeyword] = useState('');
+  const [isTracking, setIsTracking] = useState(false);
+  const [hasTracked, setHasTracked] = useState(false);
+  const [trackedResults, setTrackedResults] = useState<B2bInquiryItem[]>([]);
 
   const businessTypes = [
     'Nhà hàng / Quán ăn cao cấp',
@@ -85,8 +95,9 @@ export default function B2BPage() {
       });
 
       if (res && res.success) {
+        const code = res.data?.inquiry_code || 'B2B-RECEIVED';
         setIsSubmitted(true);
-        setSubmittedCode(res.data?.inquiry_code || 'B2B-RECEIVED');
+        setSubmittedCode(code);
         toast.success(res.message || 'Đã gửi hồ sơ đăng ký B2B thành công tới Ban Quản Trị!');
       } else {
         toast.error(res?.message || 'Có lỗi xảy ra khi gửi hồ sơ B2B, vui lòng thử lại!');
@@ -96,6 +107,67 @@ export default function B2BPage() {
       toast.error('Lỗi kết nối máy chủ khi gửi hồ sơ B2B!');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleTrack = async (keywordToTrack?: string) => {
+    const kw = (keywordToTrack !== undefined ? keywordToTrack : trackKeyword).trim();
+    if (!kw) {
+      toast.error('Vui lòng nhập Mã phiếu (B2B-...) hoặc Số điện thoại để tra cứu!');
+      return;
+    }
+
+    setIsTracking(true);
+    try {
+      const res = await trackB2bInquiriesApi(kw);
+      setHasTracked(true);
+      if (res && res.success) {
+        setTrackedResults(res.data || []);
+        if (res.data && res.data.length > 0) {
+          toast.success(`Tìm thấy ${res.data.length} hồ sơ liên quan!`);
+        } else {
+          toast.error('Không tìm thấy hồ sơ nào khớp với thông tin đã nhập.');
+        }
+      } else {
+        setTrackedResults([]);
+        toast.error(res?.message || 'Không tìm thấy hồ sơ phù hợp.');
+      }
+    } catch (err) {
+      console.error('Lỗi tra cứu hồ sơ B2B:', err);
+      toast.error('Lỗi kết nối khi tra cứu hồ sơ!');
+    } finally {
+      setIsTracking(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+            <Clock size={12} /> Đang Tiếp Nhận
+          </span>
+        );
+      case 'CONTACTED':
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300">
+            <PhoneCall size={12} /> Đang Thẩm Định & Khảo Sát
+          </span>
+        );
+      case 'CONTRACTED':
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+            <CheckCircle2 size={12} /> Đã Báo Giá & Ký Hợp Đồng
+          </span>
+        );
+      case 'CANCELLED':
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300">
+            Đã Đóng Hồ Sơ
+          </span>
+        );
+      default:
+        return null;
     }
   };
 
@@ -110,7 +182,7 @@ export default function B2BPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 lg:px-8 max-w-6xl space-y-12">
+      <div className="container mx-auto px-4 lg:px-8 max-w-6xl space-y-10">
         {/* HERO BANNER B2B */}
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-900 text-white p-8 sm:p-12 shadow-xl border border-emerald-800">
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -182,232 +254,516 @@ export default function B2BPage() {
           </div>
         </div>
 
-        {/* 2-COLUMNS: REGISTRATION FORM & COOPERATION PROCESS */}
+        {/* 2-COLUMNS: MAIN INTERACTION & COOPERATION PROCESS */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* FORM ĐĂNG KÝ B2B */}
+          {/* CỘT CHÍNH: TAB ĐĂNG KÝ VÀ TAB TRA CỨU TIẾN ĐỘ / PHẢN HỒI */}
           <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200">
-            <div className="mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                Nhận Báo Giá Sỉ & Mẫu Thử
-              </span>
-              <h2 className="text-2xl font-black text-slate-900 mt-2">Đăng Ký Tư Vấn Doanh Nghiệp</h2>
-              <p className="text-xs text-slate-500 mt-1">
-                Điền thông tin bên dưới để chuyên viên B2B của GreenFood gửi bảng giá chiết khấu mới nhất trong ngày.
-              </p>
+            
+            {/* TAB SELECTOR */}
+            <div className="flex items-center gap-2 p-1.5 bg-slate-100 rounded-2xl mb-6">
+              <button
+                type="button"
+                onClick={() => setActiveTab('register')}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  activeTab === 'register'
+                    ? 'bg-white text-emerald-800 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Send size={15} />
+                <span>Đăng Ký Tư Vấn & Báo Giá Sỉ</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('track')}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  activeTab === 'track'
+                    ? 'bg-white text-emerald-800 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Search size={15} />
+                <span>Tra Cứu Hồ Sơ & Xem Phản Hồi</span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-amber-950">24/7</span>
+              </button>
             </div>
 
-            {isSubmitted ? (
-              <div className="p-8 text-center bg-emerald-50/80 rounded-2xl border border-emerald-200 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto shadow-md">
-                  <CheckCircle2 size={32} />
+            {/* TAB 1: FORM ĐĂNG KÝ */}
+            {activeTab === 'register' && (
+              <div>
+                <div className="mb-6">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    Nhận Báo Giá Sỉ & Mẫu Thử
+                  </span>
+                  <h2 className="text-2xl font-black text-slate-900 mt-2">Đăng Ký Tư Vấn Doanh Nghiệp</h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Điền thông tin bên dưới để chuyên viên B2B của GreenFood gửi bảng giá chiết khấu mới nhất trong ngày.
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-emerald-950">Tiếp Nhận Hồ Sơ B2B Thành Công!</h3>
 
-                {submittedCode && (
-                  <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-emerald-300 shadow-sm">
-                    <span className="text-xs text-slate-500 font-medium">Mã phiếu đối soát:</span>
-                    <span className="font-mono font-bold text-emerald-800 text-sm">{submittedCode}</span>
+                {isSubmitted ? (
+                  <div className="p-8 text-center bg-emerald-50/80 rounded-2xl border border-emerald-200 space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto shadow-md">
+                      <CheckCircle2 size={32} />
+                    </div>
+                    <h3 className="text-lg font-bold text-emerald-950">Tiếp Nhận Hồ Sơ B2B Thành Công!</h3>
+
+                    {submittedCode && (
+                      <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-emerald-300 shadow-sm">
+                        <span className="text-xs text-slate-500 font-medium">Mã phiếu đối soát:</span>
+                        <span className="font-mono font-bold text-emerald-800 text-sm">{submittedCode}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (navigator.clipboard) {
+                              navigator.clipboard.writeText(submittedCode);
+                              setHasCopiedCode(true);
+                              toast.success('Đã sao chép mã phiếu B2B!');
+                              setTimeout(() => setHasCopiedCode(false), 2000);
+                            }
+                          }}
+                          className="p-1 text-slate-400 hover:text-emerald-700 transition-colors cursor-pointer"
+                          title="Sao chép mã"
+                        >
+                          {hasCopiedCode ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                        </button>
+                      </div>
+                    )}
+
+                    <p className="text-xs text-emerald-900 max-w-md mx-auto leading-relaxed">
+                      Cảm ơn <strong>{formData.companyName}</strong> đã gửi yêu cầu. Thông tin phiếu đã được chuyển trực tiếp tới <strong>Ban Quản Trị Viên (Admin)</strong>. Quý đối tác có thể bấm nút bên dưới để theo dõi trạng thái xử lý và xem phản hồi của admin bất cứ lúc nào.
+                    </p>
+
+                    <div className="pt-2 flex flex-wrap gap-3 justify-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTrackKeyword(submittedCode);
+                          setActiveTab('track');
+                          handleTrack(submittedCode);
+                        }}
+                        className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                      >
+                        <Search size={14} />
+                        <span>Xem Tiến Độ & Phản Hồi Ngay</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsSubmitted(false);
+                          setFormData({
+                            companyName: '',
+                            taxId: '',
+                            contactName: '',
+                            phone: '',
+                            email: '',
+                            businessType: 'Nhà hàng / Quán ăn cao cấp',
+                            dailyVolume: '50kg - 200kg / ngày',
+                            categories: ['Rau lá & Củ quả VietGAP'],
+                            deliveryTime: 'Trước 06:00 sáng',
+                            notes: '',
+                          });
+                        }}
+                        className="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 transition-colors cursor-pointer"
+                      >
+                        Gửi thêm hồ sơ khác
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">
+                          Tên Doanh Nghiệp / Nhà Hàng <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.companyName}
+                          onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                          placeholder="Ví dụ: Công ty CP Bếp Ăn Hoa Sen"
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Mã số thuế (nếu có)</label>
+                        <input
+                          type="text"
+                          value={formData.taxId}
+                          onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
+                          placeholder="0101234567"
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">
+                          Người liên hệ <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.contactName}
+                          onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+                          placeholder="Nguyễn Văn A"
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">
+                          Số điện thoại <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          maxLength={10}
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
+                          placeholder="0912345678"
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Email nhận báo giá</label>
+                        <input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="muahang@congty.com"
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Mô hình hoạt động</label>
+                        <select
+                          value={formData.businessType}
+                          onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs cursor-pointer"
+                        >
+                          {businessTypes.map((t) => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Sản lượng dự kiến</label>
+                        <select
+                          value={formData.dailyVolume}
+                          onChange={(e) => setFormData({ ...formData, dailyVolume: e.target.value })}
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs cursor-pointer"
+                        >
+                          <option value="Dưới 50kg / ngày">Dưới 50kg / ngày</option>
+                          <option value="50kg - 200kg / ngày">50kg - 200kg / ngày</option>
+                          <option value="200kg - 500kg / ngày">200kg - 500kg / ngày</option>
+                          <option value="Trên 500kg / ngày (Khối lượng lớn)">Trên 500kg / ngày (Khối lượng lớn)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1.5">
+                        Nhóm mặt hàng nông sản quan tâm (chọn nhiều mục)
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {categoryOptions.map((cat) => {
+                          const isChecked = formData.categories.includes(cat);
+                          return (
+                            <label
+                              key={cat}
+                              onClick={() => handleToggleCategory(cat)}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer transition-all ${
+                                isChecked
+                                  ? 'bg-emerald-50/80 border-emerald-500 text-emerald-950 font-bold'
+                                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {}}
+                                className="rounded text-emerald-600 focus:ring-emerald-500"
+                              />
+                              <span className="text-[11px]">{cat}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Ghi chú yêu cầu đặc biệt</label>
+                      <textarea
+                        rows={3}
+                        value={formData.notes}
+                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        placeholder="Ví dụ: Cần rau củ sơ chế sẵn gọt vỏ, giao hàng trước 05:30 sáng hằng ngày tại Quận 1..."
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full py-3 bg-gradient-to-r from-emerald-700 to-teal-800 hover:from-emerald-800 hover:to-teal-900 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                    >
+                      {isSubmitting ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Send size={15} />
+                      )}
+                      <span>{isSubmitting ? 'Đang gửi thông tin...' : 'Gửi Đăng Ký Nhận Báo Giá Sỉ Ngay'}</span>
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
+
+            {/* TAB 2: TRA CỨU HỒ SƠ & PHẢN HỒI ADMIN */}
+            {activeTab === 'track' && (
+              <div className="space-y-6">
+                <div className="mb-4">
+                  <span className="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
+                    Cổng Tra Cứu Trực Tuyến 24/7
+                  </span>
+                  <h2 className="text-2xl font-black text-slate-900 mt-2">Tra Cứu Tiến Độ & Phản Hồi B2B</h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Nhập <strong>Mã phiếu đối soát</strong> (ví dụ: <code className="text-emerald-700 font-mono">B2B-20261011-9721</code>) hoặc <strong>Số điện thoại</strong> đã đăng ký để xem trực tiếp phản hồi, báo giá từ chuyên viên GreenFood.
+                  </p>
+                </div>
+
+                {/* THANH TÌM KIẾM */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleTrack();
+                  }}
+                  className="flex gap-2"
+                >
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={trackKeyword}
+                      onChange={(e) => setTrackKeyword(e.target.value)}
+                      placeholder="Nhập mã phiếu (B2B-...) hoặc số điện thoại..."
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-600 text-xs font-medium"
+                    />
+                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isTracking}
+                    className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2 shrink-0 cursor-pointer disabled:opacity-60"
+                  >
+                    {isTracking ? <RefreshCw size={14} className="animate-spin" /> : <Search size={14} />}
+                    <span>Tra Cứu</span>
+                  </button>
+                </form>
+
+                {/* DANH SÁCH KẾT QUẢ TRA CỨU */}
+                {isTracking && (
+                  <div className="py-12 text-center text-slate-500 text-xs">
+                    <RefreshCw size={24} className="animate-spin mx-auto text-emerald-600 mb-2" />
+                    <span>Đang tìm kiếm hồ sơ từ hệ thống quản trị GreenFood...</span>
+                  </div>
+                )}
+
+                {!isTracking && hasTracked && trackedResults.length === 0 && (
+                  <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                    <AlertCircle size={32} className="mx-auto text-amber-500" />
+                    <h4 className="font-bold text-slate-800 text-sm">Không Tìm Thấy Hồ Sơ Nào</h4>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                      Không tìm thấy phiếu đăng ký nào khớp với từ khóa <strong>"{trackKeyword}"</strong>. Vui lòng kiểm tra lại chính xác mã phiếu hoặc số điện thoại người liên hệ.
+                    </p>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (navigator.clipboard) {
-                          navigator.clipboard.writeText(submittedCode);
-                          setHasCopiedCode(true);
-                          toast.success('Đã sao chép mã phiếu B2B!');
-                          setTimeout(() => setHasCopiedCode(false), 2000);
-                        }
-                      }}
-                      className="p-1 text-slate-400 hover:text-emerald-700 transition-colors"
-                      title="Sao chép mã"
+                      onClick={() => setActiveTab('register')}
+                      className="text-xs text-emerald-700 font-bold hover:underline inline-flex items-center gap-1 cursor-pointer"
                     >
-                      {hasCopiedCode ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                      Đăng ký hồ sơ mới ngay <ArrowRight size={12} />
                     </button>
                   </div>
                 )}
 
-                <p className="text-xs text-emerald-900 max-w-md mx-auto leading-relaxed">
-                  Cảm ơn <strong>{formData.companyName}</strong> đã gửi yêu cầu. Thông tin phiếu đã được ghi nhận trực tiếp vào <strong>Hệ thống Quản Trị Viên (Admin)</strong> của GreenFood. Chuyên viên khối Khách sỉ & Doanh nghiệp sẽ liên hệ với anh/chị qua số điện thoại <strong>{formData.phone}</strong> trong vòng 2 giờ làm việc để gửi bảng giá và chuẩn bị mẫu thử.
-                </p>
+                {!isTracking && trackedResults.length > 0 && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between text-xs text-slate-600 font-semibold border-b pb-2">
+                      <span>Tìm thấy <strong>{trackedResults.length}</strong> hồ sơ:</span>
+                      <span className="text-[11px] text-slate-400">Cập nhật theo thời gian thực</span>
+                    </div>
 
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSubmitted(false);
-                      setFormData({
-                        companyName: '',
-                        taxId: '',
-                        contactName: '',
-                        phone: '',
-                        email: '',
-                        businessType: 'Nhà hàng / Quán ăn cao cấp',
-                        dailyVolume: '50kg - 200kg / ngày',
-                        categories: ['Rau lá & Củ quả VietGAP'],
-                        deliveryTime: 'Trước 06:00 sáng',
-                        notes: '',
-                      });
-                    }}
-                    className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-sm"
-                  >
-                    Gửi thêm hồ sơ yêu cầu khác
-                  </button>
-                </div>
+                    {trackedResults.map((item) => (
+                      <div
+                        key={item.id}
+                        className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5 transition-all hover:border-emerald-300"
+                      >
+                        {/* HEADER PHIẾU */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-bold text-emerald-900 text-sm bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                                {item.inquiry_code}
+                              </span>
+                              <span className="text-xs text-slate-400">• {item.created_at_human || item.created_at}</span>
+                            </div>
+                            <h3 className="font-black text-slate-900 text-base mt-1.5">{item.company_name}</h3>
+                          </div>
+                          <div>
+                            {getStatusBadge(item.status)}
+                          </div>
+                        </div>
+
+                        {/* TIẾN TRÌNH XỬ LÝ (STEPPER) */}
+                        <div className="py-2">
+                          <div className="grid grid-cols-3 gap-2 text-center text-[11px]">
+                            <div className="space-y-1.5">
+                              <div className="w-7 h-7 mx-auto rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                                1
+                              </div>
+                              <span className="font-bold text-emerald-900 block">Đã Tiếp Nhận</span>
+                              <span className="text-[10px] text-slate-400">Hệ thống đã lưu</span>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <div className={`w-7 h-7 mx-auto rounded-full flex items-center justify-center font-bold text-xs ${
+                                item.client_response || item.status === 'CONTACTED' || item.status === 'CONTRACTED'
+                                  ? 'bg-emerald-600 text-white shadow-sm'
+                                  : 'bg-slate-200 text-slate-500'
+                              }`}>
+                                2
+                              </div>
+                              <span className={`font-bold block ${
+                                item.client_response || item.status === 'CONTACTED' || item.status === 'CONTRACTED'
+                                  ? 'text-emerald-900'
+                                  : 'text-slate-400'
+                              }`}>
+                                Thẩm Định & Báo Giá
+                              </span>
+                              <span className="text-[10px] text-slate-400">Khảo sát & chiết khấu</span>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <div className={`w-7 h-7 mx-auto rounded-full flex items-center justify-center font-bold text-xs ${
+                                item.status === 'CONTRACTED'
+                                  ? 'bg-emerald-600 text-white shadow-sm'
+                                  : 'bg-slate-200 text-slate-500'
+                              }`}>
+                                3
+                              </div>
+                              <span className={`font-bold block ${
+                                item.status === 'CONTRACTED' ? 'text-emerald-900' : 'text-slate-400'
+                              }`}>
+                                Ký Hợp Đồng & Cung Ứng
+                              </span>
+                              <span className="text-[10px] text-slate-400">Giao hàng hằng ngày</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* KHỐI PHẢN HỒI CHÍNH THỨC CỦA ADMIN (TRỌNG TÂM) */}
+                        {item.client_response ? (
+                          <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50 border-2 border-emerald-400/90 rounded-2xl p-5 shadow-sm space-y-3">
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+                              <div className="flex items-center gap-2">
+                                <span className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shadow-sm">
+                                  <MessageSquare size={16} />
+                                </span>
+                                <div>
+                                  <h4 className="font-extrabold text-emerald-950 text-sm">
+                                    Thông Điệp & Báo Giá Chính Thức Từ GreenFood
+                                  </h4>
+                                  <p className="text-[11px] text-emerald-700">
+                                    Chuyên viên phụ trách: <strong>{item.assigned_staff || 'Ban Chuyên Trách B2B GreenFood'}</strong>
+                                  </p>
+                                </div>
+                              </div>
+                              {item.responded_at_human && (
+                                <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/90 px-3 py-1 rounded-full border border-emerald-300">
+                                  {item.responded_at_human}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-line bg-white/95 p-4 rounded-xl border border-emerald-200 shadow-inner">
+                              {item.client_response}
+                            </div>
+
+                            <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs">
+                              <span className="text-slate-600 text-[11px] font-medium">
+                                Quý đối tác cần chốt nhanh danh mục hoặc mẫu thử?
+                              </span>
+                              <div className="flex gap-2">
+                                <a
+                                  href="tel:02877702614"
+                                  className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] rounded-lg flex items-center gap-1.5 transition-colors shadow-sm"
+                                >
+                                  <PhoneCall size={12} /> Gọi Hotline 24/7
+                                </a>
+                                <a
+                                  href={`mailto:b2b@greenfood.vn?subject=Phan hoi bao gia ${item.inquiry_code} - ${item.company_name}`}
+                                  className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-emerald-800 font-bold text-[11px] border border-emerald-300 rounded-lg flex items-center gap-1.5 transition-colors"
+                                >
+                                  <Mail size={12} /> Gửi Email Lại
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bg-amber-50/90 border border-amber-300 rounded-2xl p-4 flex items-start gap-3 text-amber-950">
+                            <Clock size={20} className="text-amber-600 shrink-0 mt-0.5" />
+                            <div className="text-xs space-y-1">
+                              <p className="font-bold">Đang Lập Báo Giá Chiết Khấu Ưu Đãi</p>
+                              <p className="text-[11px] text-amber-800 leading-relaxed">
+                                Hồ sơ đã được ghi nhận vào hệ thống. Chuyên viên khối Khách sỉ & Doanh nghiệp đang tổng hợp báo giá sỉ tốt nhất. Quý doanh nghiệp sẽ nhận được email báo giá và phản hồi chi tiết tại đây trong tối đa 2 giờ làm việc.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* THÔNG TIN CHI TIẾT NHU CẦU ĐÃ GỬI */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-50 p-4 rounded-xl border border-slate-100">
+                          <div>
+                            <span className="text-slate-400 block text-[11px]">Người liên hệ:</span>
+                            <span className="font-semibold text-slate-800">{item.contact_name} ({item.phone})</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[11px]">Mô hình & Sản lượng:</span>
+                            <span className="font-semibold text-slate-800">{item.business_type} • {item.estimated_volume}</span>
+                          </div>
+                          <div className="sm:col-span-2">
+                            <span className="text-slate-400 block text-[11px] mb-1">Nhóm hàng nông sản:</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {item.categories.map((c, idx) => (
+                                <span key={idx} className="bg-white px-2 py-0.5 rounded-md border text-[11px] text-slate-700">
+                                  {c}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          {item.note && (
+                            <div className="sm:col-span-2">
+                              <span className="text-slate-400 block text-[11px]">Ghi chú yêu cầu:</span>
+                              <span className="italic text-slate-700">{item.note}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Tên Doanh Nghiệp / Nhà Hàng <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.companyName}
-                      onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                      placeholder="Ví dụ: Công ty CP Bếp Ăn Hoa Sen"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Mã số thuế (nếu có)</label>
-                    <input
-                      type="text"
-                      value={formData.taxId}
-                      onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
-                      placeholder="0101234567"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Người liên hệ <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.contactName}
-                      onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                      placeholder="Nguyễn Văn A"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Số điện thoại <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      maxLength={10}
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
-                      placeholder="0912345678"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Email nhận báo giá</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="muahang@congty.com"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Mô hình hoạt động</label>
-                    <select
-                      value={formData.businessType}
-                      onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs cursor-pointer"
-                    >
-                      {businessTypes.map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Sản lượng dự kiến</label>
-                    <select
-                      value={formData.dailyVolume}
-                      onChange={(e) => setFormData({ ...formData, dailyVolume: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs cursor-pointer"
-                    >
-                      <option value="Dưới 50kg / ngày">Dưới 50kg / ngày</option>
-                      <option value="50kg - 200kg / ngày">50kg - 200kg / ngày</option>
-                      <option value="200kg - 500kg / ngày">200kg - 500kg / ngày</option>
-                      <option value="Trên 500kg / ngày (Khối lượng lớn)">Trên 500kg / ngày (Khối lượng lớn)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">
-                    Nhóm mặt hàng nông sản quan tâm (chọn nhiều mục)
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {categoryOptions.map((cat) => {
-                      const isChecked = formData.categories.includes(cat);
-                      return (
-                        <label
-                          key={cat}
-                          onClick={() => handleToggleCategory(cat)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer transition-all ${
-                            isChecked
-                              ? 'bg-emerald-50/80 border-emerald-500 text-emerald-950 font-bold'
-                              : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => {}}
-                            className="rounded text-emerald-600 focus:ring-emerald-500"
-                          />
-                          <span className="text-[11px]">{cat}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Ghi chú yêu cầu đặc biệt</label>
-                  <textarea
-                    rows={3}
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Ví dụ: Cần rau củ sơ chế sẵn gọt vỏ, giao hàng trước 05:30 sáng hằng ngày tại Quận 1..."
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3 bg-gradient-to-r from-emerald-700 to-teal-800 hover:from-emerald-800 hover:to-teal-900 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-                >
-                  {isSubmitting ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Send size={15} />
-                  )}
-                  <span>{isSubmitting ? 'Đang gửi thông tin...' : 'Gửi Đăng Ký Nhận Báo Giá Sỉ Ngay'}</span>
-                </button>
-              </form>
             )}
           </div>
 

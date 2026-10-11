@@ -4,13 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { 
   Building2, Search, Filter, RefreshCw, Phone, Mail, FileText, 
   CheckCircle2, Clock, XCircle, AlertCircle, Eye, Trash2, Edit3, 
-  ChevronRight, Calendar, MapPin, Package, ArrowUpRight, Check, X
+  ChevronRight, Calendar, MapPin, Package, ArrowUpRight, Check, X, Send
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { 
   getAdminB2bInquiriesApi, 
   updateB2bInquiryStatusApi, 
   deleteB2bInquiryApi, 
+  respondB2bInquiryApi,
   B2bInquiryItem 
 } from '@/lib/api';
 
@@ -24,7 +25,11 @@ export default function AdminB2bPage() {
   // Modal states
   const [selectedInquiry, setSelectedInquiry] = useState<B2bInquiryItem | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isSendingResponse, setIsSendingResponse] = useState(false);
   const [adminNoteInput, setAdminNoteInput] = useState('');
+  const [clientResponseInput, setClientResponseInput] = useState('');
+  const [assignedStaffInput, setAssignedStaffInput] = useState('Chuyên viên B2B GreenFood');
+  const [sendEmailCheckbox, setSendEmailCheckbox] = useState(true);
 
   const fetchInquiries = useCallback(async (isSilent = false) => {
     if (!isSilent) setLoading(true);
@@ -77,6 +82,40 @@ export default function AdminB2bPage() {
       toast.error('Lỗi khi cập nhật trạng thái phiếu');
     } finally {
       setIsUpdatingStatus(false);
+    }
+  };
+
+  // Handle send response to client
+  const handleSendClientResponse = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!selectedInquiry) return;
+    if (!clientResponseInput.trim()) {
+      toast.error('Vui lòng nhập nội dung phản hồi / báo giá gửi cho doanh nghiệp!');
+      return;
+    }
+
+    setIsSendingResponse(true);
+    try {
+      const res = await respondB2bInquiryApi(selectedInquiry.id, {
+        client_response: clientResponseInput.trim(),
+        assigned_staff: assignedStaffInput.trim() || 'Chuyên viên B2B GreenFood',
+        send_email: sendEmailCheckbox,
+        status: selectedInquiry.status === 'PENDING' ? 'CONTACTED' : selectedInquiry.status,
+        admin_notes: adminNoteInput,
+      });
+
+      if (res && res.success && res.data) {
+        toast.success(res.message || 'Đã gửi phản hồi thành công!');
+        setInquiries(prev => prev.map(item => item.id === selectedInquiry.id ? res.data! : item));
+        setSelectedInquiry(res.data);
+      } else {
+        toast.error(res?.message || 'Gửi phản hồi thất bại');
+      }
+    } catch (err) {
+      console.error('Lỗi khi gửi phản hồi B2B:', err);
+      toast.error('Lỗi kết nối khi gửi phản hồi');
+    } finally {
+      setIsSendingResponse(false);
     }
   };
 
@@ -352,11 +391,14 @@ export default function AdminB2bPage() {
                           onClick={() => {
                             setSelectedInquiry(item);
                             setAdminNoteInput(item.admin_notes || '');
+                            setClientResponseInput(item.client_response || '');
+                            setAssignedStaffInput(item.assigned_staff || 'Chuyên viên B2B GreenFood');
+                            setSendEmailCheckbox(Boolean(item.email));
                           }}
                           className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg transition-colors flex items-center gap-1 text-[11px] cursor-pointer"
                         >
                           <Eye size={13} />
-                          <span>Chi tiết</span>
+                          <span>Chi tiết & Phản hồi</span>
                         </button>
                         
                         <button
@@ -495,17 +537,96 @@ export default function AdminB2bPage() {
               </div>
             )}
 
+            {/* Client Response & Quotation Section */}
+            <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 sm:p-5 space-y-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-emerald-950 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                  <Mail size={14} className="text-emerald-700" />
+                  Phản Hồi & Báo Giá Chính Thức Gửi Khách Hàng (Client Feedback):
+                </span>
+                {selectedInquiry.responded_at && (
+                  <span className="text-[11px] text-emerald-700 font-semibold">
+                    Đã gửi: {selectedInquiry.responded_at_human || selectedInquiry.responded_at.split('T')[0]}
+                  </span>
+                )}
+              </div>
+
+              {selectedInquiry.client_response && (
+                <div className="p-3 bg-white rounded-xl border border-emerald-200/80 text-emerald-900 leading-relaxed text-xs">
+                  <div className="text-[11px] text-slate-400 font-semibold mb-1">
+                    Người phụ trách: {selectedInquiry.assigned_staff || 'Chuyên viên B2B GreenFood'}
+                  </div>
+                  <div className="whitespace-pre-line">{selectedInquiry.client_response}</div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Chuyên viên phụ trách đại diện
+                  </label>
+                  <input
+                    type="text"
+                    value={assignedStaffInput}
+                    onChange={(e) => setAssignedStaffInput(e.target.value)}
+                    placeholder="Ví dụ: Lê Thiều Hưng - Trưởng phòng Khách sỉ"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
+
+                <div className="flex items-end pb-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-slate-700 font-semibold text-xs">
+                    <input
+                      type="checkbox"
+                      checked={sendEmailCheckbox}
+                      disabled={!selectedInquiry.email}
+                      onChange={(e) => setSendEmailCheckbox(e.target.checked)}
+                      className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                    />
+                    <span>
+                      Gửi Email thông báo tự động {selectedInquiry.email ? `(${selectedInquiry.email})` : '(Khách không để lại email)'}
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Nội dung phản hồi / Báo giá sỉ gửi cho khách:
+                </label>
+                <textarea
+                  rows={4}
+                  value={clientResponseInput}
+                  onChange={(e) => setClientResponseInput(e.target.value)}
+                  placeholder="Ví dụ: Kính gửi quý công ty, GreenFood xin gửi mức chiết khấu 18% cho đơn hàng rau củ VietGAP. Xe lạnh giao trước 5h30 sáng tại địa chỉ..."
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-emerald-600"
+                />
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  disabled={isSendingResponse}
+                  onClick={handleSendClientResponse}
+                  className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-sm text-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <Send size={13} />
+                  <span>{isSendingResponse ? 'Đang gửi...' : 'Lưu & Gửi Phản Hồi Cho Doanh Nghiệp'}</span>
+                </button>
+              </div>
+            </div>
+
             {/* Admin Notes Section */}
             <div className="space-y-2 text-xs">
               <label className="font-bold text-slate-700 block">
-                Ghi Chú Nội Bộ Của Chuyên Viên B2B (Admin Notes):
+                Ghi Chú Nội Bộ Của Chuyên Viên B2B (Admin Notes - Chỉ nội bộ nhìn thấy):
               </label>
               <textarea
-                rows={3}
+                rows={2}
                 value={adminNoteInput}
                 onChange={(e) => setAdminNoteInput(e.target.value)}
-                placeholder="Ví dụ: Đã gọi điện lúc 10h, khách yêu cầu báo giá rau xà lách thủy canh 50kg/ngày, hẹn gửi mẫu vào sáng thứ Tư..."
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
+                placeholder="Ví dụ: Khách này yêu cầu công nợ 20 ngày, sếp duyệt chiết khấu 18%..."
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 text-xs"
               />
             </div>
 

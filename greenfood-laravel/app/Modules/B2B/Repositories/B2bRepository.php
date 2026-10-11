@@ -41,6 +41,15 @@ class B2bRepository
             ->first();
     }
 
+    public function findByKeyword(string $keyword): Collection
+    {
+        $clean = trim($keyword);
+        return B2bInquiry::where('inquiry_code', strtoupper($clean))
+            ->orWhere('phone', $clean)
+            ->latest('created_at')
+            ->get();
+    }
+
     public function create(array $data): B2bInquiry
     {
         return B2bInquiry::create($data);

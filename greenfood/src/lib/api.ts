@@ -1245,7 +1245,11 @@ export interface B2bInquiryItem {
   note?: string;
   status: 'PENDING' | 'CONTACTED' | 'CONTRACTED' | 'CANCELLED';
   admin_notes?: string;
+  client_response?: string;
+  assigned_staff?: string;
   contacted_at?: string;
+  responded_at?: string;
+  responded_at_human?: string;
   created_at: string;
   created_at_human?: string;
   updated_at: string;
@@ -1291,6 +1295,45 @@ export async function getAdminB2bInquiriesApi(filters?: { status?: string; searc
   } catch (error) {
     console.error('[API] getAdminB2bInquiriesApi error:', error);
     return { success: false, total: 0, pending_count: 0, data: [] };
+  }
+}
+
+export async function trackB2bInquiriesApi(keyword: string): Promise<{
+  success: boolean;
+  message?: string;
+  total: number;
+  data: B2bInquiryItem[];
+}> {
+  try {
+    const res = await fetchApi<{ success: boolean; message?: string; total: number; data: B2bInquiryItem[] }>(
+      `/b2b/inquiries/track?keyword=${encodeURIComponent(keyword.trim())}`
+    );
+    return res || { success: false, total: 0, data: [] };
+  } catch (error) {
+    console.error('[API] trackB2bInquiriesApi error:', error);
+    return { success: false, total: 0, data: [] };
+  }
+}
+
+export async function respondB2bInquiryApi(id: string, data: {
+  client_response: string;
+  assigned_staff?: string;
+  status?: string;
+  send_email?: boolean;
+  admin_notes?: string;
+}): Promise<{ success: boolean; message: string; data?: B2bInquiryItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: B2bInquiryItem }>(
+      `/b2b/inquiries/${id}/respond`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+    return res || { success: false, message: 'Lỗi khi gửi phản hồi cho doanh nghiệp' };
+  } catch (error) {
+    console.error('[API] respondB2bInquiryApi error:', error);
+    return { success: false, message: 'Lỗi kết nối khi gửi phản hồi cho doanh nghiệp' };
   }
 }
 
