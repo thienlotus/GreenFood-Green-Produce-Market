@@ -1363,22 +1363,22 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* TAB 5: SECURITY & DATABASE MANAGEMENT */}
+        {/* TAB 5: SECURITY */}
         {activeTab === 'security' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="max-w-2xl mx-auto w-full">
             {/* Change Password Form */}
-            <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
-              <div className="pb-4 border-b border-gray-100">
-                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <Lock size={18} className="text-emerald-600" />
+            <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-gray-100 space-y-6">
+              <div className="pb-4 border-b border-gray-100 text-center sm:text-left">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center justify-center sm:justify-start gap-2">
+                  <Lock size={20} className="text-emerald-600" />
                   <span>Đổi Mật Khẩu Bảo Mật</span>
                 </h2>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xs text-gray-500 mt-1">
                   Mật khẩu được mã hóa an toàn bằng tiêu chuẩn mã hóa hiện đại.
                 </p>
               </div>
 
-              <form onSubmit={handleChangePassword} className="space-y-4">
+              <form onSubmit={handleChangePassword} className="space-y-5">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
                     Mật khẩu hiện tại
@@ -1390,14 +1390,14 @@ export default function ProfilePage() {
                       value={oldPassword}
                       onChange={(e) => setOldPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-500 pr-10"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-500 pr-10 transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => setShowOldPass(!showOldPass)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
                     >
-                      {showOldPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showOldPass ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 </div>
@@ -1413,14 +1413,14 @@ export default function ProfilePage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-500 pr-10"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-500 pr-10 transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPass(!showNewPass)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
                     >
-                      {showNewPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showNewPass ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 </div>
@@ -1435,50 +1435,25 @@ export default function ProfilePage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-500 transition-colors"
                   />
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-2 flex justify-center sm:justify-start">
                   <button
                     type="submit"
                     disabled={isChangingPass}
-                    className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60"
+                    className="w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                   >
                     {isChangingPass ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <CheckCircle2 size={16} />
+                      <CheckCircle2 size={18} />
                     )}
                     <span>{isChangingPass ? 'Đang cập nhật...' : 'Cập Nhật Mật Khẩu Mới'}</span>
                   </button>
                 </div>
               </form>
-            </div>
-
-            {/* Database & Security Specs */}
-            <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-4 text-xs">
-              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                <ShieldCheck size={18} className="text-emerald-600" />
-                <span>Tiêu Chuẩn Bảo Mật GreenFood</span>
-              </h3>
-
-              <div className="space-y-3 text-gray-600 pt-2">
-                <div className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-100">
-                  <span className="font-bold text-emerald-900 block mb-1">Mã hóa mật khẩu chuẩn Bcrypt</span>
-                  Mật khẩu người dùng không được lưu thô mà luôn được băm với thuật toán Bcrypt của Laravel trước khi ghi vào bảng users.
-                </div>
-
-                <div className="p-3.5 bg-blue-50/60 rounded-xl border border-blue-100">
-                  <span className="font-bold text-blue-900 block mb-1">Kiểm soát bảo mật tập trung</span>
-                  Dữ liệu tài khoản của bạn được mã hóa an toàn và bảo vệ tuyệt đối trên hệ thống máy chủ của GreenFood.
-                </div>
-
-                <div className="p-3.5 bg-amber-50/60 rounded-xl border border-amber-100">
-                  <span className="font-bold text-amber-900 block mb-1">Bảo vệ đơn hàng & Tracking</span>
-                  Chỉ có người đặt hàng và Quản trị viên mới có quyền xem thông tin chi tiết của đơn hàng thông qua số điện thoại đã xác thực.
-                </div>
-              </div>
             </div>
           </div>
         )}
