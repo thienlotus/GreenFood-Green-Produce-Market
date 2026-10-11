@@ -18,7 +18,7 @@ type PaymentMethod = 'COD' | 'BANK_TRANSFER' | 'MOMO' | 'VNPAY' | 'ATM_CARD';
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
-  const { user, userVouchers, markVoucherAsUsed } = useAuthStore();
+  const { user, userVouchers, markVoucherAsUsed, savedAddresses } = useAuthStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,6 +76,29 @@ export default function CheckoutPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Tự động điền Họ tên, Số điện thoại, Email từ tài khoản người dùng đã đăng nhập
+  useEffect(() => {
+    if (user) {
+      const defaultAddr = savedAddresses?.find(a => a.isDefault) || savedAddresses?.[0];
+      
+      const autoName = defaultAddr?.recipientName || user.name || '';
+      const autoPhone = defaultAddr?.recipientPhone || user.phone || '';
+      const autoEmail = user.email || '';
+
+      setFullName(prev => (prev.trim() === '' ? autoName : prev));
+      setPhone(prev => (prev.trim() === '' ? autoPhone : prev));
+      setEmail(prev => (prev.trim() === '' ? autoEmail : prev));
+
+      if (defaultAddr?.street) {
+        setAddress(prev => (prev.trim() === '' ? defaultAddr.street! : prev));
+      } else if (defaultAddr?.addressDetail) {
+        setAddress(prev => (prev.trim() === '' ? defaultAddr.addressDetail : prev));
+      } else if (user.address) {
+        setAddress(prev => (prev.trim() === '' ? user.address! : prev));
+      }
+    }
+  }, [user, savedAddresses]);
 
   useEffect(() => {
     let isMounted = true;
@@ -647,9 +670,47 @@ export default function CheckoutPage() {
             <form id="checkout-form" onSubmit={handleSubmit} className="space-y-6">
               {/* Thông tin giao hàng */}
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <MapPin size={20} className="text-emerald-600" /> Thông tin giao hàng
-                </h2>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                  <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <MapPin size={20} className="text-emerald-600" /> Thông tin giao hàng
+                  </h2>
+                  {user && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-xs">
+                      <Sparkles size={13} className="text-amber-500" /> Tự động điền từ tài khoản: <strong>{user.name}</strong>
+                    </span>
+                  )}
+                </div>
+
+                {/* Sổ địa chỉ đã lưu (nếu có) */}
+                {savedAddresses && savedAddresses.length > 0 && (
+                  <div className="mb-4 p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <MapPin size={14} className="text-emerald-600" /> Sổ địa chỉ nhận hàng đã lưu:
+                      </span>
+                      <span className="text-[11px] text-slate-500">Bấm để điền nhanh</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {savedAddresses.map((addr) => (
+                        <button
+                          key={addr.id}
+                          type="button"
+                          onClick={() => {
+                            if (addr.recipientName) setFullName(addr.recipientName);
+                            if (addr.recipientPhone) setPhone(addr.recipientPhone);
+                            if (addr.street) setAddress(addr.street);
+                            else if (addr.addressDetail) setAddress(addr.addressDetail);
+                            toast.success(`Đã chọn địa chỉ: ${addr.label} (${addr.recipientName})`);
+                          }}
+                          className="px-3 py-1.5 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 rounded-lg text-xs font-medium transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <span className="font-bold text-emerald-700">{addr.label}:</span>
+                          <span>{addr.recipientName} ({addr.recipientPhone})</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
