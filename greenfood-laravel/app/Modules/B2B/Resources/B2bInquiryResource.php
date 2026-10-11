@@ -17,6 +17,9 @@ class B2bInquiryResource extends JsonResource
             'company_name' => $this->company_name,
             'contact_name' => $this->contact_name,
             'phone' => $this->phone,
+            'phone_masked' => strlen((string)$this->phone) >= 7
+                ? substr((string)$this->phone, 0, 4) . '***' . substr((string)$this->phone, -3)
+                : $this->phone,
             'email' => $this->email,
             'tax_id' => $this->tax_id,
             'business_type' => $this->business_type,

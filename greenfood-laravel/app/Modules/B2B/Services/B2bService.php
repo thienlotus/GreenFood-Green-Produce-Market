@@ -42,6 +42,18 @@ class B2bService
                 'business_type' => $inquiry->business_type,
             ]);
 
+            // Tự động gửi Email xác nhận tiếp nhận tức thì đến hộp thư doanh nghiệp
+            if (!empty($inquiry->email)) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($inquiry->email)->send(
+                        new \App\Mail\B2bConfirmationEmail($inquiry)
+                    );
+                    Log::info("Đã gửi email xác nhận tiếp nhận B2B tới [{$inquiry->email}] thành công");
+                } catch (\Throwable $mailErr) {
+                    Log::warning("Gửi email xác nhận B2B tới [{$inquiry->email}] thất bại: " . $mailErr->getMessage());
+                }
+            }
+
             return $inquiry;
         });
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Building2, ChevronRight, CheckCircle2, ShieldCheck, FileSpreadsheet, 
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { createB2bInquiryApi, trackB2bInquiriesApi, B2bInquiryItem } from '@/lib/api';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function B2BPage() {
   const [activeTab, setActiveTab] = useState<'register' | 'track'>('register');
@@ -26,6 +27,23 @@ export default function B2BPage() {
     deliveryTime: 'Trước 06:00 sáng',
     notes: '',
   });
+  const { user } = useAuthStore();
+  const [hasAutoFilled, setHasAutoFilled] = useState(false);
+
+  // Tự động điền thông tin từ tài khoản người dùng đã đăng nhập
+  useEffect(() => {
+    if (user && !hasAutoFilled) {
+      setFormData(prev => ({
+        ...prev,
+        contactName: prev.contactName.trim() === '' ? (user.name || '') : prev.contactName,
+        phone: prev.phone.trim() === '' ? (user.phone || '') : prev.phone,
+        email: prev.email.trim() === '' ? (user.email || '') : prev.email,
+        companyName: prev.companyName.trim() === '' ? (user.farmName || '') : prev.companyName,
+      }));
+      setHasAutoFilled(true);
+    }
+  }, [user, hasAutoFilled]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedCode, setSubmittedCode] = useState('');
@@ -294,9 +312,16 @@ export default function B2BPage() {
             {activeTab === 'register' && (
               <div>
                 <div className="mb-6">
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                    Nhận Báo Giá Sỉ & Mẫu Thử
-                  </span>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                      Nhận Báo Giá Sỉ & Mẫu Thử
+                    </span>
+                    {user && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <Sparkles size={12} className="text-amber-500" /> Tự động điền từ tài khoản: <strong>{user.name}</strong>
+                      </span>
+                    )}
+                  </div>
                   <h2 className="text-2xl font-black text-slate-900 mt-2">Đăng Ký Tư Vấn Doanh Nghiệp</h2>
                   <p className="text-xs text-slate-500 mt-1">
                     Điền thông tin bên dưới để chuyên viên B2B của GreenFood gửi bảng giá chiết khấu mới nhất trong ngày.
@@ -736,7 +761,7 @@ export default function B2BPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-50 p-4 rounded-xl border border-slate-100">
                           <div>
                             <span className="text-slate-400 block text-[11px]">Người liên hệ:</span>
-                            <span className="font-semibold text-slate-800">{item.contact_name} ({item.phone})</span>
+                            <span className="font-semibold text-slate-800">{item.contact_name} ({item.phone_masked || item.phone})</span>
                           </div>
                           <div>
                             <span className="text-slate-400 block text-[11px]">Mô hình & Sản lượng:</span>

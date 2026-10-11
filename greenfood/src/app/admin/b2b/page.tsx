@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { 
   Building2, Search, Filter, RefreshCw, Phone, Mail, FileText, 
   CheckCircle2, Clock, XCircle, AlertCircle, Eye, Trash2, Edit3, 
-  ChevronRight, Calendar, MapPin, Package, ArrowUpRight, Check, X, Send
+  ChevronRight, Calendar, MapPin, Package, ArrowUpRight, Check, X, Send, Download
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { 
@@ -178,6 +178,63 @@ export default function AdminB2bPage() {
     }
   };
 
+  const handleExportCsv = () => {
+    if (inquiries.length === 0) {
+      toast.error('Không có dữ liệu phiếu B2B để xuất file');
+      return;
+    }
+
+    const headers = [
+      'Mã phiếu',
+      'Ngày gửi',
+      'Tên doanh nghiệp',
+      'Người liên hệ',
+      'Số điện thoại',
+      'Email',
+      'Mã số thuế',
+      'Mô hình kinh doanh',
+      'Sản lượng dự kiến',
+      'Thời gian giao hàng',
+      'Nhóm hàng quan tâm',
+      'Trạng thái',
+      'Chuyên viên phụ trách',
+      'Thời gian phản hồi',
+      'Nội dung phản hồi',
+      'Ghi chú nội bộ admin'
+    ];
+
+    const rows = inquiries.map(item => [
+      `"${item.inquiry_code}"`,
+      `"${item.created_at_human || item.created_at}"`,
+      `"${(item.company_name || '').replace(/"/g, '""')}"`,
+      `"${(item.contact_name || '').replace(/"/g, '""')}"`,
+      `"${item.phone}"`,
+      `"${item.email || ''}"`,
+      `"${item.tax_id || ''}"`,
+      `"${(item.business_type || '').replace(/"/g, '""')}"`,
+      `"${(item.estimated_volume || '').replace(/"/g, '""')}"`,
+      `"${(item.delivery_time || '').replace(/"/g, '""')}"`,
+      `"${(Array.isArray(item.categories) ? item.categories.join(', ') : '').replace(/"/g, '""')}"`,
+      `"${item.status}"`,
+      `"${(item.assigned_staff || '').replace(/"/g, '""')}"`,
+      `"${item.responded_at_human || item.responded_at || ''}"`,
+      `"${(item.client_response || '').replace(/"/g, '""')}"`,
+      `"${(item.admin_notes || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Danh_Sach_Doi_Tac_B2B_GreenFood_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`Đã xuất thành công ${inquiries.length} hồ sơ B2B ra file Excel/CSV!`);
+  };
+
   // Stats computation
   const totalCount = inquiries.length;
   const pendingCount = inquiries.filter(i => i.status === 'PENDING').length;
@@ -199,15 +256,26 @@ export default function AdminB2bPage() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => fetchInquiries(true)}
-          disabled={refreshing}
-          className="self-start sm:self-auto px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50"
-        >
-          <RefreshCw size={14} className={refreshing ? 'animate-spin text-emerald-600' : ''} />
-          <span>{refreshing ? 'Đang đồng bộ...' : 'Làm mới dữ liệu'}</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
+          >
+            <Download size={14} />
+            <span>Xuất Excel / CSV</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => fetchInquiries(true)}
+            disabled={refreshing}
+            className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={refreshing ? 'animate-spin text-emerald-600' : ''} />
+            <span>{refreshing ? 'Đang đồng bộ...' : 'Làm mới'}</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI METRIC CARDS */}

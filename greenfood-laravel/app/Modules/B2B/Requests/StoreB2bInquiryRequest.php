@@ -15,6 +15,23 @@ class StoreB2bInquiryRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('phone')) {
+            $cleanPhone = preg_replace('/\D/', '', (string)$this->phone);
+            $this->merge(['phone' => $cleanPhone]);
+        }
+        if ($this->has('company_name')) {
+            $this->merge(['company_name' => trim((string)$this->company_name)]);
+        }
+        if ($this->has('contact_name')) {
+            $this->merge(['contact_name' => trim((string)$this->contact_name)]);
+        }
+        if ($this->has('email') && !empty($this->email)) {
+            $this->merge(['email' => strtolower(trim((string)$this->email))]);
+        }
+    }
+
     public function rules(): array
     {
         return [

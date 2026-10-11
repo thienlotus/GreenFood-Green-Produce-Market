@@ -1235,6 +1235,7 @@ export interface B2bInquiryItem {
   company_name: string;
   contact_name: string;
   phone: string;
+  phone_masked?: string;
   email?: string;
   tax_id?: string;
   business_type: string;
