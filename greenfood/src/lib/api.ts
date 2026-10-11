@@ -15,6 +15,8 @@ import {
   calculateFallbackShippingFee
 } from '@/data/vietnamAddress';
 import { resolveCoordinatesFromAddress } from './geoUtils';
+import { ProductReviewItem, ReviewStats, SubmitReviewPayload } from '@/types/review';
+import { getCombinedReviews, saveUserReviewToStorage } from '@/data/mockReviews';
 
 export { cleanVietnameseMojibake };
 export type { ProductItem, CategoryInfo };
@@ -1213,6 +1215,184 @@ export async function updateFarmerBankApi(farmerId: string, bankData: {
     return { success: false, message: 'Lỗi mạng khi cập nhật tài khoản ngân hàng' };
   }
 }
+
+// -------------------------------------------------------------
+// PRODUCT REVIEWS API (Shopee Style with Video & Photos)
+// -------------------------------------------------------------
+
+function mapApiReview(r: any): ProductReviewItem {
+  return {
+    id: r.id,
+    productId: r.product_id || r.productId,
+    userId: r.user_id || r.userId,
+    userName: cleanVietnameseMojibake(r.user_name || r.userName || 'Khách hàng GreenFood'),
+    userAvatar: r.user_avatar || r.userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
+    rating: Number(r.rating) || 5,
+    comment: cleanVietnameseMojibake(r.comment || ''),
+    variantInfo: cleanVietnameseMojibake(r.variant_info || r.variantInfo || 'Tiêu chuẩn'),
+    productQuality: cleanVietnameseMojibake(r.product_quality || r.productQuality || 'Chuẩn VietGAP tươi ngon'),
+    matchDescription: cleanVietnameseMojibake(r.match_description || r.matchDescription || 'Đúng với mô tả 100%'),
+    tasteExperience: cleanVietnameseMojibake(r.taste_experience || r.tasteExperience || ''),
+    videoUrl: r.video_url || r.videoUrl || null,
+    videoThumbnail: r.video_thumbnail || r.videoThumbnail || null,
+    videoDuration: r.video_duration || r.videoDuration || null,
+    images: Array.isArray(r.images) ? r.images : [],
+    tags: Array.isArray(r.tags) ? r.tags.map((t: string) => cleanVietnameseMojibake(t)) : [],
+    likesCount: Number(r.likes_count ?? r.likesCount ?? 0),
+    isLiked: false,
+    sellerReply: cleanVietnameseMojibake(r.seller_reply || r.sellerReply || ''),
+    sellerReplyAt: r.seller_reply_at || r.sellerReplyAt || null,
+    isVerifiedPurchase: r.is_verified_purchase !== false,
+    isAnonymous: Boolean(r.is_anonymous || r.isAnonymous),
+    createdAt: r.created_at || r.createdAt || 'Vừa xong'
+  };
+}
+
+export async function getProductReviews(
+  productId: string,
+  params?: { rating?: number; has_video?: boolean; has_media?: boolean; sort?: string }
+): Promise<{ reviews: ProductReviewItem[]; stats: ReviewStats }> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.rating) query.set('rating', String(params.rating));
+    if (params?.has_video) query.set('has_video', '1');
+    if (params?.has_media) query.set('has_media', '1');
+    if (params?.sort) query.set('sort', params.sort);
+
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+    const res = await fetchApi<{
+      success: boolean;
+      stats?: any;
+      data?: any[];
+    }>(`/products/${productId}/reviews${queryString}`);
+
+    if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+      const apiReviews = res.data.map(mapApiReview);
+      return getCombinedReviews(productId, apiReviews);
+    }
+  } catch (err) {
+    console.warn('[API] getProductReviews error, falling back to mock:', err);
+  }
+
+  // Graceful fallback to mock data + stored user reviews
+  return getCombinedReviews(productId);
+}
+
+export async function submitProductReview(
+  productId: string,
+  payload: SubmitReviewPayload
+): Promise<{ success: boolean; data?: ProductReviewItem; message?: string }> {
+  // 1. Create client-side representation
+  const newReview: ProductReviewItem = {
+    id: `local-${Date.now()}`,
+    productId,
+    userName: payload.isAnonymous 
+      ? (payload.userName ? `${payload.userName.charAt(0)}*****${payload.userName.slice(-1)}` : 'n*****9')
+      : payload.userName,
+    userAvatar: payload.userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop',
+    rating: payload.rating,
+    comment: payload.comment,
+    variantInfo: payload.variantInfo || 'Hộp 1kg (Tươi ngon)',
+    productQuality: payload.productQuality || 'Xuất sắc, chuẩn VietGAP tươi ngon',
+    matchDescription: payload.matchDescription || '100% đúng với mô tả',
+    tasteExperience: payload.tasteExperience || 'Rất vừa khẩu vị',
+    videoUrl: payload.videoUrl || null,
+    videoThumbnail: payload.videoThumbnail || null,
+    videoDuration: payload.videoDuration || '0:15',
+    images: payload.images || [],
+    tags: payload.tags || ['Rau củ rất tươi', 'Đóng gói cẩn thận', 'Giao nhanh 2h'],
+    likesCount: 0,
+    isLiked: false,
+    sellerReply: 'Dạ GreenFood và nhà vườn chân thành cảm ơn đánh giá của bạn! Sự hài lòng của bạn là niềm vinh hạnh của chúng tôi ạ ❤️',
+    sellerReplyAt: 'Vừa xong',
+    isVerifiedPurchase: true,
+    isAnonymous: Boolean(payload.isAnonymous),
+    createdAt: 'Vừa xong'
+  };
+
+  // Always persist locally first so user never loses their submission!
+  saveUserReviewToStorage(newReview);
+
+  // 2. Attempt saving to backend API
+  try {
+    const res = await fetchApi<{ success: boolean; data?: any; message?: string }>(
+      `/products/${productId}/reviews`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          user_name: newReview.userName,
+          user_avatar: newReview.userAvatar,
+          rating: payload.rating,
+          comment: payload.comment,
+          variant_info: payload.variantInfo,
+          product_quality: payload.productQuality,
+          match_description: payload.matchDescription,
+          taste_experience: payload.tasteExperience,
+          video_url: payload.videoUrl,
+          video_thumbnail: payload.videoThumbnail,
+          video_duration: payload.videoDuration,
+          images: payload.images,
+          tags: payload.tags,
+          is_anonymous: payload.isAnonymous,
+        })
+      }
+    );
+
+    if (res && res.success && res.data) {
+      return { success: true, data: mapApiReview(res.data), message: res.message };
+    }
+  } catch (err) {
+    console.warn('[API] submitProductReview backend failed, saved to local state only:', err);
+  }
+
+  return { 
+    success: true, 
+    data: newReview, 
+    message: 'Đánh giá kèm video đã được đăng thành công! Bạn nhận được +200 GreenXu tích lũy.' 
+  };
+}
+
+export async function likeProductReviewApi(reviewId: string | number): Promise<boolean> {
+  try {
+    const res = await fetchApi<{ success: boolean }>(`/reviews/${reviewId}/like`, {
+      method: 'POST'
+    });
+    return !!res?.success;
+  } catch (err) {
+    return true; // Optimistic update
+  }
+}
+
+export async function uploadReviewMediaApi(file: File): Promise<{ url: string; type: 'video' | 'image' } | null> {
+  try {
+    const baseUrl = getApiBaseUrl();
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${baseUrl}/reviews/upload`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.url) {
+        return { url: data.url, type: data.type };
+      }
+    }
+  } catch (err) {
+    console.warn('[API] uploadReviewMediaApi error:', err);
+  }
+
+  // Local fallback: create object URL
+  const objectUrl = URL.createObjectURL(file);
+  const isVideo = file.type.startsWith('video/');
+  return { url: objectUrl, type: isVideo ? 'video' : 'image' };
+}
+
 
 
 

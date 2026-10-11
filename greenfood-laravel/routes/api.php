@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Modules\User\Controllers\UserController;
 use App\Modules\Product\Controllers\ProductController;
 use App\Modules\Product\Controllers\CategoryController;
+use App\Modules\Product\Controllers\ReviewController;
 use App\Modules\Cart\Controllers\CartController;
 use App\Modules\Order\Controllers\OrderController;
 use App\Modules\Payment\Controllers\PaymentController;
@@ -55,6 +56,12 @@ Route::prefix('v1')->group(function () {
     Route::get('/products/{slug}', [ProductController::class, 'show']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+
+    // 2.5 Product Reviews (Shopee Style with Video & Photos)
+    Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
+    Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
+    Route::post('/reviews/{id}/like', [ReviewController::class, 'toggleLike']);
+    Route::post('/reviews/upload', [ReviewController::class, 'uploadMedia']);
 
     // 3. Cart Module
     Route::post('/cart/calculate', [CartController::class, 'calculate']);
@@ -146,6 +153,10 @@ Route::post('/products', [ProductController::class, 'store']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::put('/products/{id}', [ProductController::class, 'update']);
 Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
+Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
+Route::post('/reviews/{id}/like', [ReviewController::class, 'toggleLike']);
+Route::post('/reviews/upload', [ReviewController::class, 'uploadMedia']);
 
 Route::post('/cart/calculate', [CartController::class, 'calculate']);
 

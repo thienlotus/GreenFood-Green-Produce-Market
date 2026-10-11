@@ -10,6 +10,7 @@ import { ALL_PRODUCTS, ProductItem, getProductBySlug as getMockProductBySlug } f
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
+import SimpleTikTokVideoSection from '@/components/ProductReviews/SimpleTikTokVideoSection';
 
 interface ProductClientProps {
   initialSlug?: string;
@@ -177,11 +178,12 @@ export default function ProductClient({ initialSlug }: ProductClientProps) {
                 
                 {/* Rating & Sold count */}
                 <div className="flex items-center gap-4 text-sm text-gray-600 pb-4 border-b border-gray-100 flex-wrap">
-                  <div className="flex items-center text-amber-500 font-bold">
+                  <a href="#product-reviews" className="flex items-center text-amber-500 font-bold hover:underline transition-all">
                     <Star size={16} className="fill-current" />
-                    <span className="ml-1 text-gray-800">{product.rating || 4.8}</span>
+                    <span className="ml-1 text-gray-800">{product.rating || 4.9}</span>
                     <span className="text-xs text-gray-400 font-normal ml-1">/ 5.0</span>
-                  </div>
+                    <span className="ml-1 text-xs text-emerald-600 font-medium">(Reels)</span>
+                  </a>
                   <span className="text-gray-300">|</span>
                   <span>Đã bán <strong className="text-gray-800">{product.soldCount || 120}+</strong></span>
                   <span className="text-gray-300">|</span>
@@ -332,6 +334,11 @@ export default function ProductClient({ initialSlug }: ProductClientProps) {
             </div>
           </div>
         </div>
+
+        {/* Reels (3 Video Trực Tiếp Khung Lớn) */}
+        <SimpleTikTokVideoSection
+          title="Reels"
+        />
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
