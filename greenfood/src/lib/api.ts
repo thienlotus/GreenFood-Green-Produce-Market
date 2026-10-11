@@ -1214,6 +1214,116 @@ export async function updateFarmerBankApi(farmerId: string, bankData: {
   }
 }
 
+// 12. B2B WHOLESALE & ENTERPRISE INQUIRIES API
+export interface B2bInquiryPayload {
+  company_name: string;
+  contact_name: string;
+  phone: string;
+  email?: string;
+  tax_id?: string;
+  business_type: string;
+  categories: string[];
+  estimated_volume?: string;
+  delivery_time?: string;
+  address?: string;
+  note?: string;
+}
+
+export interface B2bInquiryItem {
+  id: string;
+  inquiry_code: string;
+  company_name: string;
+  contact_name: string;
+  phone: string;
+  email?: string;
+  tax_id?: string;
+  business_type: string;
+  categories: string[];
+  estimated_volume?: string;
+  delivery_time?: string;
+  address?: string;
+  note?: string;
+  status: 'PENDING' | 'CONTACTED' | 'CONTRACTED' | 'CANCELLED';
+  admin_notes?: string;
+  contacted_at?: string;
+  created_at: string;
+  created_at_human?: string;
+  updated_at: string;
+}
+
+export async function createB2bInquiryApi(payload: B2bInquiryPayload): Promise<{
+  success: boolean;
+  message: string;
+  data?: B2bInquiryItem;
+}> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: B2bInquiryItem }>('/b2b/inquiries', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return res || { success: false, message: 'Không thể kết nối đến máy chủ GreenFood' };
+  } catch (error) {
+    console.error('[API] createB2bInquiryApi error:', error);
+    return { success: false, message: 'Lỗi mạng khi gửi hồ sơ đăng ký B2B' };
+  }
+}
+
+export async function getAdminB2bInquiriesApi(filters?: { status?: string; search?: string }): Promise<{
+  success: boolean;
+  total: number;
+  pending_count: number;
+  data: B2bInquiryItem[];
+}> {
+  try {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.search) params.append('search', filters.search);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+
+    const res = await fetchApi<{
+      success: boolean;
+      total: number;
+      pending_count: number;
+      data: B2bInquiryItem[];
+    }>(`/b2b/inquiries${queryString}`);
+
+    return res || { success: false, total: 0, pending_count: 0, data: [] };
+  } catch (error) {
+    console.error('[API] getAdminB2bInquiriesApi error:', error);
+    return { success: false, total: 0, pending_count: 0, data: [] };
+  }
+}
+
+export async function updateB2bInquiryStatusApi(
+  id: string,
+  status: 'PENDING' | 'CONTACTED' | 'CONTRACTED' | 'CANCELLED',
+  adminNotes?: string
+): Promise<{ success: boolean; message: string; data?: B2bInquiryItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: B2bInquiryItem }>(`/b2b/inquiries/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, admin_notes: adminNotes }),
+    });
+    return res || { success: false, message: 'Lỗi khi cập nhật trạng thái phiếu B2B' };
+  } catch (error) {
+    console.error('[API] updateB2bInquiryStatusApi error:', error);
+    return { success: false, message: 'Lỗi mạng khi cập nhật trạng thái phiếu B2B' };
+  }
+}
+
+export async function deleteB2bInquiryApi(id: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string }>(`/b2b/inquiries/${id}`, {
+      method: 'DELETE',
+    });
+    return res || { success: false, message: 'Lỗi khi xóa phiếu B2B' };
+  } catch (error) {
+    console.error('[API] deleteB2bInquiryApi error:', error);
+    return { success: false, message: 'Lỗi mạng khi xóa phiếu B2B' };
+  }
+}
+
+
 
 
 

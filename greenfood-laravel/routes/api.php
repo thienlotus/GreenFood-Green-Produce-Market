@@ -16,6 +16,7 @@ use App\Modules\Promotion\Controllers\ShippingZoneController;
 use App\Modules\Farmer\Controllers\FarmerController;
 use App\Modules\Dashboard\Controllers\DashboardController;
 use App\Modules\Chat\Controllers\ChatController;
+use App\Modules\B2B\Controllers\B2bController;
 use App\Http\Controllers\Api\GHNController;
 use App\Http\Controllers\Api\CardPaymentController;
 
@@ -112,6 +113,15 @@ Route::prefix('v1')->group(function () {
     Route::get('/admin/orders/{id}', [OrderController::class, 'show']);
     Route::put('/admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
     Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
+
+    // 10. B2B Wholesale & Partner Inquiries Module
+    Route::get('/b2b/inquiries', [B2bController::class, 'index']);
+    Route::post('/b2b/inquiries', [B2bController::class, 'store']);
+    Route::get('/b2b/inquiries/{id}', [B2bController::class, 'show']);
+    Route::put('/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
+    Route::delete('/b2b/inquiries/{id}', [B2bController::class, 'destroy']);
+    Route::get('/admin/b2b/inquiries', [B2bController::class, 'index']);
+    Route::put('/admin/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
 });
 
 // Direct aliases without v1 prefix for backward compatibility
@@ -206,3 +216,13 @@ Route::prefix('chat')->group(function () {
     Route::put('/conversations/{id}/close', [ChatController::class, 'close']);
     Route::get('/unread-count', [ChatController::class, 'unreadCount']);
 });
+
+// 11. B2B Direct Aliases
+Route::get('/b2b/inquiries', [B2bController::class, 'index']);
+Route::post('/b2b/inquiries', [B2bController::class, 'store']);
+Route::get('/b2b/inquiries/{id}', [B2bController::class, 'show']);
+Route::put('/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
+Route::delete('/b2b/inquiries/{id}', [B2bController::class, 'destroy']);
+Route::get('/admin/b2b/inquiries', [B2bController::class, 'index']);
+Route::put('/admin/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
+

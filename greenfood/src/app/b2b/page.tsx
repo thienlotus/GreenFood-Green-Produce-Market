@@ -4,9 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { 
   Building2, ChevronRight, CheckCircle2, ShieldCheck, FileSpreadsheet, 
-  Truck, Receipt, PhoneCall, Send, ArrowRight, Award, Users, Clock, Sparkles
+  Truck, Receipt, PhoneCall, Send, ArrowRight, Award, Users, Clock, Sparkles, Copy, Check
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { createB2bInquiryApi } from '@/lib/api';
 
 export default function B2BPage() {
   const [formData, setFormData] = useState({
@@ -15,7 +16,7 @@ export default function B2BPage() {
     contactName: '',
     phone: '',
     email: '',
-    businessType: 'Nhà hàng / Quán ăn',
+    businessType: 'Nhà hàng / Quán ăn cao cấp',
     dailyVolume: '50kg - 200kg / ngày',
     categories: ['Rau lá & Củ quả VietGAP'] as string[],
     deliveryTime: 'Trước 06:00 sáng',
@@ -23,6 +24,8 @@ export default function B2BPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedCode, setSubmittedCode] = useState('');
+  const [hasCopiedCode, setHasCopiedCode] = useState(false);
 
   const businessTypes = [
     'Nhà hàng / Quán ăn cao cấp',
@@ -53,19 +56,47 @@ export default function B2BPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.companyName.trim() || !formData.phone.trim() || !formData.contactName.trim()) {
       toast.error('Vui lòng điền đầy đủ tên doanh nghiệp, người liên hệ và số điện thoại!');
       return;
     }
 
+    const cleanPhone = formData.phone.replace(/\D/g, '');
+    if (!/^(0|\+?84)[35789][0-9]{8}$/.test(cleanPhone)) {
+      toast.error('Số điện thoại không hợp lệ (cần 10 chữ số di động Việt Nam)!');
+      return;
+    }
+
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const res = await createB2bInquiryApi({
+        company_name: formData.companyName.trim(),
+        contact_name: formData.contactName.trim(),
+        phone: cleanPhone,
+        email: formData.email.trim() || undefined,
+        tax_id: formData.taxId.trim() || undefined,
+        business_type: formData.businessType,
+        categories: formData.categories,
+        estimated_volume: formData.dailyVolume,
+        delivery_time: formData.deliveryTime,
+        note: formData.notes.trim() || undefined,
+      });
+
+      if (res && res.success) {
+        setIsSubmitted(true);
+        setSubmittedCode(res.data?.inquiry_code || 'B2B-RECEIVED');
+        toast.success(res.message || 'Đã gửi hồ sơ đăng ký B2B thành công tới Ban Quản Trị!');
+      } else {
+        toast.error(res?.message || 'Có lỗi xảy ra khi gửi hồ sơ B2B, vui lòng thử lại!');
+      }
+    } catch (err) {
+      console.error('Lỗi khi gửi hồ sơ B2B:', err);
+      toast.error('Lỗi kết nối máy chủ khi gửi hồ sơ B2B!');
+    } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-      toast.success('Đã gửi thông tin đăng ký đối tác B2B thành công! Chuyên viên GreenFood sẽ liên hệ lại trong vòng 2 giờ.');
-    }, 800);
+    }
   };
 
   return (
@@ -167,21 +198,61 @@ export default function B2BPage() {
             </div>
 
             {isSubmitted ? (
-              <div className="p-8 text-center bg-emerald-50 rounded-2xl border border-emerald-200 space-y-4">
+              <div className="p-8 text-center bg-emerald-50/80 rounded-2xl border border-emerald-200 space-y-4">
                 <div className="w-16 h-16 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto shadow-md">
                   <CheckCircle2 size={32} />
                 </div>
-                <h3 className="text-lg font-bold text-emerald-950">Gửi Hồ Sơ B2B Thành Công!</h3>
-                <p className="text-xs text-emerald-800 max-w-md mx-auto leading-relaxed">
-                  Cảm ơn <strong>{formData.companyName}</strong> đã tin tưởng GreenFood. Đội ngũ phụ trách khối Doanh nghiệp sẽ chuẩn bị mẫu thử và liên hệ với anh/chị qua số điện thoại <strong>{formData.phone}</strong> trong vòng 2 giờ làm việc.
+                <h3 className="text-lg font-bold text-emerald-950">Tiếp Nhận Hồ Sơ B2B Thành Công!</h3>
+
+                {submittedCode && (
+                  <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-emerald-300 shadow-sm">
+                    <span className="text-xs text-slate-500 font-medium">Mã phiếu đối soát:</span>
+                    <span className="font-mono font-bold text-emerald-800 text-sm">{submittedCode}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (navigator.clipboard) {
+                          navigator.clipboard.writeText(submittedCode);
+                          setHasCopiedCode(true);
+                          toast.success('Đã sao chép mã phiếu B2B!');
+                          setTimeout(() => setHasCopiedCode(false), 2000);
+                        }
+                      }}
+                      className="p-1 text-slate-400 hover:text-emerald-700 transition-colors"
+                      title="Sao chép mã"
+                    >
+                      {hasCopiedCode ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                    </button>
+                  </div>
+                )}
+
+                <p className="text-xs text-emerald-900 max-w-md mx-auto leading-relaxed">
+                  Cảm ơn <strong>{formData.companyName}</strong> đã gửi yêu cầu. Thông tin phiếu đã được ghi nhận trực tiếp vào <strong>Hệ thống Quản Trị Viên (Admin)</strong> của GreenFood. Chuyên viên khối Khách sỉ & Doanh nghiệp sẽ liên hệ với anh/chị qua số điện thoại <strong>{formData.phone}</strong> trong vòng 2 giờ làm việc để gửi bảng giá và chuẩn bị mẫu thử.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setIsSubmitted(false)}
-                  className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
-                >
-                  Gửi thêm yêu cầu khác
-                </button>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSubmitted(false);
+                      setFormData({
+                        companyName: '',
+                        taxId: '',
+                        contactName: '',
+                        phone: '',
+                        email: '',
+                        businessType: 'Nhà hàng / Quán ăn cao cấp',
+                        dailyVolume: '50kg - 200kg / ngày',
+                        categories: ['Rau lá & Củ quả VietGAP'],
+                        deliveryTime: 'Trước 06:00 sáng',
+                        notes: '',
+                      });
+                    }}
+                    className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-sm"
+                  >
+                    Gửi thêm hồ sơ yêu cầu khác
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">

@@ -12,7 +12,8 @@ import {
   Clock, 
   CheckCircle2,
   Bot,
-  Tractor
+  Tractor,
+  Building2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -22,7 +23,7 @@ import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 
 export interface AdminNotification {
   id: string;
-  type: 'order' | 'chat' | 'stock' | 'farmer';
+  type: 'order' | 'chat' | 'stock' | 'farmer' | 'b2b';
   title: string;
   description: string;
   timestamp: string;
@@ -33,7 +34,7 @@ export interface AdminNotification {
 
 export default function AdminNotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'order' | 'farmer' | 'chat' | 'stock'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'order' | 'farmer' | 'b2b' | 'chat' | 'stock'>('all');
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -156,6 +157,28 @@ export default function AdminNotificationCenter() {
         }
       } catch (err) {
         console.warn('Farmers notification fetch error:', err);
+      }
+
+      // 5. Fetch B2B Wholesale Inquiries pending
+      try {
+        const { getAdminB2bInquiriesApi } = await import('@/lib/api');
+        const b2bRes = await getAdminB2bInquiriesApi({ status: 'PENDING' });
+        if (b2bRes && b2bRes.success && Array.isArray(b2bRes.data)) {
+          b2bRes.data.forEach((inquiry) => {
+            notifList.push({
+              id: `b2b-${inquiry.id}`,
+              type: 'b2b',
+              title: `Phiếu đối tác B2B: ${inquiry.company_name}`,
+              description: `${inquiry.contact_name} (${inquiry.phone}) cần tư vấn ${inquiry.business_type} - Sản lượng: ${inquiry.estimated_volume || 'N/A'}`,
+              timestamp: inquiry.created_at_human || 'Chờ liên hệ',
+              isRead: readIds.has(`b2b-${inquiry.id}`),
+              link: '/admin/b2b/',
+              badge: 'Khách sỉ B2B',
+            });
+          });
+        }
+      } catch (err) {
+        console.warn('B2B notification fetch error:', err);
       }
 
       // Calculate unread count
@@ -313,6 +336,16 @@ export default function AdminNotificationCenter() {
               Nông hộ
             </button>
             <button
+              onClick={() => setActiveTab('b2b')}
+              className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center ${
+                activeTab === 'b2b' 
+                  ? 'bg-white text-teal-700 shadow-xs' 
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+            >
+              Khách sỉ B2B
+            </button>
+            <button
               onClick={() => setActiveTab('chat')}
               className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center ${
                 activeTab === 'chat' 
@@ -357,12 +390,15 @@ export default function AdminNotificationCenter() {
                       ? 'bg-emerald-100 text-emerald-700' 
                       : item.type === 'farmer'
                         ? 'bg-purple-100 text-purple-700'
-                        : item.type === 'chat'
-                          ? 'bg-sky-100 text-sky-700'
-                          : 'bg-amber-100 text-amber-700'
+                        : item.type === 'b2b'
+                          ? 'bg-teal-100 text-teal-800'
+                          : item.type === 'chat'
+                            ? 'bg-sky-100 text-sky-700'
+                            : 'bg-amber-100 text-amber-700'
                   }`}>
                     {item.type === 'order' && <ShoppingBag size={18} />}
                     {item.type === 'farmer' && <Tractor size={18} />}
+                    {item.type === 'b2b' && <Building2 size={18} />}
                     {item.type === 'chat' && <Bot size={18} />}
                     {item.type === 'stock' && <AlertTriangle size={18} />}
                   </div>
