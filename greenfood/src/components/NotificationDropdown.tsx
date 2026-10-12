@@ -18,9 +18,11 @@ import {
   Trash2,
   PackageCheck,
   ShieldCheck,
-  ExternalLink
+  ExternalLink,
+  User
 } from 'lucide-react';
 import { useNotificationStore, NotificationItem, NotificationType } from '@/store/useNotificationStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'react-hot-toast';
 
 export function formatNotificationTime(dateStr: string): string {
@@ -64,6 +66,9 @@ export default function NotificationDropdown() {
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const { user, isAuthenticated } = useAuthStore();
+  const isUserLoggedIn = Boolean(mounted && isAuthenticated && user);
+
   const { 
     notifications, 
     soundEnabled, 
@@ -93,10 +98,15 @@ export default function NotificationDropdown() {
     };
   }, [isOpen]);
 
-  const unreadCount = mounted ? notifications.filter(n => !n.isRead).length : 0;
+  // Chỉ tính số thông báo chưa đọc khi người dùng ĐÃ ĐĂNG NHẬP
+  const myNotifications = isUserLoggedIn 
+    ? notifications.filter(item => !item.userId || item.userId === String(user?.id))
+    : [];
 
-  // Lọc thông báo theo tab
-  const filteredNotifications = notifications.filter(item => {
+  const unreadCount = isUserLoggedIn ? myNotifications.filter(n => !n.isRead).length : 0;
+
+  // Lọc thông báo theo tab (chỉ áp dụng khi đã đăng nhập)
+  const filteredNotifications = myNotifications.filter(item => {
     if (activeTab === 'all') return true;
     if (activeTab === 'order') return item.type === 'order';
     if (activeTab === 'promotion') return item.type === 'promotion';
@@ -160,7 +170,7 @@ export default function NotificationDropdown() {
             : 'text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 border-slate-200/80 hover:border-emerald-300'
         }`}
         aria-label="Thông báo"
-        title="Thông báo mới nhận kiểu Shopee"
+        title={isUserLoggedIn ? 'Thông báo của bạn' : 'Đăng nhập để xem thông báo'}
       >
         <Bell 
           size={19} 
@@ -169,8 +179,8 @@ export default function NotificationDropdown() {
           }`} 
         />
         
-        {/* Unread Badge số đếm kiểu Shopee */}
-        {mounted && unreadCount > 0 && (
+        {/* Unread Badge số đếm kiểu Shopee - CHỈ HIỆN KHI ĐÃ ĐĂNG NHẬP */}
+        {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-rose-600 text-white font-extrabold text-[10px] leading-tight min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm animate-in zoom-in">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
@@ -180,51 +190,88 @@ export default function NotificationDropdown() {
       {/* Popover Dropdown Kiểu Shopee */}
       {isOpen && (
         <div 
-          className="absolute right-0 sm:-right-2 top-full mt-2.5 w-[360px] sm:w-[420px] max-w-[calc(100vw-24px)] bg-white rounded-2xl shadow-2xl border border-slate-200/90 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
-          style={{ boxShadow: '0 15px 40px -10px rgba(0, 0, 0, 0.2)' }}
+          className="absolute right-0 sm:-right-2 top-full mt-2.5 w-[360px] sm:w-[420px] max-w-[calc(100vw-24px)] bg-white rounded-2xl shadow-2xl border border-slate-200 z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+          style={{ boxShadow: '0 20px 50px -10px rgba(0, 0, 0, 0.25)' }}
         >
           {/* Caret mũi tên nhọn trỏ lên icon chuông */}
           <div className="absolute -top-2 right-4 sm:right-6 w-3.5 h-3.5 bg-white border-t border-l border-slate-200 transform rotate-45 z-10" />
 
-          {/* Header Thông Báo */}
-          <div className="relative z-20 bg-white border-b border-slate-100 px-4 py-3.5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-                Thông Báo Mới Nhận
-              </h3>
-              {unreadCount > 0 && (
-                <span className="bg-red-50 text-red-600 border border-red-200 text-[11px] font-bold px-2 py-0.5 rounded-full">
-                  {unreadCount} chưa đọc
-                </span>
-              )}
-            </div>
+          {/* TRƯỜNG HỢP 1: CHƯA ĐĂNG NHẬP -> ẨN HẾT THÔNG TIN NHẠY CẢM, YÊU CẦU ĐĂNG NHẬP */}
+          {!isUserLoggedIn ? (
+            <div className="relative z-20 bg-white p-6 text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-100 shadow-inner">
+                <ShieldCheck size={34} className="text-emerald-600" />
+              </div>
 
-            <div className="flex items-center gap-1">
-              {/* Nút bật/tắt âm thanh */}
-              <button
-                type="button"
-                onClick={toggleSound}
-                className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                title={soundEnabled ? 'Tắt âm báo' : 'Bật âm báo'}
-              >
-                {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} className="text-slate-400" />}
-              </button>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                  Đăng nhập để xem thông báo
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
+                  Thông tin lộ trình đơn hàng, tình trạng giao nhận và các voucher cá nhân được bảo mật riêng cho tài khoản của bạn.
+                </p>
+              </div>
 
-              {/* Nút Đọc tất cả */}
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  onClick={handleMarkAllRead}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 px-2 py-1 rounded-lg transition-colors cursor-pointer"
-                  title="Đánh dấu tất cả là đã đọc"
+              <div className="flex flex-col gap-2 pt-1 max-w-xs mx-auto">
+                <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all text-center flex items-center justify-center gap-1.5"
                 >
-                  <CheckCheck size={14} />
-                  <span className="hidden sm:inline">Đã đọc tất cả</span>
-                </button>
-              )}
+                  <User size={15} />
+                  <span>Đăng nhập ngay</span>
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all text-center"
+                >
+                  Chưa có tài khoản? Đăng ký
+                </Link>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* TRƯỜNG HỢP 2: ĐÃ ĐĂNG NHẬP -> HIỂN THỊ ĐẦY ĐỦ THÔNG BÁO CỦA BẢN THÂN */
+            <>
+              {/* Header Thông Báo */}
+              <div className="relative z-20 bg-white border-b border-slate-100 px-4 py-3.5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+                    Thông Báo Của Bạn
+                  </h3>
+                  {unreadCount > 0 && (
+                    <span className="bg-red-50 text-red-600 border border-red-200 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                      {unreadCount} chưa đọc
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1">
+                  {/* Nút bật/tắt âm thanh */}
+                  <button
+                    type="button"
+                    onClick={toggleSound}
+                    className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                    title={soundEnabled ? 'Tắt âm báo' : 'Bật âm báo'}
+                  >
+                    {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} className="text-slate-400" />}
+                  </button>
+
+                  {/* Nút Đọc tất cả */}
+                  {unreadCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleMarkAllRead}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                      title="Đánh dấu tất cả là đã đọc"
+                    >
+                      <CheckCheck size={14} />
+                      <span className="hidden sm:inline">Đã đọc tất cả</span>
+                    </button>
+                  )}
+                </div>
+              </div>
 
           {/* Category Tabs kiểu Shopee */}
           <div className="grid grid-cols-4 bg-slate-50/80 border-b border-slate-200/80 p-1 text-xs font-semibold text-slate-600">
@@ -371,8 +418,10 @@ export default function NotificationDropdown() {
               <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-        </div>
+        </>
       )}
     </div>
+  )}
+</div>
   );
 }

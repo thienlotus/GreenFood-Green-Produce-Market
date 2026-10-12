@@ -14,6 +14,7 @@ import {
   Users, 
   Tractor,
   Truck,
+  Building2,
   MessageCircle, 
   Settings, 
   LogOut, 
@@ -46,20 +47,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pendingFarmerCount, setPendingFarmerCount] = useState(0);
+  const [pendingB2bCount, setPendingB2bCount] = useState(0);
 
   useEffect(() => {
-    async function checkPendingFarmers() {
+    async function checkPendingCounts() {
       try {
-        const { getAdminFarmersApi } = await import('@/lib/api');
-        const data = await getAdminFarmersApi();
-        if (Array.isArray(data)) {
-          const count = data.filter(f => !f.is_verified).length;
+        const { getAdminFarmersApi, getAdminB2bInquiriesApi } = await import('@/lib/api');
+        const [farmerData, b2bData] = await Promise.all([
+          getAdminFarmersApi().catch(() => []),
+          getAdminB2bInquiriesApi({ status: 'PENDING' }).catch(() => ({ success: false, pending_count: 0, data: [] }))
+        ]);
+        if (Array.isArray(farmerData)) {
+          const count = farmerData.filter(f => !f.is_verified).length;
           setPendingFarmerCount(count);
+        }
+        if (b2bData && b2bData.success) {
+          setPendingB2bCount(b2bData.pending_count || 0);
         }
       } catch {}
     }
-    checkPendingFarmers();
-    const interval = setInterval(checkPendingFarmers, 15000);
+    checkPendingCounts();
+    const interval = setInterval(checkPendingCounts, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -87,6 +95,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           badge: pendingFarmerCount > 0 ? `${pendingFarmerCount} chờ duyệt` : undefined,
           highlight: pendingFarmerCount > 0
         },
+        { 
+          name: 'Khách sỉ & B2B', 
+          href: '/admin/b2b/', 
+          icon: Building2, 
+          badge: pendingB2bCount > 0 ? `${pendingB2bCount} chờ liên hệ` : undefined,
+          highlight: pendingB2bCount > 0
+        },
         { name: 'Phí giao hàng GHN', href: '/admin/shipping/', icon: Truck },
       ],
     },
@@ -112,6 +127,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (norm === '/admin') return 'Bảng điều khiển Tổng quan';
     if (norm.startsWith('/admin/orders')) return 'Quản lý Đơn hàng';
     if (norm.startsWith('/admin/products')) return 'Quản lý Sản phẩm';
+    if (norm.startsWith('/admin/b2b')) return 'Khách sỉ & Doanh nghiệp (B2B)';
     if (norm.startsWith('/admin/chat')) return 'Live Chat & Trợ lý AI';
     if (norm.startsWith('/admin/customers')) return 'Người dùng & Phân quyền';
     if (norm.startsWith('/admin/farmers')) return 'Nông hộ & Vùng trồng';

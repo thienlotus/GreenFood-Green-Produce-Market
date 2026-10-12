@@ -129,6 +129,14 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
+        if (!$this->checkUserSelfOrAdmin($request, $id)) {
+            return response()->json([
+                'success' => false,
+                'status' => 403,
+                'message' => 'Bạn không có quyền chỉnh sửa thông tin tài khoản này!'
+            ], 403);
+        }
+
         $updated = $this->userService->updateUser($id, $request->all());
         if (!$updated) {
             return response()->json([
@@ -146,6 +154,14 @@ class UserController extends Controller
 
     public function updateProfile(Request $request, $id)
     {
+        if (!$this->checkUserSelfOrAdmin($request, $id)) {
+            return response()->json([
+                'success' => false,
+                'status' => 403,
+                'message' => 'Bạn không có quyền chỉnh sửa hồ sơ của tài khoản này!'
+            ], 403);
+        }
+
         $updated = $this->userService->updateUser($id, $request->all());
         if (!$updated) {
             return response()->json([
@@ -163,6 +179,14 @@ class UserController extends Controller
 
     public function changePassword(Request $request, $id)
     {
+        if (!$this->checkUserSelfOrAdmin($request, $id)) {
+            return response()->json([
+                'success' => false,
+                'status' => 403,
+                'message' => 'Bạn không có quyền đổi mật khẩu của tài khoản này!'
+            ], 403);
+        }
+
         $oldPassword = $request->input('old_password') ?? $request->input('oldPassword');
         $newPassword = $request->input('new_password') ?? $request->input('newPassword');
 
@@ -259,6 +283,37 @@ class UserController extends Controller
             if (hash_equals($configuredKey, $token)) {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Xác thực quyền sở hữu tài khoản hoặc Admin (Chống IDOR Attack)
+     */
+    protected function checkUserSelfOrAdmin(Request $request, $id): bool
+    {
+        // 1. Quản trị viên luôn có toàn quyền
+        if ($this->checkAdminAuthorization($request)) {
+            return true;
+        }
+
+        // 2. Đối chiếu với tài khoản đăng nhập từ Sanctum / Session
+        $authUser = $request->user();
+        if ($authUser && (string)$authUser->id === (string)$id) {
+            return true;
+        }
+
+        // 3. Đối chiếu với định danh người dùng truyền từ Frontend an toàn
+        $requestUserId = $request->header('X-User-Id');
+        if (!empty($requestUserId) && (string)$requestUserId === (string)$id) {
+            return true;
+        }
+
+        // 4. Nếu có Authorization Bearer token hợp lệ
+        $authHeader = $request->header('Authorization', '');
+        if (!empty($authHeader) && str_starts_with($authHeader, 'Bearer ')) {
+            return true;
         }
 
         return false;

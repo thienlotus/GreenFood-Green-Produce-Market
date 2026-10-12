@@ -56,7 +56,7 @@ class PromotionService
         $vouchers = [
             'GREEN10' => ['type' => 'percent', 'value' => 10, 'min' => 100000, 'max_discount' => 50000, 'title' => 'Giảm 10% tối đa 50k'],
             'FREESHIP' => ['type' => 'shipping', 'value' => 100, 'min' => 150000, 'max_discount' => 30000, 'title' => 'Freeship tối đa 30k'],
-            'CHAOBANMOI' => ['type' => 'fixed', 'value' => 20000, 'min' => 50000, 'max_discount' => 20000, 'title' => 'Giảm 20.000đ cho đơn đầu tiên'],
+            'CHAOBANMOI' => ['type' => 'fixed', 'value' => 50000, 'min' => 200000, 'max_discount' => 50000, 'title' => 'Voucher Chào Bạn Mới Giảm 50.000đ'],
             'GF-WELCOME50' => ['type' => 'fixed', 'value' => 50000, 'min' => 250000, 'max_discount' => 50000, 'title' => 'Voucher Thành Viên Mới 50k'],
         ];
 

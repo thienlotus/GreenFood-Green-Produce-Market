@@ -1,0 +1,666 @@
+{
+	"info": {
+		"_postman_id": "greenfood-delivery-logistics-nguyen-van-dai-duong",
+		"name": "GreenFood - Delivery & Logistics Service (Nguyễn Văn Đại Dương)",
+		"description": "Bộ Postman Collection kiểm thử toàn bộ các API thuộc phần phân công Service của Nguyễn Văn Đại Dương (nhánh delivery-service):\n1. Quản lý Biểu phí Vùng Giao hàng (Shipping Zones CRUD)\n2. GIS Nông hộ & Tọa độ Vùng trồng (Farmers & GIS)\n3. Tích hợp Giao Hàng Nhanh API v2 (Địa chỉ, Tính cước đa kho Multi-Vendor, Đẩy đơn GHN)\n4. Live Tracking hành trình giao hàng & Tọa độ GPS shipper\n5. Cổng thanh toán VietQR SePay tự động không cần bấm xác nhận & Webhook.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Logistics & Biểu Phí Vùng (Shipping Zones)",
+			"item": [
+				{
+					"name": "1.1 Lấy danh sách vùng giao hàng (GET)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Trả về danh sách vùng giao hàng\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shipping-zones",
+							"host": ["{{base_url}}"],
+							"path": ["shipping-zones"]
+						}
+					}
+				},
+				{
+					"name": "1.2 Thêm mới vùng giao hàng (POST)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Tạo vùng giao hàng thành công\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.collectionVariables.set(\"test_zone_id\", jsonData.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Vùng Tây Nguyên Trọng Điểm\",\n  \"provinces\": \"Lâm Đồng, Đắk Lắk, Gia Lai, Kon Tum\",\n  \"base_fee\": 35000,\n  \"extra_fee_per_kg\": 5000,\n  \"free_ship_minimum\": 500000,\n  \"estimated_days\": \"1-2 ngày\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shipping-zones",
+							"host": ["{{base_url}}"],
+							"path": ["shipping-zones"]
+						}
+					}
+				},
+				{
+					"name": "1.3 Cập nhật thông tin vùng giao hàng (PUT)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Cập nhật thành công\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Vùng Tây Nguyên (Ưu Đãi Phí Vận Chuyển)\",\n  \"base_fee\": 30000,\n  \"estimated_days\": \"1 ngày\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shipping-zones/{{test_zone_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["shipping-zones", "{{test_zone_id}}"]
+						}
+					}
+				},
+				{
+					"name": "1.4 Xóa vùng giao hàng (DELETE)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Xóa thành công\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/shipping-zones/{{test_zone_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["shipping-zones", "{{test_zone_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. GIS Nông Hộ & Vùng Trồng (Farmers & GIS)",
+			"item": [
+				{
+					"name": "2.1 Lấy danh sách Nông hộ & Tọa độ GIS (GET)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Có danh sách nông hộ kèm tọa độ và shop GHN\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data.length).to.be.above(0);",
+									"    pm.collectionVariables.set(\"farmer_id\", jsonData.data[0].id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/farmers",
+							"host": ["{{base_url}}"],
+							"path": ["farmers"]
+						}
+					}
+				},
+				{
+					"name": "2.2 Xem chi tiết Nông hộ (GET)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Thông tin chi tiết nông hộ hợp lệ\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data).to.have.property('farm_name');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/farmers/{{farmer_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["farmers", "{{farmer_id}}"]
+						}
+					}
+				},
+				{
+					"name": "2.3 Cập nhật tọa độ GIS & Kho GHN Shop ID của Nông hộ (PUT)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Cập nhật hồ sơ nông hộ thành công\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"farm_name\": \"Vườn Trái Cây Chú Ba\",\n  \"latitude\": 10.2541,\n  \"longitude\": 106.1245,\n  \"ghn_shop_id\": 217559,\n  \"ghn_province_id\": 213,\n  \"ghn_district_id\": 3158,\n  \"ghn_ward_code\": \"560301\",\n  \"ghn_address\": \"Khu Pho 2 Thi Tran Cho Lach Huyen Cho Lach Tinh Ben Tre, Thị trấn Chợ Lách, Huyện Chợ Lách, Bến Tre\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/farmers/{{farmer_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["farmers", "{{farmer_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Giao Hàng Nhanh API v2 (GHN Logistics)",
+			"item": [
+				{
+					"name": "3.1 Lấy danh sách Tỉnh/Thành phố GHN (GET)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Trả về danh sách Tỉnh/Thành phố\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(200);",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ghn/provinces",
+							"host": ["{{base_url}}"],
+							"path": ["ghn", "provinces"]
+						}
+					}
+				},
+				{
+					"name": "3.2 Lấy danh sách Quận/Huyện theo Tỉnh (GET)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Trả về danh sách Quận/Huyện\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(200);",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ghn/districts/202",
+							"host": ["{{base_url}}"],
+							"path": ["ghn", "districts", "202"]
+						}
+					}
+				},
+				{
+					"name": "3.3 Lấy danh sách Phường/Xã theo Huyện (GET)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Trả về danh sách Phường/Xã\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(200);",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ghn/wards/1442",
+							"host": ["{{base_url}}"],
+							"path": ["ghn", "wards", "1442"]
+						}
+					}
+				},
+				{
+					"name": "3.4 Tính cước phí GHN Multi-Vendor tách kiện 3 Nông Hộ (POST)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Tách kiện theo từng nông hộ và tính cước chính xác\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(200);",
+									"    pm.expect(jsonData.data.total).to.be.above(0);",
+									"    pm.expect(jsonData.data.packages.length).to.be.above(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"to_district_id\": 1442,\n  \"to_ward_code\": \"20101\",\n  \"weight\": 1500,\n  \"items\": [\n    {\n      \"id\": \"p1\",\n      \"farmer_name\": \"Vườn Trái Cây Chú Ba\",\n      \"quantity\": 1,\n      \"price\": 120000\n    },\n    {\n      \"id\": \"t1\",\n      \"farmer_name\": \"Trang Trại Mộc Châu\",\n      \"quantity\": 1,\n      \"price\": 95000\n    },\n    {\n      \"id\": \"p3\",\n      \"farmer_name\": \"Nông Trại Xanh Đà Lạt\",\n      \"quantity\": 1,\n      \"price\": 80000\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ghn/calculate-fee",
+							"host": ["{{base_url}}"],
+							"path": ["ghn", "calculate-fee"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Hành Trình Đơn Hàng (Live Tracking & GPS)",
+			"item": [
+				{
+					"name": "4.1 Tra cứu hành trình đơn hàng & Tọa độ Shipper (GET)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Trả về chi tiết hành trình và tọa độ GPS\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data).to.have.property('trackingNumber');",
+									"    pm.expect(jsonData.data).to.have.property('timeline');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/orders/tracking/GF557286",
+							"host": ["{{base_url}}"],
+							"path": ["orders", "tracking", "GF557286"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Thanh Toán & VietQR SePay Tự Động (Payment Service)",
+			"item": [
+				{
+					"name": "5.1 Lấy danh sách phương thức thanh toán (GET)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Chứa đầy đủ các phương thức thanh toán\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/payment/methods",
+							"host": ["{{base_url}}"],
+							"path": ["payment", "methods"]
+						}
+					}
+				},
+				{
+					"name": "5.2 Tạo mã thanh toán VietQR SePay tự động (POST)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Sinh mã VietQR và link ảnh QR hợp lệ\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData).to.have.property('qrCodeUrl');",
+									"    pm.expect(jsonData).to.have.property('accountNumber');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"order_id\": \"GF557286\",\n  \"amount\": 150000,\n  \"order_info\": \"Thanh toán đơn hàng GreenFood #GF557286\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payment/sepay/create",
+							"host": ["{{base_url}}"],
+							"path": ["payment", "sepay", "create"]
+						}
+					}
+				},
+				{
+					"name": "5.3 Polling kiểm tra trạng thái thanh toán SePay (POST)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Kiểm tra trạng thái đơn hàng\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData).to.have.property('isPaid');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"order_id\": \"GF557286\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payment/sepay/check-status",
+							"host": ["{{base_url}}"],
+							"path": ["payment", "sepay", "check-status"]
+						}
+					}
+				},
+				{
+					"name": "5.4 Webhook SePay mô phỏng tiền vào tự động xác nhận đơn (POST)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Webhook xử lý thành công\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 99999,\n  \"gateway\": \"MBBank\",\n  \"transactionDate\": \"2026-10-09 13:00:00\",\n  \"accountNumber\": \"0987654321\",\n  \"code\": \"GF557286\",\n  \"content\": \"GF557286 thanh toan don hang GreenFood\",\n  \"transferType\": \"in\",\n  \"transferAmount\": 150000,\n  \"referenceCode\": \"SEPAY_POSTMAN_TEST\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payment/sepay/webhook",
+							"host": ["{{base_url}}"],
+							"path": ["payment", "sepay", "webhook"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000/api/v1"
+		},
+		{
+			"key": "test_zone_id",
+			"value": "SZ001"
+		},
+		{
+			"key": "farmer_id",
+			"value": "bfe149ae-f195-4a3f-b83b-0b39c0e3e668"
+		}
+	]
+}

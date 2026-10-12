@@ -15,6 +15,7 @@ export interface NotificationItem {
   tag?: string;
   orderCode?: string;
   amount?: number;
+  userId?: string;
 }
 
 const DEFAULT_NOTIFICATIONS: NotificationItem[] = [

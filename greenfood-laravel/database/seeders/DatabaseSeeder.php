@@ -31,35 +31,35 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Đi chợ online',
                 'slug' => 'di-cho-online',
                 'icon' => '🛒',
-                'banner_image' => 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1920&auto=format&fit=crop',
+                'banner_image' => '/banners/banner-di-cho.jpg',
                 'description' => 'Thực phẩm tươi ngon, rau củ quả sạch thu hoạch trong ngày giao tận nhà.'
             ],
             [
                 'name' => 'Trái cây tươi ngon',
                 'slug' => 'trai-cay',
                 'icon' => '🍉',
-                'banner_image' => 'https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop',
+                'banner_image' => '/banners/banner-trai-cay.jpg',
                 'description' => 'Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.'
             ],
             [
                 'name' => 'Trà - Cà phê - Socola',
                 'slug' => 'tra-ca-phe',
                 'icon' => '☕',
-                'banner_image' => 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?q=80&w=1920&auto=format&fit=crop',
+                'banner_image' => '/banners/banner-tra-cafe.jpg',
                 'description' => 'Trà Thái Nguyên thượng hạng, Cà phê Robusta Mộc Châu rang mộc, Cacao Bến Tre nguyên chất.'
             ],
             [
                 'name' => 'Đặc sản vùng miền',
                 'slug' => 'dac-san',
                 'icon' => '🎁',
-                'banner_image' => 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1920&auto=format&fit=crop',
+                'banner_image' => '/banners/banner-dac-san.jpg',
                 'description' => 'Đặc sản trứ danh 3 miền: Sầu riêng Ri6, Mật ong rừng Tràm, Bưởi da xanh Bến Tre.'
             ],
             [
                 'name' => 'Agrishow Triển Lãm',
                 'slug' => 'agrishow',
                 'icon' => '🌾',
-                'banner_image' => 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1920&auto=format&fit=crop',
+                'banner_image' => '/banners/banner-agrishow.jpg',
                 'description' => 'Bộ sưu tập nông sản đạt chuẩn xuất khẩu chất lượng cao tại Hội chợ Nông sản Việt.'
             ]
         ];

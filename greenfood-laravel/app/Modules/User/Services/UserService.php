@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\User\Services;
 
 use App\Mail\VerificationCodeMail;
+use App\Mail\WelcomeEmail;
 use App\Modules\User\Repositories\EmailVerificationRepository;
 use App\Modules\User\Repositories\UserRepository;
 use Carbon\Carbon;
@@ -191,6 +192,19 @@ class UserService
         $this->userRepository->update($user, ['email_verified' => true]);
 
         Log::info("GreenFood Email Successfully Verified for [{$user->email}]");
+
+        // Tự động gửi Email chào mừng và tặng Voucher tân thủ 50K
+        try {
+            Mail::to($user->email)->send(new WelcomeEmail(
+                recipientName: $user->full_name ?? 'Quý khách',
+                voucherCode: 'CHAOBANMOI',
+                voucherDiscount: 50000,
+                minOrder: 200000
+            ));
+            Log::info("GreenFood Welcome Email sent successfully to [{$user->email}]");
+        } catch (\Throwable $e) {
+            Log::warning("Could not send Welcome Email to [{$user->email}]: " . $e->getMessage());
+        }
 
         return [
             'success' => true,

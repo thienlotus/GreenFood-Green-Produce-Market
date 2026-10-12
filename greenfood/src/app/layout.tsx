@@ -1,4 +1,4 @@
-import { Pacifico, Be_Vietnam_Pro, Dancing_Script } from 'next/font/google';
+import { Pacifico, Be_Vietnam_Pro, Dancing_Script, Playfair_Display } from 'next/font/google';
 import "./globals.css";
 
 const pacifico = Pacifico({
@@ -15,6 +15,15 @@ const dancingScript = Dancing_Script({
   variable: '--font-dancing',
   display: 'swap',
   fallback: ['cursive', 'sans-serif'],
+});
+
+const playfair = Playfair_Display({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin', 'vietnamese'],
+  variable: '--font-serif',
+  display: 'swap',
+  style: ['normal', 'italic'],
+  fallback: ['Georgia', 'serif'],
 });
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -54,9 +63,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/favicon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap&subset=vietnamese" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Caveat:wght@500;600;700&family=Playwrite+VN:wght@300;400&family=Alex+Brush&display=swap" rel="stylesheet" />
       </head>
-      <body className={`antialiased bg-gray-50/60 font-sans flex flex-col min-h-screen ${pacifico.variable} ${dancingScript.variable} ${beVietnamPro.variable}`}>
+      <body className={`antialiased bg-gray-50/60 font-sans flex flex-col min-h-screen ${pacifico.variable} ${dancingScript.variable} ${beVietnamPro.variable} ${playfair.variable}`}>
         <Toaster position="top-right" />
         <ClientLayoutWrapper>
           {children}
