@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X, ChevronLeft, ChevronRight, Play, Pause, Volume2, VolumeX,
   Maximize2, ThumbsUp, Star, CheckCircle, ShoppingBag, ShieldCheck,
@@ -51,6 +52,24 @@ export default function ShopeeMediaTheaterModal({
   const [duration, setDuration] = useState(0);
   const [likedMap, setLikedMap] = useState<Record<string | number, boolean>>({});
   const [likesCountMap, setLikesCountMap] = useState<Record<string | number, number>>({});
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,7 +127,7 @@ export default function ShopeeMediaTheaterModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  if (!isOpen || !currentMedia) return null;
+  if (!isOpen || !currentMedia || !mounted) return null;
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : mediaList.length - 1));
@@ -183,8 +202,8 @@ export default function ShopeeMediaTheaterModal({
     toast.success(`Đã thêm "${productInfo.name}" vào giỏ hàng!`);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex items-center justify-center animate-in fade-in duration-200">
       {/* Nút đóng */}
       <button
         onClick={onClose}
@@ -453,6 +472,7 @@ export default function ShopeeMediaTheaterModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

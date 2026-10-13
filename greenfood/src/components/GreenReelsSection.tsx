@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { 
   Play, 
@@ -241,10 +242,27 @@ export const GREEN_REELS: ReelItem[] = [
 
 export default function GreenReelsSection() {
   const [activeReelIndex, setActiveReelIndex] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlayingModal, setIsPlayingModal] = useState(true);
   const [likedReels, setLikedReels] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  useEffect(() => {
+    if (activeReelIndex !== null) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeReelIndex]);
 
   const trackRef = useRef<HTMLDivElement>(null);
   const modalVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -529,43 +547,25 @@ export default function GreenReelsSection() {
             })}
           </div>
 
-          {/* Gợi ý trượt nhẹ */}
-          <div className="flex items-center justify-between mt-3 text-[11px] text-slate-400 font-medium px-1">
-            <span className="flex items-center gap-1">
-              <Sparkles size={12} className="text-emerald-500" /> Tự động trượt nhẹ qua trái · Rê chuột để dừng lại
-            </span>
-            <span className="hidden sm:inline">
-              Bấm vào từng video để xem clip & link mua sản phẩm chính xác
-            </span>
-          </div>
         </div>
       </div>
 
       {/* =========================================================================
           THEATER MODAL PLAYER & EXACT PRODUCT BUY LINK (PHONG CÁCH SOOPI.SITE)
           Khi khách hàng click vào xem, hiện video + link mua sản phẩm chính xác
+          (Khung nội dung gọn gàng, loại bỏ hoàn toàn khung đen ngoài, hỗ trợ Portal)
           ========================================================================= */}
-      {activeReel && (
+      {mounted && activeReel && createPortal(
         <div 
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-center justify-center p-2 sm:p-4 md:p-6 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 md:p-6 animate-in fade-in duration-200"
           onClick={handleCloseModal}
         >
-          {/* Nút đóng Modal */}
-          <button
-            type="button"
-            onClick={handleCloseModal}
-            aria-label="Đóng cửa sổ xem Reels"
-            className="absolute top-4 right-4 z-50 w-11 h-11 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-xl"
-          >
-            <X size={22} />
-          </button>
-
-          {/* Nút chuyển Reels trước / sau trên Modal */}
+          {/* Nút chuyển Reels trước / sau floating nhẹ trên màn hình lớn */}
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); handlePrevModalReel(); }}
             aria-label="Reels trước"
-            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/15 hover:bg-white/30 text-white items-center justify-center transition-all hover:scale-110 shadow-xl"
+            className="hidden xl:flex fixed left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 text-white items-center justify-center transition-all hover:scale-110 shadow-2xl backdrop-blur-md cursor-pointer"
           >
             <ChevronLeft size={24} />
           </button>
@@ -574,18 +574,18 @@ export default function GreenReelsSection() {
             type="button"
             onClick={(e) => { e.stopPropagation(); handleNextModalReel(); }}
             aria-label="Reels sau"
-            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/15 hover:bg-white/30 text-white items-center justify-center transition-all hover:scale-110 shadow-xl"
+            className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 text-white items-center justify-center transition-all hover:scale-110 shadow-2xl backdrop-blur-md cursor-pointer"
           >
             <ChevronRight size={24} />
           </button>
 
-          {/* Modal Container: Bento 2 cột (Trái: Video 9:16 - Phải: Shelf mua sản phẩm chính xác) */}
+          {/* Modal Container: Chỉ giữ khung nội dung bên trong, loại bỏ hoàn toàn khung đen bao ngoài */}
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-3xl lg:max-w-4xl max-h-[88vh] bg-slate-950 rounded-3xl border border-white/20 shadow-2xl overflow-hidden flex flex-col lg:flex-row relative z-30"
+            className="w-full max-w-4xl max-h-[88vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row relative z-30 border border-slate-200/80 animate-in zoom-in-95 duration-200"
           >
-            {/* CỘT TRÁI: KHUNG VIDEO 9:16 CÂN ĐỐI KHÔNG TRÀN KHUNG */}
-            <div className="relative w-full lg:w-[380px] xl:w-[400px] h-[46vh] sm:h-[52vh] lg:h-auto lg:min-h-[540px] bg-black flex items-center justify-center shrink-0 overflow-hidden">
+            {/* CỘT TRÁI: KHUNG VIDEO 9:16 CÂN ĐỐI */}
+            <div className="relative w-full lg:w-[380px] xl:w-[400px] h-[46vh] sm:h-[52vh] lg:h-auto lg:min-h-[560px] bg-black flex items-center justify-center shrink-0 overflow-hidden">
               <video
                 ref={modalVideoRef}
                 src={activeReel.videoSrc}
@@ -617,7 +617,7 @@ export default function GreenReelsSection() {
                   type="button"
                   onClick={toggleModalMute}
                   aria-label={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
-                  className="w-9 h-9 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center transition-colors"
+                  className="w-9 h-9 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center transition-colors cursor-pointer"
                 >
                   {isMuted ? <VolumeX size={17} className="text-rose-400" /> : <Volume2 size={17} />}
                 </button>
@@ -658,11 +658,21 @@ export default function GreenReelsSection() {
               </div>
             </div>
 
-            {/* CỘT PHẢI: SHELF SẢN PHẨM CHÍNH XÁC (INSPIRED BY SOOPI.SITE /LIVESTREAM PRODUCT SHELF) */}
-            <div className="flex-1 bg-white p-5 sm:p-6 lg:p-7 flex flex-col justify-between overflow-y-auto">
+            {/* CỘT PHẢI: SHELF SẢN PHẨM CHÍNH XÁC */}
+            <div className="flex-1 bg-white p-5 sm:p-6 lg:p-7 flex flex-col justify-between overflow-y-auto relative min-w-0">
+              {/* Nút đóng Modal đặt tinh tế ở góc phải shelf */}
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                aria-label="Đóng cửa sổ xem Reels"
+                className="absolute top-4 right-4 z-40 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+
               <div>
                 {/* Tiêu đề Shelf */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4 pr-10">
                   <div>
                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
                       GỢI Ý TỪ VIDEO REVIEW
@@ -671,7 +681,7 @@ export default function GreenReelsSection() {
                       Chọn nông sản ngay khi xem
                     </h3>
                   </div>
-                  <span className="text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                  <span className="hidden sm:inline-block text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
                     Sản phẩm chính hãng
                   </span>
                 </div>
@@ -750,7 +760,7 @@ export default function GreenReelsSection() {
                         key={item.id}
                         type="button"
                         onClick={() => { setActiveReelIndex(idx); setIsPlayingModal(true); }}
-                        className={`w-16 h-20 rounded-xl overflow-hidden shrink-0 relative border-2 transition-all ${
+                        className={`w-16 h-20 rounded-xl overflow-hidden shrink-0 relative border-2 transition-all cursor-pointer ${
                           idx === activeReelIndex 
                             ? 'border-emerald-600 scale-105 shadow-md' 
                             : 'border-slate-200 opacity-60 hover:opacity-100'
@@ -788,7 +798,7 @@ export default function GreenReelsSection() {
                 <button
                   type="button"
                   onClick={(e) => handleAddToCart(e, activeReel.product)}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-extrabold text-xs sm:text-sm py-3 px-4 rounded-2xl border border-emerald-300 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-extrabold text-xs sm:text-sm py-3 px-4 rounded-2xl border border-emerald-300 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <ShoppingBag size={16} className="text-emerald-700" />
                   <span>Thêm vào giỏ hàng</span>
@@ -798,7 +808,7 @@ export default function GreenReelsSection() {
                 <Link
                   href={`/product/${activeReel.product.slug}`}
                   onClick={handleCloseModal}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-2xl shadow-lg shadow-emerald-950/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-2xl shadow-lg shadow-emerald-950/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <span>Xem chi tiết & Mua ngay</span>
                   <ExternalLink size={15} />
@@ -806,7 +816,8 @@ export default function GreenReelsSection() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );
