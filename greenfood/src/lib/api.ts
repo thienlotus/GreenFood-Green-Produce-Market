@@ -285,12 +285,12 @@ export async function getShippingZones(): Promise<ShippingZoneItem[]> {
   if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
     return res.data.map((z: any) => ({
       id: z.id,
-      name: z.name,
-      provinces: z.provinces,
+      name: cleanVietnameseMojibake(z.name),
+      provinces: cleanVietnameseMojibake(z.provinces),
       baseFee: Number(z.base_fee),
       extraFeePerKg: Number(z.extra_fee_per_kg),
       freeShipMinimum: Number(z.free_ship_minimum),
-      estimatedDays: z.estimated_days,
+      estimatedDays: cleanVietnameseMojibake(z.estimated_days),
       isActive: Boolean(z.is_active),
     }));
   }

@@ -8,7 +8,8 @@ import {
   createShippingZone, 
   updateShippingZone, 
   deleteShippingZone, 
-  ShippingZoneItem 
+  ShippingZoneItem,
+  cleanVietnameseMojibake
 } from '@/lib/api';
 
 const fallbackZones: ShippingZoneItem[] = [
@@ -36,7 +37,12 @@ export default function AdminShipping() {
   const loadZones = async () => {
     const data = await getShippingZones();
     if (data && data.length > 0) {
-      setZones(data);
+      setZones(data.map(z => ({
+        ...z,
+        name: cleanVietnameseMojibake(z.name),
+        provinces: cleanVietnameseMojibake(z.provinces),
+        estimatedDays: cleanVietnameseMojibake(z.estimatedDays)
+      })));
     }
   };
 
