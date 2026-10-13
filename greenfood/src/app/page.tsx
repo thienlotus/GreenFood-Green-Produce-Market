@@ -12,7 +12,7 @@ import {
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
 import WelcomeLetterModal from '@/components/WelcomeLetterModal';
-import HomeVideoReviewsSection from '@/components/HomeVideoReviewsSection';
+import GreenReelsSection from '@/components/GreenReelsSection';
 import { getProducts, type ProductItem } from '@/lib/api';
 import { ALL_PRODUCTS } from '@/data/products';
 
@@ -609,32 +609,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ========================= QUICK LINKS (DANH MỤC TRUY CẬP NHANH) ========================= */}
-      <section className="container mx-auto px-4 lg:px-8 mt-7 relative z-10 reveal-on-scroll scroll-reactive-item">
-        <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/80 p-5 md:p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Sparkles size={16} className="text-emerald-600" /> Danh mục truy cập nhanh
-            </h3>
-            <span className="text-xs text-slate-400 font-medium hidden sm:inline">Trực tiếp từ vùng trồng VietGAP</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-3">
-            {QUICK_LINKS.map((c) => {
-              const Icon = c.icon;
-              return (
-                <Link key={c.name} href={c.href} className="flex flex-col items-center gap-2 group p-2 rounded-2xl hover:bg-slate-50 transition-colors scroll-reactive-item">
-                  <div className={`w-13 h-13 md:w-14 md:h-14 rounded-2xl ${c.color} flex items-center justify-center border shadow-xs group-hover:-translate-y-1.5 group-hover:shadow-md transition-all duration-300`}>
-                    <Icon size={22} />
-                  </div>
-                  <span className="text-[11px] font-bold text-slate-700 text-center leading-tight group-hover:text-emerald-800 transition-colors">
-                    {c.name}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* ========================= GREENREELS (VIDEO REVIEW THỰC TẾ SOOPI STYLE) ========================= */}
+      <GreenReelsSection />
 
       {/* ========================== FLASH SALE ========================== */}
       <section id="flash-sale" className="container mx-auto px-4 lg:px-8 mt-10 scroll-mt-28 relative z-10 reveal-on-scroll scroll-reactive-item">
@@ -821,9 +797,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      {/* ======================== REELS (VIDEO REVIEW THỰC TẾ) ======================== */}
-      <HomeVideoReviewsSection />
 
       {/* ======================= GỢI Ý HÔM NAY (TABS) ======================= */}
       <section className="container mx-auto px-4 lg:px-8 mt-12 relative z-10 reveal-on-scroll scroll-reactive-item">
