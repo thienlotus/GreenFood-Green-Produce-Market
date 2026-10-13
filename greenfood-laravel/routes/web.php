@@ -36,3 +36,34 @@ Route::prefix('user')->name('user.')->group(function () {
     Route::get('/orders/{order}/start-momo', [MomoController::class, 'start'])->name('orders.momo.start');
     Route::get('/orders/{order}/simulate-momo-success', [MomoController::class, 'simulateSuccess'])->name('orders.momo.simulate');
 });
+
+/*
+|--------------------------------------------------------------------------
+| 🖼️ PHỤC VỤ TRỰC TIẾP FILE STORAGE (ẢNH / VIDEO REVIEW)
+| Đảm bảo ảnh/video review luôn hiển thị chuẩn 100% kể cả khi symlink chưa tạo
+|--------------------------------------------------------------------------
+*/
+Route::get('/storage/{path}', function ($path) {
+    $searchPaths = [
+        public_path('storage/' . $path),
+        storage_path('app/public/' . $path),
+        storage_path('app/' . $path),
+        '/home/ajmylihnhosting/domains/greenfood.asia/public_html/storage/' . $path,
+        '/home/ajmylihnhosting/domains/greenfood.asia/storage/' . $path,
+        '/home/ajmylihnhosting/storage/app/public/' . $path,
+        base_path('storage/app/public/' . $path),
+    ];
+
+    foreach ($searchPaths as $file) {
+        if (file_exists($file) && is_file($file)) {
+            $mime = mime_content_type($file) ?: 'application/octet-stream';
+            return response()->file($file, [
+                'Content-Type' => $mime,
+                'Cache-Control' => 'public, max-age=31536000',
+            ]);
+        }
+    }
+
+    return response('File not found', 404);
+})->where('path', '.*');
+

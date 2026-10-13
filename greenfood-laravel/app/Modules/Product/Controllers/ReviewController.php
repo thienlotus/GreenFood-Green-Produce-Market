@@ -175,6 +175,28 @@ class ReviewController extends Controller
         $filename = Str::random(20) . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs($folder, $filename, 'public');
 
+        // Sao chép trực tiếp vào các thư mục public để web server phục vụ tĩnh ngay lập tức
+        $sourceFile = storage_path('app/public/' . $folder . '/' . $filename);
+        $publicDestinations = [
+            public_path('storage/' . $folder),
+            base_path('domains/greenfood.asia/public_html/storage/' . $folder),
+            base_path('domains/greenfood.asia/storage/' . $folder),
+            '/home/ajmylihnhosting/domains/greenfood.asia/public_html/storage/' . $folder,
+            '/home/ajmylihnhosting/domains/greenfood.asia/storage/' . $folder,
+            '/home/ajmylihnhosting/public_html/storage/' . $folder,
+        ];
+
+        if (file_exists($sourceFile)) {
+            foreach ($publicDestinations as $destDir) {
+                try {
+                    if (!is_dir($destDir)) {
+                        @mkdir($destDir, 0755, true);
+                    }
+                    @copy($sourceFile, $destDir . '/' . $filename);
+                } catch (\Throwable $t) {}
+            }
+        }
+
         $url = asset('storage/' . $path);
 
         return response()->json([

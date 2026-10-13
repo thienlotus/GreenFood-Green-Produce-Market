@@ -321,6 +321,9 @@ export default function ShopeeMediaTheaterModal({
               <img
                 src={currentMedia.url}
                 alt="Ảnh review thực tế"
+                onError={(e) => {
+                  e.currentTarget.src = '/products/dau-tay.jpg';
+                }}
                 className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl transition-all"
               />
             )}

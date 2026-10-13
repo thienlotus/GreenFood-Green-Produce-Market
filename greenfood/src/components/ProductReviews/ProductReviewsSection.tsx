@@ -340,6 +340,9 @@ export default function ProductReviewsSection({
                   <img
                     src={item.thumbnail || item.url}
                     alt=""
+                    onError={(e) => {
+                      e.currentTarget.src = '/products/dau-tay.jpg';
+                    }}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
 
@@ -474,8 +477,11 @@ export default function ProductReviewsSection({
                               className="relative w-28 h-28 rounded-2xl overflow-hidden border-2 border-emerald-500/80 hover:border-emerald-600 cursor-pointer group shadow-sm transition-transform hover:scale-105 shrink-0"
                             >
                               <img
-                                src={rev.videoThumbnail || rev.images[0] || 'https://images.unsplash.com/photo-1550828520-4cb496926fc9?q=80&w=600&auto=format&fit=crop'}
+                                src={rev.videoThumbnail || (rev.images && rev.images[0]) || '/products/dau-tay.jpg'}
                                 alt="Video preview"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/products/dau-tay.jpg';
+                                }}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                               />
                               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -510,7 +516,14 @@ export default function ProductReviewsSection({
                             onClick={() => handleOpenTheaterForReview(rev, 'image')}
                             className="w-20 h-20 rounded-xl overflow-hidden border border-gray-200 hover:border-emerald-500 cursor-pointer transition-all hover:scale-105 shrink-0 shadow-2xs"
                           >
-                            <img src={img} alt="" className="w-full h-full object-cover" />
+                            <img 
+                              src={img} 
+                              alt="" 
+                              onError={(e) => {
+                                e.currentTarget.src = '/products/dau-tay.jpg';
+                              }}
+                              className="w-full h-full object-cover" 
+                            />
                           </div>
                         ))}
                       </div>
