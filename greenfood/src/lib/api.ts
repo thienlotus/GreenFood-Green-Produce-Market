@@ -1167,6 +1167,7 @@ export interface VendorOrderData {
   sub_order_number: string;
   order_id: string;
   master_tracking?: string;
+  customer_id?: string;
   customer_name?: string;
   customer_phone?: string;
   shipping_address?: string;
@@ -1182,6 +1183,12 @@ export interface VendorOrderData {
   created_at: string;
   items_count: number;
   items: VendorOrderItem[];
+  order?: {
+    id?: string;
+    customer_id?: string;
+    shipping_address?: any;
+    [key: string]: any;
+  };
 }
 
 export interface FarmerWalletData {
@@ -1202,11 +1209,12 @@ export interface FarmerWalletData {
   };
 }
 
-export async function getFarmerOrdersApi(farmerId: string, filters: { status?: string; search?: string } = {}): Promise<VendorOrderData[]> {
+export async function getFarmerOrdersApi(farmerId: string, filters: { status?: string; search?: string; limit?: number } = {}): Promise<VendorOrderData[]> {
   try {
     const params = new URLSearchParams();
     if (filters.status && filters.status !== 'all') params.append('status', filters.status);
     if (filters.search) params.append('search', filters.search);
+    if (filters.limit) params.append('limit', String(filters.limit));
     const qs = params.toString() ? `?${params.toString()}` : '';
 
     const res = await fetchApi<{ success: boolean; data: VendorOrderData[] }>(`/farmers/${farmerId}/orders${qs}`);

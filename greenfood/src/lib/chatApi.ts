@@ -274,6 +274,30 @@ export async function startFarmerAdminChat(
   return { success: res?.success || false, data: res?.data };
 }
 
+/**
+ * Nông hộ chủ động mở chat với Khách Mua Hàng
+ */
+export async function startFarmerCustomerChat(
+  farmerId: string,
+  customerId: string,
+  productId?: string,
+  message?: string
+): Promise<{ success: boolean; data?: { id: string; type: string; status: string } }> {
+  const res = await chatFetch<{ success: boolean; data?: { id: string; type: string; status: string } }>(
+    '/chat/farmer/conversations/customer',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        farmer_id: farmerId,
+        customer_id: customerId,
+        product_id: productId,
+        message,
+      }),
+    }
+  );
+  return { success: res?.success || false, data: res?.data };
+}
+
 export async function getChatMessages(
   conversationId: string,
   viewerRole: 'admin' | 'customer' | 'farmer' = 'admin'

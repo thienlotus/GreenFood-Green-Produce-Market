@@ -274,6 +274,7 @@ Route::prefix('chat')->group(function () {
     Route::get('/conversations', [ChatController::class, 'index']);
     Route::post('/conversations', [ChatController::class, 'store']);
     Route::post('/customer/conversations/farmer', [ChatController::class, 'startCustomerFarmerChat']);
+    Route::post('/farmer/conversations/customer', [ChatController::class, 'startFarmerCustomerChat']);
     Route::post('/farmer/conversations/admin', [ChatController::class, 'startFarmerAdminChat']);
     Route::get('/conversations/{id}', [ChatController::class, 'show']);
     Route::get('/conversations/{id}/customer', [ChatController::class, 'customerMessages']);

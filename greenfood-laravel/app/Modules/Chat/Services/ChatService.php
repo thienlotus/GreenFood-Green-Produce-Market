@@ -228,6 +228,44 @@ class ChatService
         ];
     }
 
+    public function createFarmerCustomerConversation(
+        string $farmerId,
+        string $customerId,
+        ?string $productId = null,
+        ?string $initialMessage = null
+    ): array {
+        $conversation = $this->chatRepository->findOrCreateCustomerFarmerConversation(
+            $customerId,
+            $farmerId,
+            $productId,
+            'Nhà vườn tư vấn khách hàng'
+        );
+
+        if ($initialMessage) {
+            $farmer = \App\Models\Farmer::find($farmerId);
+            $senderId = $farmer ? ($farmer->user_id ?? $farmerId) : $farmerId;
+            $userExists = \App\Models\User::find($senderId);
+            if (!$userExists) {
+                $fallback = \App\Models\User::where('role', 'VENDOR')->first() ?? \App\Models\User::first();
+                $senderId = $fallback ? $fallback->id : $customerId;
+            }
+
+            $this->chatRepository->createMessage([
+                'conversation_id' => $conversation->id,
+                'sender_id' => $senderId,
+                'sender_role' => 'farmer',
+                'message' => $initialMessage,
+                'message_type' => 'text',
+            ]);
+        }
+
+        return [
+            'id' => $conversation->id,
+            'type' => $conversation->type,
+            'status' => $conversation->status,
+        ];
+    }
+
     public function sendMessage(
         string $conversationId,
         string $senderId,

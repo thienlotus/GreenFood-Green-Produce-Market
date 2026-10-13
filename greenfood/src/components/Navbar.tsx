@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { 
   ShoppingCart, Search, Menu, User, Download, Users, Bell, 
   ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, List, Map, Package, LogOut, ShieldCheck, X,
-  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles, LayoutGrid, Building2, Video, Flame
+  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles, LayoutGrid, Building2, Video, Flame, MessageCircle
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -582,6 +582,19 @@ export default function Navbar() {
                         <span>Kênh người bán</span>
                       </Link>
 
+                      {/* Chat Kênh Người Bán */}
+                      <Link 
+                        href="/farmer/chat" 
+                        onClick={() => setIsMoreMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50 transition-colors group"
+                      >
+                        <MessageCircle size={16} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
+                        <span className="flex items-center justify-between flex-1">
+                          <span>Tin nhắn nông hộ</span>
+                          <span className="bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">Chat</span>
+                        </span>
+                      </Link>
+
                       {/* Khách Sỉ & Doanh Nghiệp B2B */}
                       <Link 
                         href="/b2b/" 
@@ -724,6 +737,7 @@ export default function Navbar() {
                 { name: 'Bản đồ nhà vườn', href: '/map/', icon: Map, color: 'text-teal-600' },
                 { name: 'Theo dõi đơn hàng', href: '/tracking/', icon: Package, color: 'text-amber-600' },
                 { name: 'Kênh người bán', href: '/farmer', icon: Users, color: 'text-slate-600' },
+                { name: 'Tin nhắn nông hộ', href: '/farmer/chat', icon: MessageCircle, color: 'text-emerald-700 font-bold' },
                 { name: 'Thông báo của tôi', href: '/notifications/', icon: Bell, color: 'text-emerald-600' },
                 { name: 'Hồ sơ cá nhân & VIP', href: '/profile/', icon: User, color: 'text-teal-600' },
               ].map((link) => {

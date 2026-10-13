@@ -135,6 +135,40 @@ class ChatController extends Controller
     }
 
     /**
+     * POST /api/chat/farmer/conversations/customer
+     * Nông hộ chủ động mở chat với Khách mua hàng
+     */
+    public function startFarmerCustomerChat(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'farmer_id' => 'required|string',
+            'customer_id' => 'required|string',
+            'product_id' => 'nullable|string',
+            'message' => 'nullable|string|max:2000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $result = $this->chatService->createFarmerCustomerConversation(
+            (string) $request->farmer_id,
+            (string) $request->customer_id,
+            $request->product_id ? (string) $request->product_id : null,
+            $request->message ? (string) $request->message : null
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã kết nối với khách hàng!',
+            'data' => $result,
+        ], 200);
+    }
+
+    /**
      * GET /api/chat/conversations/{id}
      * Get conversation detail with messages
      */
@@ -192,7 +226,7 @@ class ChatController extends Controller
     public function sendMessage(Request $request, string $id): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'sender_id' => 'required|uuid|exists:users,id',
+            'sender_id' => 'required|string',
             'sender_role' => 'required|in:customer,admin,farmer',
             'message' => 'required|string|max:2000',
             'message_type' => 'nullable|in:text,image,system',
@@ -205,10 +239,51 @@ class ChatController extends Controller
             ], 422);
         }
 
+        $senderId = (string) $request->sender_id;
+        $senderRole = (string) $request->sender_role;
+
+        // Tự động map sender_id sang user_id hợp lệ trong bảng users nếu là Nông hộ
+        if ($senderRole === 'farmer') {
+            $farmer = \App\Models\Farmer::find($senderId);
+            if ($farmer && $farmer->user_id) {
+                $senderId = (string) $farmer->user_id;
+            } else {
+                $userCheck = \App\Models\User::find($senderId);
+                if (!$userCheck) {
+                    $conv = \App\Models\ChatConversation::find($id);
+                    if ($conv && $conv->farmer && $conv->farmer->user_id) {
+                        $senderId = (string) $conv->farmer->user_id;
+                    } else {
+                        $firstVendor = \App\Models\User::where('role', 'VENDOR')->first() 
+                            ?? \App\Models\User::first();
+                        if ($firstVendor) {
+                            $senderId = (string) $firstVendor->id;
+                        }
+                    }
+                }
+            }
+        } elseif ($senderRole === 'admin') {
+            $userCheck = \App\Models\User::find($senderId);
+            if (!$userCheck) {
+                $adminUser = \App\Models\User::where('role', 'ADMIN')->first() ?? \App\Models\User::first();
+                if ($adminUser) {
+                    $senderId = (string) $adminUser->id;
+                }
+            }
+        } elseif ($senderRole === 'customer') {
+            $userCheck = \App\Models\User::find($senderId);
+            if (!$userCheck) {
+                $conv = \App\Models\ChatConversation::find($id);
+                if ($conv && $conv->customer_id) {
+                    $senderId = (string) $conv->customer_id;
+                }
+            }
+        }
+
         $result = $this->chatService->sendMessage(
             $id,
-            (string) $request->sender_id,
-            (string) $request->sender_role,
+            $senderId,
+            $senderRole,
             (string) $request->message,
             (string) ($request->message_type ?? 'text')
         );

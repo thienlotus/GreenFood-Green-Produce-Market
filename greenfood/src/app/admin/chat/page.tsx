@@ -220,6 +220,16 @@ export default function AdminChatPage() {
               Quản Trị Tin Nhắn Sàn
             </h2>
             <div className="flex items-center gap-1">
+              <a
+                href="/farmer/chat"
+                target="_blank"
+                rel="noreferrer"
+                className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold"
+                title="Mở giao diện Chat của Nông Hộ (Kênh người bán)"
+              >
+                <Store size={14} />
+                <span className="hidden sm:inline">Kênh Nông Hộ</span>
+              </a>
               <button
                 onClick={() => setIsNewChatModalOpen(true)}
                 className="p-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold"

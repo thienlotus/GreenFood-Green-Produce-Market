@@ -310,10 +310,11 @@ export default function FarmerPortalPage() {
 
   // Nông hộ gửi tin nhắn
   const handleSendFarmerMessage = async () => {
-    if (!newChatMessage.trim() || !selectedChatId || !user?.id || chatSending) return;
+    const senderId = currentFarmer?.user_id || user?.id || currentFarmer?.id;
+    if (!newChatMessage.trim() || !selectedChatId || !senderId || chatSending) return;
     setChatSending(true);
     try {
-      const res = await sendChatMessage(selectedChatId, user.id, 'farmer', newChatMessage.trim());
+      const res = await sendChatMessage(selectedChatId, senderId, 'farmer', newChatMessage.trim());
       if (res.success && res.data) {
         setChatMessages(prev => [...prev, res.data!]);
         setNewChatMessage('');
@@ -791,6 +792,47 @@ export default function FarmerPortalPage() {
                     </span>
                   </div>
                 )}
+
+                {/* Banner Kênh Tin Nhắn Nông Hộ */}
+                <div className="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-5 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm border border-emerald-700/50">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-xl shrink-0 border border-white/20">
+                      💬
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-sm text-white">Kênh Tin Nhắn Khách Hàng & Ban Quản Trị Sàn</h4>
+                        <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          Kênh Người Bán
+                        </span>
+                      </div>
+                      <p className="text-xs text-emerald-100 mt-0.5">
+                        Tư vấn trực tiếp cho khách mua nông sản, chốt đơn hàng và trao đổi chính sách/đối soát với Admin GreenFood.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5 w-full md:w-auto">
+                    <button
+                      onClick={() => setActiveTab('chat')}
+                      className="flex-1 md:flex-initial px-4 py-2 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <MessageCircle size={14} /> Xem tại đây
+                      {farmerUnreadChatCount > 0 && (
+                        <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                          {farmerUnreadChatCount}
+                        </span>
+                      )}
+                    </button>
+                    <Link
+                      href="/farmer/chat"
+                      target="_blank"
+                      className="flex-1 md:flex-initial px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      <span>Mở Trang Chat Độc Lập</span>
+                      <ArrowUpRight size={14} />
+                    </Link>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1525,13 +1567,24 @@ export default function FarmerPortalPage() {
                           <p className="text-[11px] text-gray-500">Trao đổi khách mua & Sàn</p>
                         </div>
                       </div>
-                      <button
-                        onClick={loadFarmerChats}
-                        className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-emerald-600 transition-colors"
-                        title="Làm mới"
-                      >
-                        <RefreshCw size={15} />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <Link
+                          href="/farmer/chat"
+                          target="_blank"
+                          className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors"
+                          title="Mở Kênh Chat Toàn Màn Hình"
+                        >
+                          <span>Mở Chat Độc Lập</span>
+                          <ArrowUpRight size={12} />
+                        </Link>
+                        <button
+                          onClick={loadFarmerChats}
+                          className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-emerald-600 transition-colors"
+                          title="Làm mới"
+                        >
+                          <RefreshCw size={15} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Nút hành động nhanh: Nhắn tin cho Admin Sàn */}
