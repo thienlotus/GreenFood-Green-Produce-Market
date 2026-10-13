@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Modules\User\Controllers\UserController;
 use App\Modules\Product\Controllers\ProductController;
 use App\Modules\Product\Controllers\CategoryController;
+use App\Modules\Product\Controllers\ReviewController;
 use App\Modules\Cart\Controllers\CartController;
 use App\Modules\Order\Controllers\OrderController;
 use App\Modules\Payment\Controllers\PaymentController;
@@ -19,6 +20,7 @@ use App\Modules\Chat\Controllers\ChatController;
 use App\Modules\B2B\Controllers\B2bController;
 use App\Http\Controllers\Api\GHNController;
 use App\Http\Controllers\Api\CardPaymentController;
+use App\Http\Controllers\Api\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +58,12 @@ Route::prefix('v1')->group(function () {
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
+    // 2.5 Product Reviews (Shopee Style with Video & Photos)
+    Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
+    Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
+    Route::post('/reviews/{id}/like', [ReviewController::class, 'toggleLike']);
+    Route::post('/reviews/upload', [ReviewController::class, 'uploadMedia']);
+
     // 3. Cart Module
     Route::post('/cart/calculate', [CartController::class, 'calculate']);
 
@@ -87,6 +95,12 @@ Route::prefix('v1')->group(function () {
     Route::post('/shipping-zones', [ShippingZoneController::class, 'store']);
     Route::put('/shipping-zones/{id}', [ShippingZoneController::class, 'update']);
     Route::delete('/shipping-zones/{id}', [ShippingZoneController::class, 'destroy']);
+
+    // 6.5 Customer Notification Module (Shopee Style)
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications', [NotificationController::class, 'store']);
+    Route::put('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
     // 7. Farmer & GIS Module
     Route::get('/farmers', [FarmerController::class, 'index']);
@@ -152,6 +166,10 @@ Route::post('/products', [ProductController::class, 'store']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::put('/products/{id}', [ProductController::class, 'update']);
 Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
+Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
+Route::post('/reviews/{id}/like', [ReviewController::class, 'toggleLike']);
+Route::post('/reviews/upload', [ReviewController::class, 'uploadMedia']);
 
 Route::post('/cart/calculate', [CartController::class, 'calculate']);
 
@@ -231,4 +249,10 @@ Route::delete('/b2b/inquiries/{id}', [B2bController::class, 'destroy']);
 Route::get('/admin/b2b/inquiries', [B2bController::class, 'index']);
 Route::put('/admin/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
 Route::post('/admin/b2b/inquiries/{id}/respond', [B2bController::class, 'respond']);
+
+// Direct alias for Notifications
+Route::get('/notifications', [NotificationController::class, 'index']);
+Route::post('/notifications', [NotificationController::class, 'store']);
+Route::put('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 

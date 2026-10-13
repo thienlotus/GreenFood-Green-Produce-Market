@@ -12,6 +12,7 @@ import {
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
 import WelcomeLetterModal from '@/components/WelcomeLetterModal';
+import HomeVideoReviewsSection from '@/components/HomeVideoReviewsSection';
 import { getProducts, type ProductItem } from '@/lib/api';
 import { ALL_PRODUCTS } from '@/data/products';
 
@@ -937,6 +938,9 @@ export default function Home() {
           </section>
         )
       )}
+
+      {/* ======================== REELS (VIDEO REVIEW THỰC TẾ) ======================== */}
+      <HomeVideoReviewsSection />
 
       {/* ========================= VÌ SAO CHỌN GREENFOOD ========================= */}
       <section className="container mx-auto px-4 lg:px-8 mt-14 relative z-10 reveal-on-scroll">

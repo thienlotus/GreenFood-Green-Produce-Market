@@ -1,0 +1,2052 @@
+[
+  {
+    "name": "1.1 Lấy danh sách tất cả Danh mục nông sản",
+    "method": "GET",
+    "path": "/api/v1/categories",
+    "status": 200,
+    "latency_ms": 407,
+    "passed": true,
+    "body": {
+      "success": true,
+      "data": [
+        {
+          "id": 1,
+          "name": "Đi chợ online",
+          "slug": "di-cho-online",
+          "icon": "🛒",
+          "banner_image": "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1920&auto=format&fit=crop",
+          "description": "Thực phẩm tươi ngon, rau củ quả sạch thu hoạch trong ngày giao tận nhà.",
+          "parent_id": null,
+          "created_at": "2026-10-04T21:44:21.000000Z",
+          "updated_at": "2026-10-04T21:44:21.000000Z",
+          "products_count": 2
+        },
+        {
+          "id": 2,
+          "name": "Trái cây tươi ngon",
+          "slug": "trai-cay",
+          "icon": "🍉",
+          "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+          "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+          "parent_id": null,
+          "created_at": "2026-10-04T21:44:21.000000Z",
+          "updated_at": "2026-10-04T21:44:21.000000Z",
+          "products_count": 6
+        },
+        {
+          "id": 3,
+          "name": "Trà - Cà phê - Socola",
+          "slug": "tra-ca-phe",
+          "icon": "☕",
+          "banner_image": "https://images.unsplash.com/photo-1490818387583-1baba5e638af?q=80&w=1920&auto=format&fit=crop",
+          "description": "Trà Thái Nguyên thượng hạng, Cà phê Robusta Mộc Châu rang mộc, Cacao Bến Tre nguyên chất.",
+          "parent_id": null,
+          "created_at": "2026-10-04T21:44:21.000000Z",
+          "updated_at": "2026-10-04T21:44:21.000000Z",
+          "products_count": 2
+        },
+        {
+          "id": 4,
+          "name": "Đặc sản vùng miền",
+          "slug": "dac-san",
+          "icon": "🎁",
+          "banner_image": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1920&auto=format&fit=crop",
+          "description": "Đặc sản trứ danh 3 miền: Sầu riêng Ri6, Mật ong rừng Tràm, Bưởi da xanh Bến Tre.",
+          "parent_id": null,
+          "created_at": "2026-10-04T21:44:22.000000Z",
+          "updated_at": "2026-10-04T21:44:22.000000Z",
+          "products_count": 1
+        },
+        {
+          "id": 5,
+          "name": "Agrishow Triển Lãm",
+          "slug": "agrishow",
+          "icon": "🌾",
+          "banner_image": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1920&auto=format&fit=crop",
+          "description": "Bộ sưu tập nông sản đạt chuẩn xuất khẩu chất lượng cao tại Hội chợ Nông sản Việt.",
+          "parent_id": null,
+          "created_at": "2026-10-04T21:44:22.000000Z",
+          "updated_at": "2026-10-04T21:44:22.000000Z",
+          "products_count": 1
+        }
+      ]
+    }
+  },
+  {
+    "name": "1.2 Lấy chi tiết Danh mục Trái cây tươi",
+    "method": "GET",
+    "path": "/api/v1/categories/trai-cay",
+    "status": 200,
+    "latency_ms": 351,
+    "passed": true,
+    "body": {
+      "success": true,
+      "data": {
+        "id": 2,
+        "name": "Trái cây tươi ngon",
+        "slug": "trai-cay",
+        "icon": "🍉",
+        "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+        "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+        "parent_id": null,
+        "created_at": "2026-10-04T21:44:21.000000Z",
+        "updated_at": "2026-10-04T21:44:21.000000Z",
+        "products_count": 6
+      }
+    }
+  },
+  {
+    "name": "1.3 Lấy danh sách tất cả Nông sản",
+    "method": "GET",
+    "path": "/api/v1/products",
+    "status": 200,
+    "latency_ms": 368,
+    "passed": true,
+    "body": {
+      "success": true,
+      "count": 12,
+      "data": [
+        {
+          "id": "af2d2f22-1da5-4400-9983-dad56e8068e9",
+          "farmer_id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+          "category_id": 4,
+          "name": "Mật Ong Rừng Tràm U Minh",
+          "slug": "mat-ong-rung-tram",
+          "description": "Mật ong hoa tràm nguyên chất 100% thu hoạch tự nhiên từ rừng tràm U Minh Cà Mau, màu vàng óng, thơm nồng dịu.",
+          "image_url": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=800&auto=format&fit=crop",
+          "badge": "Rừng 100%",
+          "sold_count": 160,
+          "rating": 4.9,
+          "is_seasonal": false,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:29.000000Z",
+          "updated_at": "2026-10-04T21:44:29.000000Z",
+          "category": {
+            "id": 4,
+            "name": "Đặc sản vùng miền",
+            "slug": "dac-san",
+            "icon": "🎁",
+            "banner_image": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1920&auto=format&fit=crop",
+            "description": "Đặc sản trứ danh 3 miền: Sầu riêng Ri6, Mật ong rừng Tràm, Bưởi da xanh Bến Tre.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:22.000000Z",
+            "updated_at": "2026-10-04T21:44:22.000000Z"
+          },
+          "farmer": {
+            "id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+            "user_id": "3484690d-a0b0-415f-ae14-6139a245ab29",
+            "farm_name": "Vườn Trái Cây Chú Ba",
+            "story": "Hơn 20 năm gắn bó với cây sầu riêng và bưởi da xanh. Nông sản đạt chuẩn VietGAP mang lại vị ngọt béo ngậy an toàn nhất.",
+            "address": "Chợ Lách, Bến Tre",
+            "region_id": 1,
+            "latitude": 10.2348,
+            "longitude": 106.3485,
+            "image_url": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+            "specialty": "Sầu riêng Ri6, Bưởi da xanh",
+            "rating": 4.8,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:23.000000Z",
+            "updated_at": "2026-10-09T03:24:57.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 2,
+            "region": {
+              "id": 1,
+              "name": "Đồng Bằng Sông Cửu Long",
+              "slug": "dong-bang-song-cuu-long",
+              "zone": "south",
+              "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+              "created_at": "2026-10-04T21:44:20.000000Z",
+              "updated_at": "2026-10-04T21:44:20.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "dc028525-dede-4486-bbc1-1afbef348d5b",
+              "product_id": "af2d2f22-1da5-4400-9983-dad56e8068e9",
+              "unit": "Chai 500ml",
+              "price": 180000,
+              "compare_at_price": 210000,
+              "stock_quantity": 50,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:29.000000Z",
+              "updated_at": "2026-10-04T21:44:29.000000Z"
+            },
+            {
+              "id": "7ca3f866-47f8-4f24-a0fb-1b20bb5ff139",
+              "product_id": "af2d2f22-1da5-4400-9983-dad56e8068e9",
+              "unit": "Chai 1 Lít",
+              "price": 340000,
+              "compare_at_price": 390000,
+              "stock_quantity": 30,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:29.000000Z",
+              "updated_at": "2026-10-04T21:44:29.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "33294266-f7d5-4d88-99ac-4e443ac97318",
+          "farmer_id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+          "category_id": 5,
+          "name": "Rau Hữu Cơ Tổng Hợp Đà Lạt",
+          "slug": "rau-huu-co-tong-hop",
+          "description": "Combo 5 loại rau củ hữu cơ Đà Lạt: Xà lách lolo, cải kale, cà chua bi cherry, cà rốt baby, ớt chuông ngọt.",
+          "image_url": "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800&auto=format&fit=crop",
+          "badge": "Organic",
+          "sold_count": 65,
+          "rating": 4.9,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:29.000000Z",
+          "updated_at": "2026-10-04T21:44:29.000000Z",
+          "category": {
+            "id": 5,
+            "name": "Agrishow Triển Lãm",
+            "slug": "agrishow",
+            "icon": "🌾",
+            "banner_image": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1920&auto=format&fit=crop",
+            "description": "Bộ sưu tập nông sản đạt chuẩn xuất khẩu chất lượng cao tại Hội chợ Nông sản Việt.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:22.000000Z",
+            "updated_at": "2026-10-04T21:44:22.000000Z"
+          },
+          "farmer": {
+            "id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+            "user_id": "4e278df6-43a0-4645-968e-707411669959",
+            "farm_name": "Nông Trại Xanh Đà Lạt",
+            "story": "Nông trại ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100% trong nhà kính thông minh.",
+            "address": "Đơn Dương, Lâm Đồng",
+            "region_id": 2,
+            "latitude": 11.8188,
+            "longitude": 108.4933,
+            "image_url": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600",
+            "specialty": "Dâu tây, Dưa lưới hữu cơ",
+            "rating": 4.9,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:24.000000Z",
+            "updated_at": "2026-10-09T03:32:03.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 1,
+            "region": {
+              "id": 2,
+              "name": "Tây Nguyên & Đà Lạt",
+              "slug": "tay-nguyen-da-lat",
+              "zone": "central",
+              "description": "Xứ sở rau củ, dâu tây và hoa quả ôn đới",
+              "created_at": "2026-10-04T21:44:21.000000Z",
+              "updated_at": "2026-10-04T21:44:21.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "b0f31baa-a674-432a-a96a-27d5cbe2792b",
+              "product_id": "33294266-f7d5-4d88-99ac-4e443ac97318",
+              "unit": "Combo 2kg (5 loại rau)",
+              "price": 85000,
+              "compare_at_price": 100000,
+              "stock_quantity": 40,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:29.000000Z",
+              "updated_at": "2026-10-04T21:44:29.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "de3185ed-cb06-4f7d-aa27-55fabaa9f3d4",
+          "farmer_id": "5818f9a7-9302-4c97-b7e6-13effc8c0b8e",
+          "category_id": 1,
+          "name": "Cam Sành Mọng Nước",
+          "slug": "cam-sanh",
+          "description": "Cam sành Vĩnh Long vỏ sần mọng nước, tép vàng ươm, vắt nước uống giải nhiệt và tăng sức đề kháng mỗi ngày.",
+          "image_url": "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=800&auto=format&fit=crop",
+          "badge": "Mọng nước",
+          "sold_count": 450,
+          "rating": 4.5,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:28.000000Z",
+          "updated_at": "2026-10-04T21:44:28.000000Z",
+          "category": {
+            "id": 1,
+            "name": "Đi chợ online",
+            "slug": "di-cho-online",
+            "icon": "🛒",
+            "banner_image": "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1920&auto=format&fit=crop",
+            "description": "Thực phẩm tươi ngon, rau củ quả sạch thu hoạch trong ngày giao tận nhà.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "5818f9a7-9302-4c97-b7e6-13effc8c0b8e",
+            "user_id": "ef251b5a-896d-49a2-a139-94f391f29c37",
+            "farm_name": "HTX Bưởi Da Xanh",
+            "story": "Hợp tác xã quy tụ 50 hộ gia đình trồng bưởi truyền thống với tiêu chuẩn sinh học sạch.",
+            "address": "Bình Minh, Vĩnh Long",
+            "region_id": 1,
+            "latitude": 10.0772,
+            "longitude": 105.9545,
+            "image_url": "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600",
+            "specialty": "Bưởi da xanh ruột hồng",
+            "rating": 4.6,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:23.000000Z",
+            "updated_at": "2026-10-04T21:44:23.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 0,
+            "region": {
+              "id": 1,
+              "name": "Đồng Bằng Sông Cửu Long",
+              "slug": "dong-bang-song-cuu-long",
+              "zone": "south",
+              "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+              "created_at": "2026-10-04T21:44:20.000000Z",
+              "updated_at": "2026-10-04T21:44:20.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "de34eda9-d1bb-4b0b-83ea-6acbf4c8b256",
+              "product_id": "de3185ed-cb06-4f7d-aa27-55fabaa9f3d4",
+              "unit": "1kg (3-4 trái)",
+              "price": 35000,
+              "compare_at_price": 45000,
+              "stock_quantity": 150,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:28.000000Z",
+              "updated_at": "2026-10-04T21:44:28.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "70cc7a2c-baac-4167-b8d0-955e5a8c5b80",
+          "farmer_id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+          "category_id": 1,
+          "name": "Chuối Laba Trứ Danh",
+          "slug": "chuoi-laba",
+          "description": "Chuối Laba Đà Lạt dẻo thơm, ruột vàng ánh kim, vị ngọt đậm đà đặc trưng từng dâng vua ngày xưa.",
+          "image_url": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?q=80&w=800&auto=format&fit=crop",
+          "badge": "Tiến vua",
+          "sold_count": 120,
+          "rating": 4.8,
+          "is_seasonal": false,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:28.000000Z",
+          "updated_at": "2026-10-04T21:44:28.000000Z",
+          "category": {
+            "id": 1,
+            "name": "Đi chợ online",
+            "slug": "di-cho-online",
+            "icon": "🛒",
+            "banner_image": "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1920&auto=format&fit=crop",
+            "description": "Thực phẩm tươi ngon, rau củ quả sạch thu hoạch trong ngày giao tận nhà.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+            "user_id": "4e278df6-43a0-4645-968e-707411669959",
+            "farm_name": "Nông Trại Xanh Đà Lạt",
+            "story": "Nông trại ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100% trong nhà kính thông minh.",
+            "address": "Đơn Dương, Lâm Đồng",
+            "region_id": 2,
+            "latitude": 11.8188,
+            "longitude": 108.4933,
+            "image_url": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600",
+            "specialty": "Dâu tây, Dưa lưới hữu cơ",
+            "rating": 4.9,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:24.000000Z",
+            "updated_at": "2026-10-09T03:32:03.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 1,
+            "region": {
+              "id": 2,
+              "name": "Tây Nguyên & Đà Lạt",
+              "slug": "tay-nguyen-da-lat",
+              "zone": "central",
+              "description": "Xứ sở rau củ, dâu tây và hoa quả ôn đới",
+              "created_at": "2026-10-04T21:44:21.000000Z",
+              "updated_at": "2026-10-04T21:44:21.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "68e75de3-34d6-4252-bb38-397f598db93e",
+              "product_id": "70cc7a2c-baac-4167-b8d0-955e5a8c5b80",
+              "unit": "Nải (1.2-1.5kg)",
+              "price": 45000,
+              "compare_at_price": 55000,
+              "stock_quantity": 88,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:28.000000Z",
+              "updated_at": "2026-10-08T16:32:57.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "6f236f88-398f-4cc4-a81c-87ca0e9afb58",
+          "farmer_id": "3bc22af6-0db2-49f7-8e0d-8570cf87b2b9",
+          "category_id": 3,
+          "name": "Cà Phê Robusta Mộc Châu",
+          "slug": "ca-phe-robusta",
+          "description": "Cà phê nguyên chất rang mộc hương vị đậm đà, vị đắng thanh quyến rũ, thu hoạch từ cao nguyên Mộc Châu.",
+          "image_url": "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?q=80&w=800&auto=format&fit=crop",
+          "badge": "Rang mộc",
+          "sold_count": 85,
+          "rating": 4.7,
+          "is_seasonal": false,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:28.000000Z",
+          "updated_at": "2026-10-04T21:44:28.000000Z",
+          "category": {
+            "id": 3,
+            "name": "Trà - Cà phê - Socola",
+            "slug": "tra-ca-phe",
+            "icon": "☕",
+            "banner_image": "https://images.unsplash.com/photo-1490818387583-1baba5e638af?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trà Thái Nguyên thượng hạng, Cà phê Robusta Mộc Châu rang mộc, Cacao Bến Tre nguyên chất.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "3bc22af6-0db2-49f7-8e0d-8570cf87b2b9",
+            "user_id": "695ae0dd-1b64-445f-b72d-47b32bf7e075",
+            "farm_name": "Trang Trại Mộc Châu",
+            "story": "Đặc sản mận hậu, cà phê rang mộc và mật ong vùng cao Tây Bắc ở độ cao trên 1000m.",
+            "address": "Mộc Châu, Sơn La",
+            "region_id": 3,
+            "latitude": 20.8332,
+            "longitude": 104.6724,
+            "image_url": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+            "specialty": "Mận hậu, Cà phê Robusta",
+            "rating": 4.7,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:25.000000Z",
+            "updated_at": "2026-10-04T21:44:25.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 0,
+            "region": {
+              "id": 3,
+              "name": "Miền Bắc",
+              "slug": "mien-bac",
+              "zone": "north",
+              "description": "Nông sản vùng cao Tây Bắc và chè Thái Nguyên",
+              "created_at": "2026-10-04T21:44:21.000000Z",
+              "updated_at": "2026-10-04T21:44:21.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "309dad79-a42b-4517-acd4-136e8479bb3e",
+              "product_id": "6f236f88-398f-4cc4-a81c-87ca0e9afb58",
+              "unit": "Gói 500g (Hạt)",
+              "price": 100000,
+              "compare_at_price": 120000,
+              "stock_quantity": 80,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:28.000000Z",
+              "updated_at": "2026-10-04T21:44:28.000000Z"
+            },
+            {
+              "id": "d70521c0-24df-43d1-be33-75601aff69c4",
+              "product_id": "6f236f88-398f-4cc4-a81c-87ca0e9afb58",
+              "unit": "Gói 500g (Bột)",
+              "price": 100000,
+              "compare_at_price": 120000,
+              "stock_quantity": 80,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:28.000000Z",
+              "updated_at": "2026-10-04T21:44:28.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "e778156b-194f-4f93-a2e3-1030ee999414",
+          "farmer_id": "9de953af-f7ee-4bc9-8141-f41008195d5a",
+          "category_id": 3,
+          "name": "Chè Thái Nguyên Tân Cương",
+          "slug": "che-thai-nguyen",
+          "description": "Trà nõn tôm Tân Cương cánh xoăn hương cốm nồng nàn, nước xanh ánh vàng, hậu ngọt sâu lắng chuẩn vị.",
+          "image_url": "https://images.unsplash.com/photo-1556881286-fc6915169721?q=80&w=800&auto=format&fit=crop",
+          "badge": "Thượng hạng",
+          "sold_count": 95,
+          "rating": 4.6,
+          "is_seasonal": false,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:28.000000Z",
+          "updated_at": "2026-10-04T21:44:28.000000Z",
+          "category": {
+            "id": 3,
+            "name": "Trà - Cà phê - Socola",
+            "slug": "tra-ca-phe",
+            "icon": "☕",
+            "banner_image": "https://images.unsplash.com/photo-1490818387583-1baba5e638af?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trà Thái Nguyên thượng hạng, Cà phê Robusta Mộc Châu rang mộc, Cacao Bến Tre nguyên chất.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "9de953af-f7ee-4bc9-8141-f41008195d5a",
+            "user_id": "f0ce4af5-ae3e-4c8e-ab6e-aa793895de2e",
+            "farm_name": "HTX Chè Thái Nguyên",
+            "story": "Búp chè hái tay 1 tôm 2 lá lúc sáng sớm giữ trọn hương sương mai thơm ngát.",
+            "address": "Tân Cương, Thái Nguyên",
+            "region_id": 3,
+            "latitude": 21.5546,
+            "longitude": 105.8008,
+            "image_url": "https://images.unsplash.com/photo-1556881286-fc6915169721?w=600",
+            "specialty": "Chè Tân Cương, Trà xanh nõn tôm",
+            "rating": 4.4,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:25.000000Z",
+            "updated_at": "2026-10-04T21:44:25.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 0,
+            "region": {
+              "id": 3,
+              "name": "Miền Bắc",
+              "slug": "mien-bac",
+              "zone": "north",
+              "description": "Nông sản vùng cao Tây Bắc và chè Thái Nguyên",
+              "created_at": "2026-10-04T21:44:21.000000Z",
+              "updated_at": "2026-10-04T21:44:21.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "5683c8cf-b0d7-4ca2-ba76-a980e5f75d0c",
+              "product_id": "e778156b-194f-4f93-a2e3-1030ee999414",
+              "unit": "Gói 200g",
+              "price": 95000,
+              "compare_at_price": 110000,
+              "stock_quantity": 70,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:29.000000Z",
+              "updated_at": "2026-10-04T21:44:29.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "7185d3e3-e5f7-4bc0-ad4e-16bf9ec10c36",
+          "farmer_id": "6094cc52-a428-418a-bed6-fe256edc3c96",
+          "category_id": 2,
+          "name": "Xoài Cát Hòa Lộc",
+          "slug": "xoai-cat-hoa-loc",
+          "description": "Xoài cát Hòa Lộc Đồng Tháp loại 1 quả thon dài, vỏ vàng tươi khi chín, thịt quả dẻo mịn không xơ, hương thơm ngào ngạt.",
+          "image_url": "https://images.unsplash.com/photo-1553279768-865429fa0078?q=80&w=800&auto=format&fit=crop",
+          "badge": "Mới về",
+          "sold_count": 20,
+          "rating": 4.7,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:27.000000Z",
+          "updated_at": "2026-10-04T21:44:27.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "6094cc52-a428-418a-bed6-fe256edc3c96",
+            "user_id": "43b9911d-ec13-4a63-bd30-b799c80eab43",
+            "farm_name": "Vườn Xoài Ông Năm",
+            "story": "Truyền thống 3 đời canh tác giống xoài quý trên đất phù sa bồi đắp màu mỡ ven sông Tiền.",
+            "address": "Cao Lãnh, Đồng Tháp",
+            "region_id": 1,
+            "latitude": 10.4563,
+            "longitude": 105.6409,
+            "image_url": "https://images.unsplash.com/photo-1553279768-865429fa0078?w=600",
+            "specialty": "Xoài cát Hòa Lộc",
+            "rating": 4.5,
+            "is_verified": false,
+            "created_at": "2026-10-04T21:44:24.000000Z",
+            "updated_at": "2026-10-04T21:44:24.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 0,
+            "region": {
+              "id": 1,
+              "name": "Đồng Bằng Sông Cửu Long",
+              "slug": "dong-bang-song-cuu-long",
+              "zone": "south",
+              "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+              "created_at": "2026-10-04T21:44:20.000000Z",
+              "updated_at": "2026-10-04T21:44:20.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "3f1c8655-e2b0-46e1-b05e-72c481c7b018",
+              "product_id": "7185d3e3-e5f7-4bc0-ad4e-16bf9ec10c36",
+              "unit": "1kg (2-3 trái)",
+              "price": 120000,
+              "compare_at_price": 150000,
+              "stock_quantity": 45,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:27.000000Z",
+              "updated_at": "2026-10-04T21:44:27.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "28432c1d-17a4-4f89-8480-6316aa3bb4d2",
+          "farmer_id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+          "category_id": 2,
+          "name": "Dâu Tây Đà Lạt Cấp Đông",
+          "slug": "dau-tay",
+          "description": "Dâu tây giống New Zealand quả đỏ tươi, vị chua ngọt hài hòa tự nhiên. Thu hoạch sáng sớm và cấp đông nhanh chuẩn IQF giữ trọn dinh dưỡng.",
+          "image_url": "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=800&auto=format&fit=crop",
+          "badge": "VietGAP",
+          "sold_count": 200,
+          "rating": 4.9,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:27.000000Z",
+          "updated_at": "2026-10-04T21:44:27.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+            "user_id": "4e278df6-43a0-4645-968e-707411669959",
+            "farm_name": "Nông Trại Xanh Đà Lạt",
+            "story": "Nông trại ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100% trong nhà kính thông minh.",
+            "address": "Đơn Dương, Lâm Đồng",
+            "region_id": 2,
+            "latitude": 11.8188,
+            "longitude": 108.4933,
+            "image_url": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600",
+            "specialty": "Dâu tây, Dưa lưới hữu cơ",
+            "rating": 4.9,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:24.000000Z",
+            "updated_at": "2026-10-09T03:32:03.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 1,
+            "region": {
+              "id": 2,
+              "name": "Tây Nguyên & Đà Lạt",
+              "slug": "tay-nguyen-da-lat",
+              "zone": "central",
+              "description": "Xứ sở rau củ, dâu tây và hoa quả ôn đới",
+              "created_at": "2026-10-04T21:44:21.000000Z",
+              "updated_at": "2026-10-04T21:44:21.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "5ffa1329-ad09-4f8a-8875-11e6fe8e4fbe",
+              "product_id": "28432c1d-17a4-4f89-8480-6316aa3bb4d2",
+              "unit": "Hộp 500g",
+              "price": 120000,
+              "compare_at_price": 140000,
+              "stock_quantity": 57,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:27.000000Z",
+              "updated_at": "2026-10-09T03:32:03.000000Z"
+            },
+            {
+              "id": "3fe80028-b902-4feb-862b-29db1dfdb88e",
+              "product_id": "28432c1d-17a4-4f89-8480-6316aa3bb4d2",
+              "unit": "Hộp 1kg",
+              "price": 220000,
+              "compare_at_price": 260000,
+              "stock_quantity": 30,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:27.000000Z",
+              "updated_at": "2026-10-04T21:44:27.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "6ec6966c-0946-454f-a44c-63bda3dc91bf",
+          "farmer_id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+          "category_id": 2,
+          "name": "Nho Mẫu Đơn Shine Muscat",
+          "slug": "nho-mau-don",
+          "description": "Nho mẫu đơn quả to tròn, vỏ mỏng không hạt, vị ngọt đậm thơm mùi xoài sữa quý tộc.",
+          "image_url": "https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=800&auto=format&fit=crop",
+          "badge": "Cao cấp",
+          "sold_count": 15,
+          "rating": 4.9,
+          "is_seasonal": false,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:27.000000Z",
+          "updated_at": "2026-10-04T21:44:27.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+            "user_id": "3484690d-a0b0-415f-ae14-6139a245ab29",
+            "farm_name": "Vườn Trái Cây Chú Ba",
+            "story": "Hơn 20 năm gắn bó với cây sầu riêng và bưởi da xanh. Nông sản đạt chuẩn VietGAP mang lại vị ngọt béo ngậy an toàn nhất.",
+            "address": "Chợ Lách, Bến Tre",
+            "region_id": 1,
+            "latitude": 10.2348,
+            "longitude": 106.3485,
+            "image_url": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+            "specialty": "Sầu riêng Ri6, Bưởi da xanh",
+            "rating": 4.8,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:23.000000Z",
+            "updated_at": "2026-10-09T03:24:57.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 2,
+            "region": {
+              "id": 1,
+              "name": "Đồng Bằng Sông Cửu Long",
+              "slug": "dong-bang-song-cuu-long",
+              "zone": "south",
+              "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+              "created_at": "2026-10-04T21:44:20.000000Z",
+              "updated_at": "2026-10-04T21:44:20.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "926b7960-2056-417d-a197-0fb5518d230a",
+              "product_id": "6ec6966c-0946-454f-a44c-63bda3dc91bf",
+              "unit": "Chùm 600g",
+              "price": 450000,
+              "compare_at_price": 500000,
+              "stock_quantity": 24,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:27.000000Z",
+              "updated_at": "2026-10-08T14:54:58.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "f8644686-6e48-45c6-9db8-f4af21564621",
+          "farmer_id": "5818f9a7-9302-4c97-b7e6-13effc8c0b8e",
+          "category_id": 2,
+          "name": "Bưởi Da Xanh Ruột Hồng",
+          "slug": "buoi-da-xanh",
+          "description": "Bưởi da xanh Bến Tre vỏ mỏng, múi căng mọng, tép bưởi màu hồng tự nhiên, vị ngọt thanh mát đậm đà. Đạt chuẩn chứng nhận VietGAP an toàn tuyệt đối.",
+          "image_url": "https://images.unsplash.com/photo-1557161189-ce564ad72591?q=80&w=800&auto=format&fit=crop",
+          "badge": "VietGAP",
+          "sold_count": 42,
+          "rating": 4.6,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:26.000000Z",
+          "updated_at": "2026-10-04T21:44:26.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "5818f9a7-9302-4c97-b7e6-13effc8c0b8e",
+            "user_id": "ef251b5a-896d-49a2-a139-94f391f29c37",
+            "farm_name": "HTX Bưởi Da Xanh",
+            "story": "Hợp tác xã quy tụ 50 hộ gia đình trồng bưởi truyền thống với tiêu chuẩn sinh học sạch.",
+            "address": "Bình Minh, Vĩnh Long",
+            "region_id": 1,
+            "latitude": 10.0772,
+            "longitude": 105.9545,
+            "image_url": "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600",
+            "specialty": "Bưởi da xanh ruột hồng",
+            "rating": 4.6,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:23.000000Z",
+            "updated_at": "2026-10-04T21:44:23.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 0,
+            "region": {
+              "id": 1,
+              "name": "Đồng Bằng Sông Cửu Long",
+              "slug": "dong-bang-song-cuu-long",
+              "zone": "south",
+              "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+              "created_at": "2026-10-04T21:44:20.000000Z",
+              "updated_at": "2026-10-04T21:44:20.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "ddcb435f-ef71-49f4-9c81-6aafba04784f",
+              "product_id": "f8644686-6e48-45c6-9db8-f4af21564621",
+              "unit": "Trái 1.2 - 1.5kg",
+              "price": 65000,
+              "compare_at_price": 85000,
+              "stock_quantity": 100,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:26.000000Z",
+              "updated_at": "2026-10-04T21:44:26.000000Z"
+            },
+            {
+              "id": "98e67d59-033a-45c5-8e07-1c31534f363b",
+              "product_id": "f8644686-6e48-45c6-9db8-f4af21564621",
+              "unit": "Thùng 6 trái",
+              "price": 360000,
+              "compare_at_price": 420000,
+              "stock_quantity": 30,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:26.000000Z",
+              "updated_at": "2026-10-04T21:44:26.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "f786f72c-466b-4484-94cf-4bec6bc8507b",
+          "farmer_id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+          "category_id": 2,
+          "name": "Dưa Lưới Mật Hữu Cơ",
+          "slug": "dua-luoi-mat",
+          "description": "Dưa lưới mật trồng trong nhà màng công nghệ cao tại Đà Lạt. Ruột màu cam đậm, vị ngọt lịm như mật, giòn thơm nức mũi.",
+          "image_url": "https://images.unsplash.com/photo-1598468305048-fb2ce57bc6ff?q=80&w=800&auto=format&fit=crop",
+          "badge": "Hữu cơ",
+          "sold_count": 89,
+          "rating": 4.9,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:26.000000Z",
+          "updated_at": "2026-10-04T21:44:26.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+            "user_id": "4e278df6-43a0-4645-968e-707411669959",
+            "farm_name": "Nông Trại Xanh Đà Lạt",
+            "story": "Nông trại ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100% trong nhà kính thông minh.",
+            "address": "Đơn Dương, Lâm Đồng",
+            "region_id": 2,
+            "latitude": 11.8188,
+            "longitude": 108.4933,
+            "image_url": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600",
+            "specialty": "Dâu tây, Dưa lưới hữu cơ",
+            "rating": 4.9,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:24.000000Z",
+            "updated_at": "2026-10-09T03:32:03.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 1,
+            "region": {
+              "id": 2,
+              "name": "Tây Nguyên & Đà Lạt",
+              "slug": "tay-nguyen-da-lat",
+              "zone": "central",
+              "description": "Xứ sở rau củ, dâu tây và hoa quả ôn đới",
+              "created_at": "2026-10-04T21:44:21.000000Z",
+              "updated_at": "2026-10-04T21:44:21.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "f77aac92-a34a-4afe-b4d9-e70737cf7523",
+              "product_id": "f786f72c-466b-4484-94cf-4bec6bc8507b",
+              "unit": "Trái 1.5kg",
+              "price": 99000,
+              "compare_at_price": 120000,
+              "stock_quantity": 80,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:26.000000Z",
+              "updated_at": "2026-10-04T21:44:26.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "6e17df72-d4fe-44d2-8cb9-a461515bf6de",
+          "farmer_id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+          "category_id": 2,
+          "name": "Sầu Riêng Ri6 Hạt Lép",
+          "slug": "sau-rieng-ri6",
+          "description": "Sầu riêng Ri6 trứ danh được trồng tại vùng phù sa màu mỡ Chợ Lách, Bến Tre. Cơm vàng óng, hạt lép, độ ngọt vừa phải và béo ngậy. Cam kết chín cây tự nhiên, không nhúng thuốc ép chín.",
+          "image_url": "https://images.unsplash.com/photo-1550828520-4cb496926fc9?q=80&w=800&auto=format&fit=crop",
+          "badge": "Freeship",
+          "sold_count": 154,
+          "rating": 4.8,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:25.000000Z",
+          "updated_at": "2026-10-04T21:44:25.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+            "user_id": "3484690d-a0b0-415f-ae14-6139a245ab29",
+            "farm_name": "Vườn Trái Cây Chú Ba",
+            "story": "Hơn 20 năm gắn bó với cây sầu riêng và bưởi da xanh. Nông sản đạt chuẩn VietGAP mang lại vị ngọt béo ngậy an toàn nhất.",
+            "address": "Chợ Lách, Bến Tre",
+            "region_id": 1,
+            "latitude": 10.2348,
+            "longitude": 106.3485,
+            "image_url": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+            "specialty": "Sầu riêng Ri6, Bưởi da xanh",
+            "rating": 4.8,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:23.000000Z",
+            "updated_at": "2026-10-09T03:24:57.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 2,
+            "region": {
+              "id": 1,
+              "name": "Đồng Bằng Sông Cửu Long",
+              "slug": "dong-bang-song-cuu-long",
+              "zone": "south",
+              "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+              "created_at": "2026-10-04T21:44:20.000000Z",
+              "updated_at": "2026-10-04T21:44:20.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "efdb4140-ae06-4a96-a70f-3736983ae117",
+              "product_id": "6e17df72-d4fe-44d2-8cb9-a461515bf6de",
+              "unit": "Tách vỏ (Hộp 500g)",
+              "price": 150000,
+              "compare_at_price": 190000,
+              "stock_quantity": 50,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:25.000000Z",
+              "updated_at": "2026-10-04T21:44:25.000000Z"
+            },
+            {
+              "id": "689496cd-46b0-4d6e-84b7-e7f98b7ed2a3",
+              "product_id": "6e17df72-d4fe-44d2-8cb9-a461515bf6de",
+              "unit": "Nguyên trái (2.5-3kg)",
+              "price": 350000,
+              "compare_at_price": 400000,
+              "stock_quantity": 20,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:26.000000Z",
+              "updated_at": "2026-10-04T21:44:26.000000Z"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "1.4 Lọc Sản phẩm theo Danh mục và sắp xếp giá tăng dần",
+    "method": "GET",
+    "path": "/api/v1/products?category=trai-cay&sort_by=price-asc",
+    "status": 200,
+    "latency_ms": 370,
+    "passed": true,
+    "body": {
+      "success": true,
+      "count": 6,
+      "data": [
+        {
+          "id": "7185d3e3-e5f7-4bc0-ad4e-16bf9ec10c36",
+          "farmer_id": "6094cc52-a428-418a-bed6-fe256edc3c96",
+          "category_id": 2,
+          "name": "Xoài Cát Hòa Lộc",
+          "slug": "xoai-cat-hoa-loc",
+          "description": "Xoài cát Hòa Lộc Đồng Tháp loại 1 quả thon dài, vỏ vàng tươi khi chín, thịt quả dẻo mịn không xơ, hương thơm ngào ngạt.",
+          "image_url": "https://images.unsplash.com/photo-1553279768-865429fa0078?q=80&w=800&auto=format&fit=crop",
+          "badge": "Mới về",
+          "sold_count": 20,
+          "rating": 4.7,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:27.000000Z",
+          "updated_at": "2026-10-04T21:44:27.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "6094cc52-a428-418a-bed6-fe256edc3c96",
+            "user_id": "43b9911d-ec13-4a63-bd30-b799c80eab43",
+            "farm_name": "Vườn Xoài Ông Năm",
+            "story": "Truyền thống 3 đời canh tác giống xoài quý trên đất phù sa bồi đắp màu mỡ ven sông Tiền.",
+            "address": "Cao Lãnh, Đồng Tháp",
+            "region_id": 1,
+            "latitude": 10.4563,
+            "longitude": 105.6409,
+            "image_url": "https://images.unsplash.com/photo-1553279768-865429fa0078?w=600",
+            "specialty": "Xoài cát Hòa Lộc",
+            "rating": 4.5,
+            "is_verified": false,
+            "created_at": "2026-10-04T21:44:24.000000Z",
+            "updated_at": "2026-10-04T21:44:24.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 0,
+            "region": {
+              "id": 1,
+              "name": "Đồng Bằng Sông Cửu Long",
+              "slug": "dong-bang-song-cuu-long",
+              "zone": "south",
+              "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+              "created_at": "2026-10-04T21:44:20.000000Z",
+              "updated_at": "2026-10-04T21:44:20.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "3f1c8655-e2b0-46e1-b05e-72c481c7b018",
+              "product_id": "7185d3e3-e5f7-4bc0-ad4e-16bf9ec10c36",
+              "unit": "1kg (2-3 trái)",
+              "price": 120000,
+              "compare_at_price": 150000,
+              "stock_quantity": 45,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:27.000000Z",
+              "updated_at": "2026-10-04T21:44:27.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "28432c1d-17a4-4f89-8480-6316aa3bb4d2",
+          "farmer_id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+          "category_id": 2,
+          "name": "Dâu Tây Đà Lạt Cấp Đông",
+          "slug": "dau-tay",
+          "description": "Dâu tây giống New Zealand quả đỏ tươi, vị chua ngọt hài hòa tự nhiên. Thu hoạch sáng sớm và cấp đông nhanh chuẩn IQF giữ trọn dinh dưỡng.",
+          "image_url": "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=800&auto=format&fit=crop",
+          "badge": "VietGAP",
+          "sold_count": 200,
+          "rating": 4.9,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:27.000000Z",
+          "updated_at": "2026-10-04T21:44:27.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+            "user_id": "4e278df6-43a0-4645-968e-707411669959",
+            "farm_name": "Nông Trại Xanh Đà Lạt",
+            "story": "Nông trại ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100% trong nhà kính thông minh.",
+            "address": "Đơn Dương, Lâm Đồng",
+            "region_id": 2,
+            "latitude": 11.8188,
+            "longitude": 108.4933,
+            "image_url": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600",
+            "specialty": "Dâu tây, Dưa lưới hữu cơ",
+            "rating": 4.9,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:24.000000Z",
+            "updated_at": "2026-10-09T03:32:03.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 1,
+            "region": {
+              "id": 2,
+              "name": "Tây Nguyên & Đà Lạt",
+              "slug": "tay-nguyen-da-lat",
+              "zone": "central",
+              "description": "Xứ sở rau củ, dâu tây và hoa quả ôn đới",
+              "created_at": "2026-10-04T21:44:21.000000Z",
+              "updated_at": "2026-10-04T21:44:21.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "5ffa1329-ad09-4f8a-8875-11e6fe8e4fbe",
+              "product_id": "28432c1d-17a4-4f89-8480-6316aa3bb4d2",
+              "unit": "Hộp 500g",
+              "price": 120000,
+              "compare_at_price": 140000,
+              "stock_quantity": 57,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:27.000000Z",
+              "updated_at": "2026-10-09T03:32:03.000000Z"
+            },
+            {
+              "id": "3fe80028-b902-4feb-862b-29db1dfdb88e",
+              "product_id": "28432c1d-17a4-4f89-8480-6316aa3bb4d2",
+              "unit": "Hộp 1kg",
+              "price": 220000,
+              "compare_at_price": 260000,
+              "stock_quantity": 30,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:27.000000Z",
+              "updated_at": "2026-10-04T21:44:27.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "6ec6966c-0946-454f-a44c-63bda3dc91bf",
+          "farmer_id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+          "category_id": 2,
+          "name": "Nho Mẫu Đơn Shine Muscat",
+          "slug": "nho-mau-don",
+          "description": "Nho mẫu đơn quả to tròn, vỏ mỏng không hạt, vị ngọt đậm thơm mùi xoài sữa quý tộc.",
+          "image_url": "https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=800&auto=format&fit=crop",
+          "badge": "Cao cấp",
+          "sold_count": 15,
+          "rating": 4.9,
+          "is_seasonal": false,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:27.000000Z",
+          "updated_at": "2026-10-04T21:44:27.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+            "user_id": "3484690d-a0b0-415f-ae14-6139a245ab29",
+            "farm_name": "Vườn Trái Cây Chú Ba",
+            "story": "Hơn 20 năm gắn bó với cây sầu riêng và bưởi da xanh. Nông sản đạt chuẩn VietGAP mang lại vị ngọt béo ngậy an toàn nhất.",
+            "address": "Chợ Lách, Bến Tre",
+            "region_id": 1,
+            "latitude": 10.2348,
+            "longitude": 106.3485,
+            "image_url": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+            "specialty": "Sầu riêng Ri6, Bưởi da xanh",
+            "rating": 4.8,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:23.000000Z",
+            "updated_at": "2026-10-09T03:24:57.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 2,
+            "region": {
+              "id": 1,
+              "name": "Đồng Bằng Sông Cửu Long",
+              "slug": "dong-bang-song-cuu-long",
+              "zone": "south",
+              "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+              "created_at": "2026-10-04T21:44:20.000000Z",
+              "updated_at": "2026-10-04T21:44:20.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "926b7960-2056-417d-a197-0fb5518d230a",
+              "product_id": "6ec6966c-0946-454f-a44c-63bda3dc91bf",
+              "unit": "Chùm 600g",
+              "price": 450000,
+              "compare_at_price": 500000,
+              "stock_quantity": 24,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:27.000000Z",
+              "updated_at": "2026-10-08T14:54:58.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "f8644686-6e48-45c6-9db8-f4af21564621",
+          "farmer_id": "5818f9a7-9302-4c97-b7e6-13effc8c0b8e",
+          "category_id": 2,
+          "name": "Bưởi Da Xanh Ruột Hồng",
+          "slug": "buoi-da-xanh",
+          "description": "Bưởi da xanh Bến Tre vỏ mỏng, múi căng mọng, tép bưởi màu hồng tự nhiên, vị ngọt thanh mát đậm đà. Đạt chuẩn chứng nhận VietGAP an toàn tuyệt đối.",
+          "image_url": "https://images.unsplash.com/photo-1557161189-ce564ad72591?q=80&w=800&auto=format&fit=crop",
+          "badge": "VietGAP",
+          "sold_count": 42,
+          "rating": 4.6,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:26.000000Z",
+          "updated_at": "2026-10-04T21:44:26.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "5818f9a7-9302-4c97-b7e6-13effc8c0b8e",
+            "user_id": "ef251b5a-896d-49a2-a139-94f391f29c37",
+            "farm_name": "HTX Bưởi Da Xanh",
+            "story": "Hợp tác xã quy tụ 50 hộ gia đình trồng bưởi truyền thống với tiêu chuẩn sinh học sạch.",
+            "address": "Bình Minh, Vĩnh Long",
+            "region_id": 1,
+            "latitude": 10.0772,
+            "longitude": 105.9545,
+            "image_url": "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600",
+            "specialty": "Bưởi da xanh ruột hồng",
+            "rating": 4.6,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:23.000000Z",
+            "updated_at": "2026-10-04T21:44:23.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 0,
+            "region": {
+              "id": 1,
+              "name": "Đồng Bằng Sông Cửu Long",
+              "slug": "dong-bang-song-cuu-long",
+              "zone": "south",
+              "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+              "created_at": "2026-10-04T21:44:20.000000Z",
+              "updated_at": "2026-10-04T21:44:20.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "ddcb435f-ef71-49f4-9c81-6aafba04784f",
+              "product_id": "f8644686-6e48-45c6-9db8-f4af21564621",
+              "unit": "Trái 1.2 - 1.5kg",
+              "price": 65000,
+              "compare_at_price": 85000,
+              "stock_quantity": 100,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:26.000000Z",
+              "updated_at": "2026-10-04T21:44:26.000000Z"
+            },
+            {
+              "id": "98e67d59-033a-45c5-8e07-1c31534f363b",
+              "product_id": "f8644686-6e48-45c6-9db8-f4af21564621",
+              "unit": "Thùng 6 trái",
+              "price": 360000,
+              "compare_at_price": 420000,
+              "stock_quantity": 30,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:26.000000Z",
+              "updated_at": "2026-10-04T21:44:26.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "f786f72c-466b-4484-94cf-4bec6bc8507b",
+          "farmer_id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+          "category_id": 2,
+          "name": "Dưa Lưới Mật Hữu Cơ",
+          "slug": "dua-luoi-mat",
+          "description": "Dưa lưới mật trồng trong nhà màng công nghệ cao tại Đà Lạt. Ruột màu cam đậm, vị ngọt lịm như mật, giòn thơm nức mũi.",
+          "image_url": "https://images.unsplash.com/photo-1598468305048-fb2ce57bc6ff?q=80&w=800&auto=format&fit=crop",
+          "badge": "Hữu cơ",
+          "sold_count": 89,
+          "rating": 4.9,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:26.000000Z",
+          "updated_at": "2026-10-04T21:44:26.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "c36b70bd-eac4-4cf2-a825-806ab03eac34",
+            "user_id": "4e278df6-43a0-4645-968e-707411669959",
+            "farm_name": "Nông Trại Xanh Đà Lạt",
+            "story": "Nông trại ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100% trong nhà kính thông minh.",
+            "address": "Đơn Dương, Lâm Đồng",
+            "region_id": 2,
+            "latitude": 11.8188,
+            "longitude": 108.4933,
+            "image_url": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600",
+            "specialty": "Dâu tây, Dưa lưới hữu cơ",
+            "rating": 4.9,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:24.000000Z",
+            "updated_at": "2026-10-09T03:32:03.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 1,
+            "region": {
+              "id": 2,
+              "name": "Tây Nguyên & Đà Lạt",
+              "slug": "tay-nguyen-da-lat",
+              "zone": "central",
+              "description": "Xứ sở rau củ, dâu tây và hoa quả ôn đới",
+              "created_at": "2026-10-04T21:44:21.000000Z",
+              "updated_at": "2026-10-04T21:44:21.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "f77aac92-a34a-4afe-b4d9-e70737cf7523",
+              "product_id": "f786f72c-466b-4484-94cf-4bec6bc8507b",
+              "unit": "Trái 1.5kg",
+              "price": 99000,
+              "compare_at_price": 120000,
+              "stock_quantity": 80,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:26.000000Z",
+              "updated_at": "2026-10-04T21:44:26.000000Z"
+            }
+          ]
+        },
+        {
+          "id": "6e17df72-d4fe-44d2-8cb9-a461515bf6de",
+          "farmer_id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+          "category_id": 2,
+          "name": "Sầu Riêng Ri6 Hạt Lép",
+          "slug": "sau-rieng-ri6",
+          "description": "Sầu riêng Ri6 trứ danh được trồng tại vùng phù sa màu mỡ Chợ Lách, Bến Tre. Cơm vàng óng, hạt lép, độ ngọt vừa phải và béo ngậy. Cam kết chín cây tự nhiên, không nhúng thuốc ép chín.",
+          "image_url": "https://images.unsplash.com/photo-1550828520-4cb496926fc9?q=80&w=800&auto=format&fit=crop",
+          "badge": "Freeship",
+          "sold_count": 154,
+          "rating": 4.8,
+          "is_seasonal": true,
+          "harvest_season": "Quanh năm",
+          "created_at": "2026-10-04T21:44:25.000000Z",
+          "updated_at": "2026-10-04T21:44:25.000000Z",
+          "category": {
+            "id": 2,
+            "name": "Trái cây tươi ngon",
+            "slug": "trai-cay",
+            "icon": "🍉",
+            "banner_image": "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=1920&auto=format&fit=crop",
+            "description": "Trái cây đặc sản nhiệt đới và ôn đới chín cây tự nhiên, chuẩn VietGAP, ngọt thơm mọng nước.",
+            "parent_id": null,
+            "created_at": "2026-10-04T21:44:21.000000Z",
+            "updated_at": "2026-10-04T21:44:21.000000Z"
+          },
+          "farmer": {
+            "id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+            "user_id": "3484690d-a0b0-415f-ae14-6139a245ab29",
+            "farm_name": "Vườn Trái Cây Chú Ba",
+            "story": "Hơn 20 năm gắn bó với cây sầu riêng và bưởi da xanh. Nông sản đạt chuẩn VietGAP mang lại vị ngọt béo ngậy an toàn nhất.",
+            "address": "Chợ Lách, Bến Tre",
+            "region_id": 1,
+            "latitude": 10.2348,
+            "longitude": 106.3485,
+            "image_url": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+            "specialty": "Sầu riêng Ri6, Bưởi da xanh",
+            "rating": 4.8,
+            "is_verified": true,
+            "created_at": "2026-10-04T21:44:23.000000Z",
+            "updated_at": "2026-10-09T03:24:57.000000Z",
+            "bank_name": null,
+            "bank_account_number": null,
+            "bank_account_name": null,
+            "balance_available": 0,
+            "commission_rate": 8,
+            "total_sales_count": 2,
+            "region": {
+              "id": 1,
+              "name": "Đồng Bằng Sông Cửu Long",
+              "slug": "dong-bang-song-cuu-long",
+              "zone": "south",
+              "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+              "created_at": "2026-10-04T21:44:20.000000Z",
+              "updated_at": "2026-10-04T21:44:20.000000Z"
+            }
+          },
+          "variants": [
+            {
+              "id": "efdb4140-ae06-4a96-a70f-3736983ae117",
+              "product_id": "6e17df72-d4fe-44d2-8cb9-a461515bf6de",
+              "unit": "Tách vỏ (Hộp 500g)",
+              "price": 150000,
+              "compare_at_price": 190000,
+              "stock_quantity": 50,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:25.000000Z",
+              "updated_at": "2026-10-04T21:44:25.000000Z"
+            },
+            {
+              "id": "689496cd-46b0-4d6e-84b7-e7f98b7ed2a3",
+              "product_id": "6e17df72-d4fe-44d2-8cb9-a461515bf6de",
+              "unit": "Nguyên trái (2.5-3kg)",
+              "price": 350000,
+              "compare_at_price": 400000,
+              "stock_quantity": 20,
+              "sku": null,
+              "created_at": "2026-10-04T21:44:26.000000Z",
+              "updated_at": "2026-10-04T21:44:26.000000Z"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "1.5 Lấy chi tiết Sản phẩm (Mật Ong Rừng Tràm U Minh)",
+    "method": "GET",
+    "path": "/api/v1/products/mat-ong-rung-tram",
+    "status": 200,
+    "latency_ms": 416,
+    "passed": true,
+    "body": {
+      "success": true,
+      "data": {
+        "id": "af2d2f22-1da5-4400-9983-dad56e8068e9",
+        "farmer_id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+        "category_id": 4,
+        "name": "Mật Ong Rừng Tràm U Minh",
+        "slug": "mat-ong-rung-tram",
+        "description": "Mật ong hoa tràm nguyên chất 100% thu hoạch tự nhiên từ rừng tràm U Minh Cà Mau, màu vàng óng, thơm nồng dịu.",
+        "image_url": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=800&auto=format&fit=crop",
+        "badge": "Rừng 100%",
+        "sold_count": 160,
+        "rating": 4.9,
+        "is_seasonal": false,
+        "harvest_season": "Quanh năm",
+        "created_at": "2026-10-04T21:44:29.000000Z",
+        "updated_at": "2026-10-04T21:44:29.000000Z",
+        "category": {
+          "id": 4,
+          "name": "Đặc sản vùng miền",
+          "slug": "dac-san",
+          "icon": "🎁",
+          "banner_image": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1920&auto=format&fit=crop",
+          "description": "Đặc sản trứ danh 3 miền: Sầu riêng Ri6, Mật ong rừng Tràm, Bưởi da xanh Bến Tre.",
+          "parent_id": null,
+          "created_at": "2026-10-04T21:44:22.000000Z",
+          "updated_at": "2026-10-04T21:44:22.000000Z"
+        },
+        "farmer": {
+          "id": "126d3141-6937-42d5-869c-1cc8796fcd28",
+          "user_id": "3484690d-a0b0-415f-ae14-6139a245ab29",
+          "farm_name": "Vườn Trái Cây Chú Ba",
+          "story": "Hơn 20 năm gắn bó với cây sầu riêng và bưởi da xanh. Nông sản đạt chuẩn VietGAP mang lại vị ngọt béo ngậy an toàn nhất.",
+          "address": "Chợ Lách, Bến Tre",
+          "region_id": 1,
+          "latitude": 10.2348,
+          "longitude": 106.3485,
+          "image_url": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+          "specialty": "Sầu riêng Ri6, Bưởi da xanh",
+          "rating": 4.8,
+          "is_verified": true,
+          "created_at": "2026-10-04T21:44:23.000000Z",
+          "updated_at": "2026-10-09T03:24:57.000000Z",
+          "bank_name": null,
+          "bank_account_number": null,
+          "bank_account_name": null,
+          "balance_available": 0,
+          "commission_rate": 8,
+          "total_sales_count": 2,
+          "region": {
+            "id": 1,
+            "name": "Đồng Bằng Sông Cửu Long",
+            "slug": "dong-bang-song-cuu-long",
+            "zone": "south",
+            "description": "Vựa trái cây nhiệt đới lớn nhất cả nước",
+            "created_at": "2026-10-04T21:44:20.000000Z",
+            "updated_at": "2026-10-04T21:44:20.000000Z"
+          }
+        },
+        "variants": [
+          {
+            "id": "dc028525-dede-4486-bbc1-1afbef348d5b",
+            "product_id": "af2d2f22-1da5-4400-9983-dad56e8068e9",
+            "unit": "Chai 500ml",
+            "price": 180000,
+            "compare_at_price": 210000,
+            "stock_quantity": 50,
+            "sku": null,
+            "created_at": "2026-10-04T21:44:29.000000Z",
+            "updated_at": "2026-10-04T21:44:29.000000Z"
+          },
+          {
+            "id": "7ca3f866-47f8-4f24-a0fb-1b20bb5ff139",
+            "product_id": "af2d2f22-1da5-4400-9983-dad56e8068e9",
+            "unit": "Chai 1 Lít",
+            "price": 340000,
+            "compare_at_price": 390000,
+            "stock_quantity": 30,
+            "sku": null,
+            "created_at": "2026-10-04T21:44:29.000000Z",
+            "updated_at": "2026-10-04T21:44:29.000000Z"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "2.1 Tính toán giỏ hàng & chiết khấu voucher (Cart Calculate)",
+    "method": "POST",
+    "path": "/api/v1/cart/calculate",
+    "status": 200,
+    "latency_ms": 397,
+    "passed": true,
+    "body": {
+      "success": true,
+      "data": {
+        "items": [
+          {
+            "product_id": "af2d2f22-1da5-4400-9983-dad56e8068e9",
+            "variant_id": "dc028525-dede-4486-bbc1-1afbef348d5b",
+            "product_name": "Mật Ong Rừng Tràm U Minh",
+            "unit": "Chai 500ml",
+            "quantity": 2,
+            "price": 180000,
+            "subtotal": 360000,
+            "image_url": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=800&auto=format&fit=crop",
+            "stock_quantity": 50
+          }
+        ],
+        "item_count": 1,
+        "total_quantity": 2,
+        "subtotal": 360000,
+        "shipping_fee": 0,
+        "free_shipping": true,
+        "voucher": {
+          "valid": true,
+          "code": "GREEN10",
+          "discount": 36000,
+          "discount_type": "percent",
+          "title": "Giảm 10% tối đa 50k",
+          "message": "Áp dụng mã giảm giá thành công!"
+        },
+        "discount": 36000,
+        "total": 324000
+      }
+    }
+  },
+  {
+    "name": "2.2 Kiểm tra mã Voucher hợp lệ (GREEN10 giảm 10%)",
+    "method": "POST",
+    "path": "/api/v1/promotions/check-voucher",
+    "status": 200,
+    "latency_ms": 333,
+    "passed": true,
+    "body": {
+      "success": true,
+      "data": {
+        "valid": true,
+        "code": "GREEN10",
+        "discount": 25000,
+        "discount_type": "percent",
+        "title": "Giảm 10% tối đa 50k",
+        "message": "Áp dụng mã giảm giá thành công!"
+      }
+    }
+  },
+  {
+    "name": "2.3 Lấy danh sách Vùng giao hàng & Phí ship (Shipping Zones)",
+    "method": "GET",
+    "path": "/api/v1/shipping-zones",
+    "status": 200,
+    "latency_ms": 343,
+    "passed": true,
+    "body": {
+      "success": true,
+      "data": [
+        {
+          "id": "SZ001",
+          "name": "Nội thành TP.HCM",
+          "provinces": "TP. Hồ Chí Minh (Quận 1-12, Bình Thạnh, Gò Vấp, Phú Nhuận, Tân Bình, Tân Phú)",
+          "base_fee": 15000,
+          "extra_fee_per_kg": 3000,
+          "free_ship_minimum": 300000,
+          "estimated_days": "1-2 giờ",
+          "is_active": true,
+          "created_at": "2026-10-04T21:44:29.000000Z",
+          "updated_at": "2026-10-04T21:44:29.000000Z"
+        },
+        {
+          "id": "SZ002",
+          "name": "Ngoại thành TP.HCM",
+          "provinces": "TP. Hồ Chí Minh (Củ Chi, Hóc Môn, Bình Chánh, Nhà Bè, Cần Giờ)",
+          "base_fee": 25000,
+          "extra_fee_per_kg": 4000,
+          "free_ship_minimum": 500000,
+          "estimated_days": "2-4 giờ",
+          "is_active": true,
+          "created_at": "2026-10-04T21:44:30.000000Z",
+          "updated_at": "2026-10-04T21:44:30.000000Z"
+        },
+        {
+          "id": "SZ003",
+          "name": "Đồng Bằng Sông Cửu Long",
+          "provinces": "Bến Tre, Vĩnh Long, Đồng Tháp, Tiền Giang, Cần Thơ, An Giang, Long An",
+          "base_fee": 30000,
+          "extra_fee_per_kg": 5000,
+          "free_ship_minimum": 500000,
+          "estimated_days": "1-2 ngày",
+          "is_active": true,
+          "created_at": "2026-10-04T21:44:30.000000Z",
+          "updated_at": "2026-10-04T21:44:30.000000Z"
+        },
+        {
+          "id": "SZ004",
+          "name": "Miền Đông Nam Bộ",
+          "provinces": "Bình Dương, Đồng Nai, Bà Rịa - Vũng Tàu, Tây Ninh, Bình Phước",
+          "base_fee": 25000,
+          "extra_fee_per_kg": 4500,
+          "free_ship_minimum": 500000,
+          "estimated_days": "1-2 ngày",
+          "is_active": true,
+          "created_at": "2026-10-04T21:44:30.000000Z",
+          "updated_at": "2026-10-04T21:44:30.000000Z"
+        },
+        {
+          "id": "SZ005",
+          "name": "Tây Nguyên & Miền Trung",
+          "provinces": "Đà Lạt, Lâm Đồng, Đắk Lắk, Đà Nẵng, Huế, Quảng Nam, Bình Định",
+          "base_fee": 40000,
+          "extra_fee_per_kg": 6000,
+          "free_ship_minimum": 700000,
+          "estimated_days": "2-3 ngày",
+          "is_active": true,
+          "created_at": "2026-10-04T21:44:30.000000Z",
+          "updated_at": "2026-10-04T21:44:30.000000Z"
+        },
+        {
+          "id": "SZ006",
+          "name": "Miền Bắc",
+          "provinces": "Hà Nội, Hải Phòng, Quảng Ninh, Nam Định, Ninh Bình, Hà Nam",
+          "base_fee": 50000,
+          "extra_fee_per_kg": 7000,
+          "free_ship_minimum": 800000,
+          "estimated_days": "3-5 ngày",
+          "is_active": true,
+          "created_at": "2026-10-04T21:44:30.000000Z",
+          "updated_at": "2026-10-04T21:44:30.000000Z"
+        }
+      ]
+    }
+  },
+  {
+    "name": "3.1 Lấy danh sách Phương thức thanh toán hỗ trợ",
+    "method": "GET",
+    "path": "/api/v1/payment/methods",
+    "status": 200,
+    "latency_ms": 332,
+    "passed": true,
+    "body": {
+      "success": true,
+      "data": [
+        {
+          "code": "COD",
+          "name": "Thanh toán khi nhận hàng (COD)",
+          "description": "Thanh toán tiền mặt cho shipper khi nhận được sản phẩm",
+          "is_active": true
+        },
+        {
+          "code": "BANK_TRANSFER",
+          "name": "Chuyển khoản ngân hàng (QR Code)",
+          "description": "Quét mã VietQR chuyển khoản nhanh 24/7",
+          "is_active": true
+        },
+        {
+          "code": "MOMO",
+          "name": "Ví điện tử MoMo (Đang phát triển)",
+          "description": "Phương thức thanh toán qua Ví MoMo đang trong quá trình nâng cấp & phát triển",
+          "is_active": false
+        },
+        {
+          "code": "VNPAY",
+          "name": "Cổng VNPAY-QR / Thẻ ATM",
+          "description": "Thanh toán qua cổng VNPAY hỗ trợ thẻ nội địa và quốc tế",
+          "is_active": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "3.2 Thanh toán Thẻ ATM Nội Địa Napas 247 thành công (Ngân hàng NCB)",
+    "method": "POST",
+    "path": "/api/payment/card/process",
+    "status": 200,
+    "latency_ms": 6348,
+    "passed": true,
+    "body": {
+      "success": true,
+      "message": "Thanh toán thẻ ATM nội địa thành công!",
+      "data": {
+        "order_id": "01a11f4f-ca82-72f5-b5ac-9fef9971af09",
+        "tracking_number": "GF_POSTMAN_QUY_ATM",
+        "ghn_order_code": null,
+        "trans_id": "ATM_NCB_1791526685_761",
+        "bank_code": "NCB",
+        "card_masked": "9704 **** **** 3849",
+        "card_holder": "LUONG VAN QUY",
+        "amount": 178000,
+        "paid_at": "09/10/2026 13:18:11"
+      }
+    }
+  },
+  {
+    "name": "3.3 Kiểm thử Validation lỗi khi thiếu số thẻ ATM (Expected 422)",
+    "method": "POST",
+    "path": "/api/payment/card/process",
+    "status": 422,
+    "latency_ms": 336,
+    "passed": true,
+    "body": {
+      "success": false,
+      "message": "Vui lòng nhập số thẻ ATM.",
+      "errors": {
+        "card_number": [
+          "Vui lòng nhập số thẻ ATM."
+        ]
+      }
+    }
+  },
+  {
+    "name": "4.1 Lấy danh sách Thông báo kiểu Shopee",
+    "method": "GET",
+    "path": "/api/v1/notifications",
+    "status": 200,
+    "latency_ms": 335,
+    "passed": true,
+    "body": {
+      "success": true,
+      "unread_count": 0,
+      "count": 7,
+      "data": [
+        {
+          "id": "notif-1791526638-0dhU",
+          "type": "order",
+          "title": "Thông báo test Postman",
+          "message": "Đơn hàng mới vừa được đặt thành công",
+          "timestamp": "2026-10-09T13:17:18+07:00",
+          "is_read": true,
+          "link": "/notifications",
+          "order_code": null,
+          "tag": "Mới"
+        },
+        {
+          "id": "notif-1",
+          "type": "order",
+          "title": "Giao hàng thành công: Đơn #GF-883921",
+          "message": "Kiện hàng 2kg Bưởi da xanh Bến Tre & 1kg Dâu tây Đà Lạt đã được giao đến bạn. Hãy chia sẻ đánh giá để nhận 50 xu nhé!",
+          "timestamp": "2026-10-09T12:52:18+07:00",
+          "is_read": true,
+          "link": "/tracking?order=GF-883921",
+          "order_code": "GF-883921",
+          "tag": "Giao thành công"
+        },
+        {
+          "id": "notif-2",
+          "type": "promotion",
+          "title": "VOUCHER KHỦNG 30K ĐÃ VÀO VÍ 🎁",
+          "message": "Mã GREEN30 giảm 30.000đ cho đơn nông sản từ 200.000đ đã sẵn sàng. Áp dụng cho mọi loại trái cây & rau củ hữu cơ.",
+          "timestamp": "2026-10-09T11:17:18+07:00",
+          "is_read": true,
+          "link": "/products",
+          "tag": "Voucher HOT"
+        },
+        {
+          "id": "notif-3",
+          "type": "order",
+          "title": "Đang vận chuyển: Đơn hàng #GF-720194",
+          "message": "Tài xế GHN đang giao rau củ quả chuẩn VietGAP từ nông hộ Bến Tre đến địa chỉ của bạn. Dự kiến giao hôm nay.",
+          "timestamp": "2026-10-09T08:17:18+07:00",
+          "is_read": true,
+          "link": "/tracking?order=GF-720194",
+          "order_code": "GF-720194",
+          "tag": "Đang vận chuyển"
+        },
+        {
+          "id": "notif-4",
+          "type": "payment",
+          "title": "Thanh toán thẻ ATM Napas thành công",
+          "message": "Giao dịch thanh toán 185.000đ cho đơn hàng #GF-662910 đã được ngân hàng xác nhận thành công.",
+          "timestamp": "2026-10-08T13:17:18+07:00",
+          "is_read": true,
+          "link": "/tracking?order=GF-662910",
+          "order_code": "GF-662910",
+          "tag": "Thẻ ATM Napas"
+        },
+        {
+          "id": "notif-5",
+          "type": "promotion",
+          "title": "Flash Sale 12:00: Nông sản giảm sốc 35%",
+          "message": "Sầu riêng Ri6 Tây Nguyên & Dưa lưới chuẩn VietGAP ưu đãi cực lớn. Số lượng có hạn trong ngày!",
+          "timestamp": "2026-10-08T09:17:18+07:00",
+          "is_read": true,
+          "link": "/products",
+          "tag": "Flash Sale"
+        },
+        {
+          "id": "notif-6",
+          "type": "system",
+          "title": "Chào mừng bạn đến với GreenFood Market! 🌱",
+          "message": "Tặng ngay 100 Điểm VIP cho tài khoản mới. Chúc bạn có trải nghiệm mua sắm nông sản sạch tươi ngon!",
+          "timestamp": "2026-10-07T13:17:18+07:00",
+          "is_read": true,
+          "link": "/profile",
+          "tag": "Hệ thống"
+        }
+      ]
+    }
+  },
+  {
+    "name": "4.2 Lọc thông báo theo phân loại Đơn hàng (type=order)",
+    "method": "GET",
+    "path": "/api/v1/notifications?type=order",
+    "status": 200,
+    "latency_ms": 330,
+    "passed": true,
+    "body": {
+      "success": true,
+      "unread_count": 0,
+      "count": 3,
+      "data": [
+        {
+          "id": "notif-1791526638-0dhU",
+          "type": "order",
+          "title": "Thông báo test Postman",
+          "message": "Đơn hàng mới vừa được đặt thành công",
+          "timestamp": "2026-10-09T13:17:18+07:00",
+          "is_read": true,
+          "link": "/notifications",
+          "order_code": null,
+          "tag": "Mới"
+        },
+        {
+          "id": "notif-1",
+          "type": "order",
+          "title": "Giao hàng thành công: Đơn #GF-883921",
+          "message": "Kiện hàng 2kg Bưởi da xanh Bến Tre & 1kg Dâu tây Đà Lạt đã được giao đến bạn. Hãy chia sẻ đánh giá để nhận 50 xu nhé!",
+          "timestamp": "2026-10-09T12:52:18+07:00",
+          "is_read": true,
+          "link": "/tracking?order=GF-883921",
+          "order_code": "GF-883921",
+          "tag": "Giao thành công"
+        },
+        {
+          "id": "notif-3",
+          "type": "order",
+          "title": "Đang vận chuyển: Đơn hàng #GF-720194",
+          "message": "Tài xế GHN đang giao rau củ quả chuẩn VietGAP từ nông hộ Bến Tre đến địa chỉ của bạn. Dự kiến giao hôm nay.",
+          "timestamp": "2026-10-09T08:17:18+07:00",
+          "is_read": true,
+          "link": "/tracking?order=GF-720194",
+          "order_code": "GF-720194",
+          "tag": "Đang vận chuyển"
+        }
+      ]
+    }
+  },
+  {
+    "name": "4.3 Tạo Thông báo mới kiểu Shopee (Đơn hàng / Thanh toán)",
+    "method": "POST",
+    "path": "/api/v1/notifications",
+    "status": 201,
+    "latency_ms": 612,
+    "passed": true,
+    "body": {
+      "success": true,
+      "message": "Tạo thông báo thành công",
+      "data": {
+        "id": "notif-1791526692-mBcg",
+        "type": "payment",
+        "title": "Thanh toán thẻ ATM Napas thành công #GF_POSTMAN_QUY_ATM",
+        "message": "Giao dịch 178.000đ qua thẻ NCB đã được xác nhận. Đơn hàng đang được đóng gói.",
+        "timestamp": "2026-10-09T13:18:12+07:00",
+        "is_read": false,
+        "link": "/tracking?order=GF_POSTMAN_QUY_ATM",
+        "order_code": "GF_POSTMAN_QUY_ATM",
+        "tag": "Thẻ ATM Napas"
+      }
+    }
+  },
+  {
+    "name": "4.4 Đánh dấu Đã đọc tất cả thông báo",
+    "method": "PUT",
+    "path": "/api/v1/notifications/mark-all-read",
+    "status": 200,
+    "latency_ms": 584,
+    "passed": true,
+    "body": {
+      "success": true,
+      "message": "Đã đánh dấu đã đọc tất cả thông báo",
+      "unread_count": 0
+    }
+  },
+  {
+    "name": "4.5 Đánh dấu Đã đọc một thông báo cụ thể",
+    "method": "PUT",
+    "path": "/api/v1/notifications/notif-1/read",
+    "status": 200,
+    "latency_ms": 560,
+    "passed": true,
+    "body": {
+      "success": true,
+      "message": "Đã đánh dấu đã đọc thông báo"
+    }
+  },
+  {
+    "name": "5.1 Tra cứu đơn hàng vừa thanh toán Thẻ ATM theo Tracking Number",
+    "method": "GET",
+    "path": "/api/v1/orders/tracking/GF_POSTMAN_QUY_ATM",
+    "status": 200,
+    "latency_ms": 335,
+    "passed": true,
+    "body": {
+      "success": true,
+      "data": {
+        "id": "GF_POSTMAN_QUY_ATM",
+        "ghn_order_code": null,
+        "customer": "LUONG VAN QUY",
+        "phone": "0912345678",
+        "address": "Địa chỉ nhận hàng (Đơn hàng thẻ ATM)",
+        "date": "2026-10-09 13:18",
+        "total": 178000,
+        "shippingFee": 0,
+        "paymentMethod": "VNPAY",
+        "status": "confirmed",
+        "shipperName": null,
+        "shipperPhone": null,
+        "shipperLat": 0,
+        "shipperLng": 0,
+        "destLat": 0,
+        "destLng": 0,
+        "items": [],
+        "steps": [
+          {
+            "title": "Đặt hàng",
+            "desc": "Đơn hàng đã được tạo thành công",
+            "time": "09/10 13:18",
+            "completed": true,
+            "current": false
+          },
+          {
+            "title": "Xác nhận",
+            "desc": "Nông hộ đã xác nhận và đóng gói sản phẩm",
+            "time": "09/10 13:48",
+            "completed": true,
+            "current": true
+          },
+          {
+            "title": "Đang giao",
+            "desc": "Shipper đang trên đường vận chuyển đơn hàng",
+            "time": "",
+            "completed": false,
+            "current": false
+          },
+          {
+            "title": "Đã giao",
+            "desc": "Giao hàng thành công đến tay người nhận",
+            "time": "",
+            "completed": false,
+            "current": false
+          }
+        ]
+      }
+    }
+  }
+]
