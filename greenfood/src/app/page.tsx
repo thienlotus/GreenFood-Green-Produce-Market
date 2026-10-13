@@ -48,16 +48,6 @@ const BANNERS = [
   },
 ];
 
-const SIDEBAR_CATEGORIES = [
-  { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: ShoppingBag, color: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/20' },
-  { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: Apple, color: 'text-rose-600 bg-rose-500/10 border-rose-500/20' },
-  { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: Sparkles, color: 'text-purple-600 bg-purple-500/10 border-purple-500/20' },
-  { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700 bg-amber-500/10 border-amber-500/20' },
-  { name: 'Agrishow Triển lãm', href: '/category/agrishow/', icon: Store, color: 'text-teal-600 bg-teal-500/10 border-teal-500/20' },
-  { name: 'Bản đồ vùng trồng', href: '/map/', icon: MapPin, color: 'text-sky-600 bg-sky-500/10 border-sky-500/20' },
-  { name: 'Nông hộ đối tác', href: '/farmers/', icon: Users, color: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20' },
-  { name: 'Theo dõi đơn hàng', href: '/tracking/', icon: Package, color: 'text-indigo-600 bg-indigo-500/10 border-indigo-500/20' },
-];
 
 const QUICK_LINKS = [
   { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: ShoppingBag, color: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/25 group-hover:bg-emerald-600 group-hover:text-white' },
@@ -409,55 +399,11 @@ export default function Home() {
       </div>
 
       {/* ============================ HERO ============================ */}
-      <section className="container mx-auto px-4 lg:px-8 pt-5 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <section className="container mx-auto max-w-7xl px-4 lg:px-8 pt-5 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
           
-          {/* Sidebar danh mục sản phẩm (Desktop) - Modern Glassmorphic Elevation */}
-          <aside className="hidden xl:flex xl:col-span-3 flex-col justify-between bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden h-[500px]">
-            <div>
-              <div className="px-5 py-3.5 bg-gradient-to-r from-emerald-800 via-emerald-900 to-teal-900 text-white font-bold text-sm flex items-center justify-between shadow-xs">
-                <span className="flex items-center gap-2">
-                  <Leaf size={16} className="text-emerald-300" /> Danh mục nông sản
-                </span>
-                <span className="text-[10px] bg-white/15 border border-white/20 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider text-emerald-200">VietGAP</span>
-              </div>
-              <ul className="divide-y divide-slate-100/70 text-sm py-1">
-                {SIDEBAR_CATEGORIES.map((c) => {
-                  const Icon = c.icon;
-                  return (
-                    <li key={c.name}>
-                      <Link
-                        href={c.href}
-                        className="flex items-center justify-between px-3.5 py-1.5 mx-2 my-0.5 rounded-2xl text-slate-700 hover:text-emerald-800 hover:bg-emerald-50/90 transition-all duration-200 group font-semibold text-xs"
-                      >
-                        <span className="flex items-center gap-2.5">
-                          <span className={`w-7 h-7 rounded-xl ${c.color} flex items-center justify-center border shadow-xs group-hover:scale-110 transition-transform`}>
-                            <Icon size={14} />
-                          </span>
-                          <span>{c.name}</span>
-                        </span>
-                        <ChevronRight size={14} className="text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-
-            {/* Thẻ cam kết chất lượng lấp đầy đáy sidebar không bao giờ bị cắt chữ */}
-            <div className="p-2.5 mx-2.5 mb-2.5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-500/20">
-              <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs">
-                <Sparkles size={13} className="text-amber-500 fill-amber-500" />
-                <span>Bảo hành tươi ngon 24H</span>
-              </div>
-              <p className="text-[11px] text-emerald-800/80 mt-0.5 leading-snug">
-                Đổi trả 100% miễn phí nếu nông sản không đạt độ tươi giòn.
-              </p>
-            </div>
-          </aside>
-
           {/* Carousel Banner chính - Modern Cinematic Presentation */}
-          <div className="lg:col-span-8 xl:col-span-6 relative rounded-3xl overflow-hidden shadow-elevated-card border border-slate-200/90 group h-[320px] sm:h-[420px] lg:h-[500px]">
+          <div className="lg:col-span-8 relative rounded-3xl overflow-hidden shadow-elevated-card border border-slate-200/90 group h-[320px] sm:h-[420px] lg:h-[500px]">
             <div ref={emblaRef} className="overflow-hidden h-full">
               <div className="flex h-full">
                 {BANNERS.map((b) => (
@@ -549,7 +495,7 @@ export default function Home() {
           </div>
 
           {/* 2 Banner phụ (Desktop) - Modern Frosted Bento Cards */}
-          <div className="hidden lg:grid lg:col-span-4 xl:col-span-3 grid-rows-2 gap-4 h-[500px]">
+          <div className="hidden lg:grid lg:col-span-4 grid-rows-2 gap-4 h-[500px]">
             <Link href="/category/trai-cay/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 border border-slate-200/90 block h-[242px]">
               <img
                 src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop"

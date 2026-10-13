@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
   ChevronRight, MapPin, Star, ShieldCheck, Search, Leaf, Map, 
@@ -11,8 +12,20 @@ import { getFarmers, FarmerData, updateFarmerProfileApi } from '@/lib/api';
 import { resolveCoordinatesFromAddress } from '@/lib/geoUtils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'react-hot-toast';
+import FarmerStorefrontClient from './[id]/FarmerStorefrontClient';
 
-export default function FarmersPage() {
+function FarmersPageContent() {
+  const searchParams = useSearchParams();
+  const directStoreId = searchParams?.get('id') || searchParams?.get('store');
+
+  if (directStoreId) {
+    return <FarmerStorefrontClient initialId={directStoreId} />;
+  }
+
+  return <FarmersListView />;
+}
+
+function FarmersListView() {
   const { user } = useAuthStore();
   const [farmers, setFarmers] = useState<FarmerData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -647,5 +660,19 @@ export default function FarmersPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function FarmersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        </div>
+      }
+    >
+      <FarmersPageContent />
+    </Suspense>
   );
 }

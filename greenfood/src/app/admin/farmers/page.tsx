@@ -682,7 +682,7 @@ export default function AdminFarmersPage() {
                                 {farmer.farm_name}
                               </button>
                               <Link
-                                href={`/farmers/${farmer.id}`}
+                                href={`/farmers/${farmer.id}/?store=${farmer.id}`}
                                 target="_blank"
                                 className="text-emerald-600 hover:text-emerald-700 p-0.5 rounded hover:bg-emerald-50 transition-colors inline-flex items-center"
                                 title="Mở trực tiếp gian hàng ngoài website"
@@ -790,7 +790,7 @@ export default function AdminFarmersPage() {
 
                           {/* 2. Xem Gian Hàng Nông Hộ Ngoài Web (Mở trực tiếp) */}
                           <Link
-                            href={`/farmers/${farmer.id}`}
+                            href={`/farmers/${farmer.id}/?store=${farmer.id}`}
                             target="_blank"
                             className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-100 bg-white"
                             title="Mở trực tiếp gian hàng nông hộ ngoài website"
@@ -881,7 +881,7 @@ export default function AdminFarmersPage() {
                 <div className="flex items-center gap-2 shrink-0">
                   {/* Nút Xem Gian Hàng Ngoài Web Trực Tiếp */}
                   <Link
-                    href={`/farmers/${farmer.id}`}
+                    href={`/farmers/${farmer.id}/?store=${farmer.id}`}
                     target="_blank"
                     className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-white text-emerald-800 hover:bg-emerald-50 rounded-xl transition-all shadow-sm"
                   >
@@ -1182,7 +1182,7 @@ export default function AdminFarmersPage() {
                 <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
                   {/* Nút Xem Gian Hàng Ngoài Web */}
                   <Link
-                    href={`/farmers/${farmer.id}`}
+                    href={`/farmers/${farmer.id}/?store=${farmer.id}`}
                     target="_blank"
                     className="px-4 py-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-colors flex items-center gap-1.5"
                   >
@@ -1236,7 +1236,7 @@ export default function AdminFarmersPage() {
               <div className="flex items-center gap-2">
                 {/* Nút Xem Gian Hàng Trực Tiếp Trên Header Modal Sửa */}
                 <Link
-                  href={`/farmers/${editingFarmer.id}`}
+                  href={`/farmers/${editingFarmer.id}/?store=${editingFarmer.id}`}
                   target="_blank"
                   className="hidden sm:flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-white hover:bg-emerald-100 border border-emerald-300 rounded-lg transition-colors"
                   title="Mở gian hàng ngoài web để đối chiếu"
@@ -1542,7 +1542,7 @@ export default function AdminFarmersPage() {
               {/* Action Buttons */}
               <div className="pt-4 flex items-center justify-between gap-3 border-t border-gray-100">
                 <Link
-                  href={`/farmers/${editingFarmer.id}`}
+                  href={`/farmers/${editingFarmer.id}/?store=${editingFarmer.id}`}
                   target="_blank"
                   className="px-4 py-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-colors flex items-center gap-1.5"
                 >
