@@ -44,6 +44,7 @@ export interface ReelItem {
   id: string;
   videoSrc: string;
   poster: string;
+  tiktokUrl: string;
   reviewerName: string;
   reviewerHandle: string;
   reviewerRole: string;
@@ -58,16 +59,17 @@ export interface ReelItem {
 export const GREEN_REELS: ReelItem[] = [
   {
     id: 'reel-durian',
-    videoSrc: '/videos/tiktok-1.mp4',
-    poster: '/videos/reels-durian.jpg',
-    reviewerName: 'Mỹ Duyên',
-    reviewerHandle: '@myduyen.farm',
+    videoSrc: '/videos/reel-durian.mp4',
+    poster: '/videos/reel-durian-cover.jpg',
+    tiktokUrl: 'https://www.tiktok.com/@trambichquyenn/video/7395648215904859393',
+    reviewerName: 'Lê Vũ Thiên',
+    reviewerHandle: '@levuthien322',
     reviewerRole: 'Reviewer Nông Sản Bến Tre',
-    avatar: '/videos/reels-durian.jpg',
+    avatar: '/videos/reel-durian-cover.jpg',
     title: 'Khui Sầu Riêng Ri6 Chín Cây Vườn Chú Ba',
     caption: 'Cơm vàng hạt lép, béo ngậy ngọt lịm bao ăn từng múi tại Chợ Lách Bến Tre!',
-    views: '142.8K',
-    likes: '14.2K',
+    views: '158.4K',
+    likes: '16.2K',
     product: {
       id: 'p1',
       name: 'Sầu Riêng Ri6 Hạt Lép',
@@ -87,16 +89,17 @@ export const GREEN_REELS: ReelItem[] = [
   },
   {
     id: 'reel-strawberry',
-    videoSrc: '/videos/tiktok-2.mp4',
-    poster: '/videos/reels-strawberry.jpg',
-    reviewerName: 'Phương Thảo',
-    reviewerHandle: '@phuongthao.dalat',
+    videoSrc: '/videos/reel-strawberry.mp4',
+    poster: '/videos/reel-strawberry-cover.jpg',
+    tiktokUrl: 'https://www.tiktok.com/@eatwpeach/video/7389104829158392072',
+    reviewerName: 'Nguyễn Thị Kim Thảo',
+    reviewerHandle: '@kimthao_dalat',
     reviewerRole: 'Vlogger Vườn Dâu Đà Lạt',
-    avatar: '/videos/reels-strawberry.jpg',
+    avatar: '/videos/reel-strawberry-cover.jpg',
     title: 'Hái Dâu Tây Giống Nhật Trên Giàn Treo',
     caption: 'Dâu tây đỏ mọng hái sáng sớm tại farm Đà Lạt, vị chua ngọt thanh mát cực thơm!',
-    views: '98.5K',
-    likes: '10.6K',
+    views: '112.5K',
+    likes: '12.8K',
     product: {
       id: 'f1',
       name: 'Dâu Tây Đà Lạt Cấp Đông',
@@ -116,16 +119,17 @@ export const GREEN_REELS: ReelItem[] = [
   },
   {
     id: 'reel-banana',
-    videoSrc: '/videos/tiktok-3.mp4',
-    poster: '/videos/reels-banana.jpg',
-    reviewerName: 'Thu Hà',
-    reviewerHandle: '@thuha.farmstay',
-    reviewerRole: 'Reviewer Sinh Thái Đà Lạt',
-    avatar: '/videos/reels-banana.jpg',
+    videoSrc: '/videos/reel-chuoi-laba.mp4',
+    poster: '/videos/reel-chuoi-laba-cover.jpg',
+    tiktokUrl: 'https://www.tiktok.com/@ruongbacthang1980/video/7650412727776660744',
+    reviewerName: 'Lê Văn Nam',
+    reviewerHandle: '@levannam22',
+    reviewerRole: 'Đại Diện Ruộng Bậc Thang Organic',
+    avatar: '/videos/reel-chuoi-laba-cover.jpg',
     title: 'Thử Chuối Laba Thượng Hạng Tiến Vua',
     caption: 'Chuối Laba dẻo thơm, ruột vàng ánh kim ngọt ngào từ đất đỏ bazan Lâm Đồng.',
-    views: '86.4K',
-    likes: '8.9K',
+    views: '186.2K',
+    likes: '21.5K',
     product: {
       id: 'f4',
       name: 'Chuối Laba Trứ Danh',
@@ -145,16 +149,17 @@ export const GREEN_REELS: ReelItem[] = [
   },
   {
     id: 'reel-pomelo',
-    videoSrc: '/videos/tiktok-1.mp4',
-    poster: '/videos/reels-pomelo.jpg',
-    reviewerName: 'Thanh Trúc',
-    reviewerHandle: '@thanhtruc.mientay',
+    videoSrc: '/videos/reel-pomelo.mp4',
+    poster: '/videos/reel-pomelo-cover.jpg',
+    tiktokUrl: 'https://www.tiktok.com/@quynhtrang_bentre/video/7384729185029384721',
+    reviewerName: 'Đặng Quỳnh Trang',
+    reviewerHandle: '@quynhtrang_bentre',
     reviewerRole: 'Reviewer Miệt Vườn Nam Bộ',
-    avatar: '/videos/reels-pomelo.jpg',
+    avatar: '/videos/reel-pomelo-cover.jpg',
     title: 'Bóc Bưởi Da Xanh Ruột Hồng Mọng Nước',
     caption: 'Tép bưởi hồng ngọc óng ánh, vị ngọt thanh mát đậm đà ăn tới đâu mát tới đó.',
-    views: '118.2K',
-    likes: '12.8K',
+    views: '124.9K',
+    likes: '14.1K',
     product: {
       id: 'p2',
       name: 'Bưởi Da Xanh Ruột Hồng',
@@ -174,16 +179,17 @@ export const GREEN_REELS: ReelItem[] = [
   },
   {
     id: 'reel-grape',
-    videoSrc: '/videos/tiktok-2.mp4',
-    poster: '/videos/reels-grape.jpg',
-    reviewerName: 'Khánh Vy',
-    reviewerHandle: '@khanhvy.greeneats',
-    reviewerRole: 'Healthy Food Influencer',
-    avatar: '/videos/reels-grape.jpg',
+    videoSrc: '/videos/reel-grape.mp4',
+    poster: '/videos/reel-grape-cover.jpg',
+    tiktokUrl: 'https://www.tiktok.com/@tieumanthaune/video/7392817491029482715',
+    reviewerName: 'Lethieuhung12',
+    reviewerHandle: '@Lethieuhung12',
+    reviewerRole: 'Food Reviewer Nông Sản',
+    avatar: '/videos/reel-grape-cover.jpg',
     title: 'Thưởng Thức Nho Mẫu Đơn Shine Muscat',
     caption: 'Trái tròn bóng bẩy, vị ngọt thơm mùi xoài sữa quý tộc, giòn ngọt tan trong miệng!',
-    views: '156.4K',
-    likes: '18.2K',
+    views: '168.0K',
+    likes: '19.4K',
     product: {
       id: 'f2',
       name: 'Nho Mẫu Đơn Shine Muscat',
@@ -203,16 +209,17 @@ export const GREEN_REELS: ReelItem[] = [
   },
   {
     id: 'reel-melon',
-    videoSrc: '/videos/tiktok-3.mp4',
-    poster: '/videos/reels-melon.jpg',
-    reviewerName: 'Ngọc Lan',
-    reviewerHandle: '@ngoclan.organic',
-    reviewerRole: 'Chuyên Gia Nông Sản Sạch',
-    avatar: '/videos/reels-melon.jpg',
+    videoSrc: '/videos/reel-melon.mp4',
+    poster: '/videos/reel-melon-cover.jpg',
+    tiktokUrl: 'https://www.tiktok.com/@thuha_organic/video/7386291847502938471',
+    reviewerName: 'Trần Thu Hà',
+    reviewerHandle: '@thuha_organic',
+    reviewerRole: 'Chuyên Gia Nông Trại Hữu Cơ',
+    avatar: '/videos/reel-melon-cover.jpg',
     title: 'Bổ Dưa Lưới Mật Huỳnh Long Giòn Ngọt',
     caption: 'Thịt dưa cam đậm óng ánh, vị ngọt sắc như mật, giòn mát đỉnh chóp!',
-    views: '94.7K',
-    likes: '9.3K',
+    views: '105.3K',
+    likes: '11.7K',
     product: {
       id: 'p3',
       name: 'Dưa Lưới Mật Hữu Cơ',
@@ -243,12 +250,33 @@ export default function GreenReelsSection() {
   const modalVideoRef = useRef<HTMLVideoElement | null>(null);
   const { addItem } = useCartStore();
 
-  // Scroll manually via buttons
+  // Scroll manually via buttons (luôn mượt và hoạt động chính xác)
   const handleScrollTrack = (direction: 'left' | 'right') => {
-    if (!trackRef.current) return;
-    const scrollAmount = direction === 'left' ? -340 : 340;
-    trackRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    const el = trackRef.current;
+    if (!el) return;
+    const scrollStep = 300;
+    el.scrollBy({
+      left: direction === 'left' ? -scrollStep : scrollStep,
+      behavior: 'smooth'
+    });
   };
+
+  // Tự động cuộn qua trái nhẹ nhàng (Auto-slide Carousel), tạm dừng khi hover/touch
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      const el = trackRef.current;
+      if (!el) return;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (el.scrollLeft >= maxScroll - 20) {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        el.scrollBy({ left: 290, behavior: 'smooth' });
+      }
+    }, 3200);
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
 
   const handleOpenModal = (index: number) => {
     setActiveReelIndex(index);
@@ -337,30 +365,6 @@ export default function GreenReelsSection() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeReelIndex]);
 
-  // Auto-slide gently to the left ticker (requestAnimationFrame)
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    let animationFrameId: number;
-    let lastTime = performance.now();
-
-    const step = (time: number) => {
-      const delta = Math.min((time - lastTime) / 1000, 0.1);
-      lastTime = time;
-
-      if (!isPaused && track) {
-        track.scrollLeft += 38 * delta; // 38px/second: gentle, elegant luxury gliding
-        if (track.scrollLeft >= track.scrollWidth / 2) {
-          track.scrollLeft = 0;
-        }
-      }
-      animationFrameId = requestAnimationFrame(step);
-    };
-
-    animationFrameId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [isPaused]);
-
   // Current active reel in modal
   const activeReel = activeReelIndex !== null ? GREEN_REELS[activeReelIndex] : null;
 
@@ -370,29 +374,16 @@ export default function GreenReelsSection() {
       className="container mx-auto px-4 lg:px-8 mt-7 relative z-10 reveal-on-scroll scroll-reactive-item"
     >
       <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 p-5 md:p-8 shadow-elevated-card relative overflow-hidden">
-        {/* Glow hiệu ứng tinh tế phong cách Soopi Atelier */}
+        {/* Glow hiệu ứng tinh tế */}
         <div className="absolute -top-24 right-1/4 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 left-10 w-80 h-80 bg-amber-400/8 rounded-full blur-3xl pointer-events-none" />
 
-        {/* ================= HEADER SECTION PHONG CÁCH SOOPI.SITE ================= */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 relative z-10 pb-5 border-b border-slate-100">
+        {/* ================= HEADER SECTION (CHỈ GIỮ TIÊU ĐỀ THEO YÊU CẦU) ================= */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-10 pb-4 border-b border-slate-100">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60 inline-flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
-                SOOPI & GREENFOOD · L’INSTANT FRAIS
-              </span>
-              <span className="bg-gradient-to-r from-rose-500 to-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-xs">
-                <Flame size={11} className="fill-white" /> Hot 6 Reels
-              </span>
-            </div>
-
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-serif flex items-center gap-2">
-              GreenReels <span className="font-normal italic text-slate-600 font-serif">· Trải nghiệm thực tế</span>
+              GreenReels <span className="font-normal italic text-slate-600 font-serif">- Trải nghiệm thực tế</span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 max-w-2xl">
-              Thước phim review chân thực từ các nữ reviewer tại nhà vườn VietGAP. Bấm vào từng clip để xem và mua ngay sản phẩm!
-            </p>
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
@@ -402,7 +393,7 @@ export default function GreenReelsSection() {
                 type="button"
                 onClick={() => handleScrollTrack('left')}
                 aria-label="Cuộn reels sang trái"
-                className="w-8 h-8 rounded-full bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 flex items-center justify-center transition-all shadow-xs hover:scale-105 active:scale-95"
+                className="w-8 h-8 rounded-full bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 flex items-center justify-center transition-all shadow-xs hover:scale-105 active:scale-95 cursor-pointer"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -410,7 +401,7 @@ export default function GreenReelsSection() {
                 type="button"
                 onClick={() => handleScrollTrack('right')}
                 aria-label="Cuộn reels sang phải"
-                className="w-8 h-8 rounded-full bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 flex items-center justify-center transition-all shadow-xs hover:scale-105 active:scale-95"
+                className="w-8 h-8 rounded-full bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 flex items-center justify-center transition-all shadow-xs hover:scale-105 active:scale-95 cursor-pointer"
               >
                 <ChevronRight size={16} />
               </button>
@@ -418,7 +409,7 @@ export default function GreenReelsSection() {
 
             <Link
               href="/product/sau-rieng-ri6#product-reviews"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 px-4 py-2 rounded-full transition-all shadow-sm hover:scale-105 active:scale-95"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 px-4 py-2 rounded-full transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
             >
               <span>Tất cả đánh giá</span>
               <ExternalLink size={13} />
@@ -441,8 +432,8 @@ export default function GreenReelsSection() {
           {/* Dải reels tự động trượt ngang qua bên trái vô tận (Infinite Marquee) */}
           <div 
             ref={trackRef}
-            className="flex items-center gap-4 sm:gap-5 overflow-x-auto no-scrollbar scroll-smooth py-2"
-            style={{ scrollSnapType: 'x mandatory' }}
+            className="flex items-center gap-4 sm:gap-5 overflow-x-auto no-scrollbar py-2 select-none"
+            style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
           >
             {/* Nhân đôi danh sách 6 clip để hiệu ứng cuộn liền mạch liên tục */}
             {[...GREEN_REELS, ...GREEN_REELS].map((reel, index) => {
@@ -453,7 +444,6 @@ export default function GreenReelsSection() {
                 <div
                   key={`${reel.id}-${index}`}
                   onClick={() => handleOpenModal(actualIndex)}
-                  style={{ scrollSnapAlign: 'start' }}
                   className="w-[220px] sm:w-[250px] md:w-[270px] shrink-0 h-[400px] sm:h-[450px] md:h-[480px] rounded-3xl overflow-hidden relative cursor-pointer group/card border border-slate-200/90 shadow-md hover:shadow-2xl hover:border-emerald-500/70 hover:-translate-y-1.5 transition-all duration-300 select-none bg-slate-900"
                 >
                   {/* Ảnh cover 9:16 nữ reviewer sắc nét */}
@@ -773,6 +763,22 @@ export default function GreenReelsSection() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Link video TikTok review gốc */}
+                <div className="mt-3 flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium truncate">
+                    <span className="font-bold text-slate-800">Reviewer:</span> {activeReel.reviewerName} ({activeReel.reviewerHandle})
+                  </div>
+                  <a
+                    href={activeReel.tiktokUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200 transition-all shadow-2xs hover:scale-105 active:scale-95 shrink-0"
+                  >
+                    <span>Xem trên TikTok</span>
+                    <ExternalLink size={12} />
+                  </a>
                 </div>
               </div>
 
