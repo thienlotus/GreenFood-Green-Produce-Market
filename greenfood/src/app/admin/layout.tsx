@@ -27,7 +27,10 @@ import {
   User,
   MapPin,
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  Mail,
+  AlertTriangle,
+  Briefcase
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'react-hot-toast';
@@ -54,6 +57,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [pendingFarmerCount, setPendingFarmerCount] = useState(0);
   const [pendingB2bCount, setPendingB2bCount] = useState(0);
+  const [pendingJobCount, setPendingJobCount] = useState(0);
+  const [pendingContactCount, setPendingContactCount] = useState(0);
+  const [pendingComplaintCount, setPendingComplaintCount] = useState(0);
 
   // Quick search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,18 +73,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     async function checkPendingCounts() {
       try {
-        const { getAdminFarmersApi, getAdminB2bInquiriesApi } = await import('@/lib/api');
-        const [farmerData, b2bData] = await Promise.all([
+        const { 
+          getAdminFarmersApi, 
+          getAdminB2bInquiriesApi,
+          getAdminJobApplicationsApi,
+          getAdminContactInquiriesApi,
+          getAdminCustomerComplaintsApi
+        } = await import('@/lib/api');
+
+        const [farmerData, b2bData, jobData, contactData, complaintData] = await Promise.all([
           getAdminFarmersApi().catch(() => []),
-          getAdminB2bInquiriesApi({ status: 'PENDING' }).catch(() => ({ success: false, pending_count: 0, data: [] }))
+          getAdminB2bInquiriesApi({ status: 'PENDING' }).catch(() => ({ success: false, pending_count: 0 })),
+          getAdminJobApplicationsApi({ status: 'PENDING' }).catch(() => ({ success: false, pending_count: 0 })),
+          getAdminContactInquiriesApi({ status: 'PENDING' }).catch(() => ({ success: false, pending_count: 0 })),
+          getAdminCustomerComplaintsApi({ status: 'PENDING' }).catch(() => ({ success: false, pending_count: 0 })),
         ]);
+
         if (Array.isArray(farmerData)) {
-          const count = farmerData.filter(f => !f.is_verified).length;
-          setPendingFarmerCount(count);
+          setPendingFarmerCount(farmerData.filter(f => !f.is_verified).length);
         }
-        if (b2bData && b2bData.success) {
-          setPendingB2bCount(b2bData.pending_count || 0);
-        }
+        if (b2bData?.pending_count !== undefined) setPendingB2bCount(b2bData.pending_count);
+        if (jobData?.pending_count !== undefined) setPendingJobCount(jobData.pending_count);
+        if (contactData?.pending_count !== undefined) setPendingContactCount(contactData.pending_count);
+        if (complaintData?.pending_count !== undefined) setPendingComplaintCount(complaintData.pending_count);
       } catch {}
     }
     checkPendingCounts();
@@ -136,11 +153,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ],
     },
     {
-      title: 'CHĂM SÓC & HỖ TRỢ',
+      title: 'CHĂM SÓC KHÁCH HÀNG & PHẢN HỒI',
       items: [
         { name: 'Live Chat & Trợ lý AI', href: '/admin/chat/', icon: MessageCircle, badge: 'AI Flash', highlight: true },
+        { 
+          name: 'Tiếp nhận khiếu nại', 
+          href: '/admin/complaints/', 
+          icon: AlertTriangle, 
+          badge: pendingComplaintCount > 0 ? `${pendingComplaintCount} xử lý` : undefined,
+          highlight: pendingComplaintCount > 0
+        },
+        { 
+          name: 'Liên hệ & Góp ý', 
+          href: '/admin/contact/', 
+          icon: Mail, 
+          badge: pendingContactCount > 0 ? `${pendingContactCount} mới` : undefined,
+          highlight: pendingContactCount > 0
+        },
         { name: 'Khách hàng & User', href: '/admin/customers/', icon: Users },
         { name: 'Bản đồ nông hộ', href: '/map', icon: MapPin },
+      ],
+    },
+    {
+      title: 'TUYỂN DỤNG & NHÂN SỰ',
+      items: [
+        { 
+          name: 'Tuyển dụng nhân sự', 
+          href: '/admin/careers/', 
+          icon: Briefcase, 
+          badge: pendingJobCount > 0 ? `${pendingJobCount} hồ sơ` : undefined,
+          highlight: pendingJobCount > 0
+        },
       ],
     },
     {
@@ -160,6 +203,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (norm.startsWith('/admin/products')) return 'Quản lý Sản phẩm';
     if (norm.startsWith('/admin/b2b')) return 'Khách sỉ & Doanh nghiệp (B2B)';
     if (norm.startsWith('/admin/chat')) return 'Live Chat & Trợ lý AI';
+    if (norm.startsWith('/admin/complaints')) return 'Tiếp nhận & Xử lý Khiếu nại Dịch vụ';
+    if (norm.startsWith('/admin/contact')) return 'Liên hệ & Góp ý Khách hàng';
+    if (norm.startsWith('/admin/careers')) return 'Quản lý Tuyển dụng Nhân sự';
     if (norm.startsWith('/admin/customers')) return 'Người dùng & Phân quyền';
     if (norm.startsWith('/admin/farmers')) return 'Nông hộ & Vùng trồng';
     if (norm.startsWith('/admin/shipping')) return 'Cước phí vận chuyển GHN';
@@ -195,25 +241,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ${mobileMenuOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0'}
           ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'}
         `}>
-          {/* Brand Header */}
-          <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200/90 bg-white">
+          {/* Brand Header: 100% Đồng bộ logo thương hiệu GreenFood */}
+          <div className="h-16 flex items-center justify-between px-3.5 border-b border-slate-200/90 bg-white">
             <Link 
               href="/admin/" 
-              className="flex items-center gap-3 overflow-hidden group py-1"
-              title="GreenFood Adminator"
+              className="flex items-center gap-2.5 overflow-hidden group py-1"
+              title="GreenFood Admin"
             >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-black text-lg shadow-sm shadow-emerald-600/30 shrink-0 group-hover:scale-105 transition-transform">
-                🌱
-              </div>
+              <img
+                src="/logo.png"
+                alt="GreenFood Logo"
+                className="w-9 h-9 object-contain shrink-0 transition-transform duration-300 group-hover:scale-105 drop-shadow-xs"
+              />
               {!isSidebarCollapsed && (
-                <div className="flex flex-col min-w-0">
+                <div className="flex flex-col justify-center min-w-0 select-none">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-extrabold text-base tracking-tight text-slate-900 font-sans">GreenFood</span>
-                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded uppercase">
-                      Admin
+                    <span className="font-pacifico font-bold text-xl text-emerald-600 leading-none group-hover:text-emerald-700 transition-colors">
+                      GreenFood
+                    </span>
+                    <span className="text-[9px] font-extrabold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">
+                      ADMIN
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-medium truncate">Nông Sản Sạch Từ Tâm</span>
+                  <span className="text-[9px] font-bold tracking-[0.16em] text-emerald-700 uppercase whitespace-nowrap mt-1 leading-none">
+                    Nông sản sạch từ tâm
+                  </span>
                 </div>
               )}
             </Link>

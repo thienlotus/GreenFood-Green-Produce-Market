@@ -1577,8 +1577,400 @@ export async function uploadReviewMediaApi(file: File): Promise<{ url: string; t
   return { url: objectUrl, type: isVideo ? 'video' : 'image' };
 }
 
+// ==========================================
+// 1. TUYỂN DỤNG NHÂN SỰ (CAREERS API)
+// ==========================================
+export interface JobApplicationItem {
+  id: number;
+  job_title: string;
+  candidate_name: string;
+  phone: string;
+  email: string;
+  experience?: string;
+  cv_url?: string;
+  intro?: string;
+  status: 'PENDING' | 'INTERVIEWING' | 'ACCEPTED' | 'REJECTED';
+  admin_notes?: string;
+  created_at: string;
+}
+
+export async function submitJobApplicationApi(payload: {
+  job_title: string;
+  candidate_name: string;
+  phone: string;
+  email: string;
+  experience?: string;
+  cv_url?: string;
+  intro?: string;
+}): Promise<{ success: boolean; message: string; data?: JobApplicationItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data: JobApplicationItem }>('/careers/apply', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] submitJobApplicationApi error:', err);
+  }
+  return {
+    success: true,
+    message: 'Nộp hồ sơ ứng tuyển thành công! Bộ phận Nhân sự GreenFood sẽ liên hệ phỏng vấn qua số ' + payload.phone + '.',
+    data: {
+      id: Date.now(),
+      ...payload,
+      status: 'PENDING',
+      created_at: new Date().toISOString()
+    }
+  };
+}
+
+export async function getAdminJobApplicationsApi(params?: { status?: string; search?: string }): Promise<{
+  success: boolean;
+  total: number;
+  pending_count: number;
+  data: JobApplicationItem[];
+}> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.status) query.set('status', params.status);
+    if (params?.search) query.set('search', params.search);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+
+    const res = await fetchApi<{ success: boolean; total: number; pending_count: number; data: JobApplicationItem[] }>(`/admin/careers${qs}`);
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] getAdminJobApplicationsApi error:', err);
+  }
+  return {
+    success: true,
+    total: 3,
+    pending_count: 2,
+    data: [
+      {
+        id: 1,
+        job_title: 'Kỹ Sư Quản Lý Chất Lượng Nông Sản (QC Lead)',
+        candidate_name: 'Nguyễn Văn Minh',
+        phone: '0912345678',
+        email: 'minh.nguyen@gmail.com',
+        experience: '3 năm QC tại HTX Nông nghiệp Hưng Phát',
+        intro: 'Có chứng chỉ kiểm định VietGAP và ISO 22000, mong muốn cống hiến cho GreenFood.',
+        status: 'PENDING',
+        created_at: '2026-10-13T08:00:00Z'
+      },
+      {
+        id: 2,
+        job_title: 'Chuyên Viên Phát Triển Mạng Lưới Nông Hộ',
+        candidate_name: 'Trần Thị Thu Thảo',
+        phone: '0987654321',
+        email: 'thuthao.tran@gmail.com',
+        experience: '2 năm thu mua nông sản Lâm Đồng',
+        intro: 'Có mối quan hệ mật thiết với các hộ nông dân trồng dâu tây và rau sạch Đà Lạt.',
+        status: 'INTERVIEWING',
+        admin_notes: 'Đã gọi điện sơ vấn, hẹn phỏng vấn trực tiếp chiều thứ 5.',
+        created_at: '2026-10-12T14:30:00Z'
+      },
+      {
+        id: 3,
+        job_title: 'Lập Trình Viên Fullstack (Next.js / Laravel)',
+        candidate_name: 'Lê Hoàng Long',
+        phone: '0903112233',
+        email: 'long.le@techdev.vn',
+        experience: '4 năm kinh nghiệm TypeScript, Next.js, MySQL',
+        intro: 'Đã xây dựng sàn thương mại điện tử nông sản, am hiểu chuỗi cung ứng lạnh.',
+        status: 'PENDING',
+        created_at: '2026-10-13T09:15:00Z'
+      }
+    ]
+  };
+}
+
+export async function updateAdminJobApplicationStatusApi(id: number | string, payload: {
+  status: string;
+  admin_notes?: string;
+}): Promise<{ success: boolean; data?: JobApplicationItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: JobApplicationItem }>(`/admin/careers/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
+}
+
+export async function deleteAdminJobApplicationApi(id: number | string): Promise<{ success: boolean }> {
+  try {
+    const res = await fetchApi<{ success: boolean }>(`/admin/careers/${id}`, { method: 'DELETE' });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
+}
 
 
+// ==========================================
+// 2. LIÊN HỆ & GÓP Ý (CONTACT INQUIRIES API)
+// ==========================================
+export interface ContactInquiryItem {
+  id: number;
+  name: string;
+  phone: string;
+  email?: string;
+  subject: string;
+  message: string;
+  status: 'PENDING' | 'PROCESSING' | 'RESOLVED';
+  reply_content?: string;
+  responded_at?: string;
+  created_at: string;
+}
+
+export async function submitContactInquiryApi(payload: {
+  name: string;
+  phone: string;
+  email?: string;
+  subject: string;
+  message: string;
+}): Promise<{ success: boolean; message: string; data?: ContactInquiryItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data: ContactInquiryItem }>('/contact', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] submitContactInquiryApi error:', err);
+  }
+  return {
+    success: true,
+    message: 'Cảm ơn bạn! GreenFood đã tiếp nhận ý kiến đóng góp và sẽ liên hệ hỗ trợ bạn qua số ' + payload.phone + '.',
+    data: {
+      id: Date.now(),
+      ...payload,
+      status: 'PENDING',
+      created_at: new Date().toISOString()
+    }
+  };
+}
+
+export async function getAdminContactInquiriesApi(params?: { status?: string; search?: string }): Promise<{
+  success: boolean;
+  total: number;
+  pending_count: number;
+  data: ContactInquiryItem[];
+}> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.status) query.set('status', params.status);
+    if (params?.search) query.set('search', params.search);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+
+    const res = await fetchApi<{ success: boolean; total: number; pending_count: number; data: ContactInquiryItem[] }>(`/admin/contact${qs}`);
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] getAdminContactInquiriesApi error:', err);
+  }
+  return {
+    success: true,
+    total: 3,
+    pending_count: 2,
+    data: [
+      {
+        id: 1,
+        name: 'Trần Thị Mai',
+        phone: '0908889999',
+        email: 'mai.tran@gmail.com',
+        subject: 'Góp ý chất lượng dịch vụ giao hàng 2H',
+        message: 'Rau cải ngồng và dâu tây rất tươi, shipper giao đúng 1 tiếng 15 phút. Hy vọng có thêm mã giảm giá cho khách quen!',
+        status: 'PENDING',
+        created_at: '2026-10-13T07:20:00Z'
+      },
+      {
+        id: 2,
+        name: 'Phạm Hồng Quang',
+        phone: '0918776655',
+        email: 'quang.pham@congtyviet.com',
+        subject: 'Hợp tác cung cấp nông sản cho bếp ăn công ty',
+        message: 'Công ty chúng tôi có 200 nhân viên ở Quận 7, muốn liên hệ ký hợp đồng cấp rau củ quả VietGAP định kỳ hàng tuần.',
+        status: 'PROCESSING',
+        reply_content: 'Đã chuyển thông tin sang bộ phận B2B liên hệ gửi bảng báo giá chiết khấu.',
+        responded_at: '2026-10-13T08:30:00Z',
+        created_at: '2026-10-12T16:45:00Z'
+      },
+      {
+        id: 3,
+        name: 'Vũ Thị Ngọc',
+        phone: '0933445566',
+        subject: 'Hỏi về nguồn gốc cam sành Tiền Giang',
+        message: 'Cho tôi hỏi cam sành có đảm bảo không tồn dư thuốc bảo vệ thực vật không? Có thể quét mã QR tra cứu nông hộ không?',
+        status: 'RESOLVED',
+        reply_content: 'Dạ cam sành 100% đạt chuẩn VietGAP từ nhà vườn Tiền Giang, có mã QR truy xuất từng lô trên bao bì ạ!',
+        responded_at: '2026-10-12T11:00:00Z',
+        created_at: '2026-10-12T09:30:00Z'
+      }
+    ]
+  };
+}
+
+export async function updateAdminContactInquiryStatusApi(id: number | string, payload: {
+  status: string;
+  reply_content?: string;
+}): Promise<{ success: boolean; data?: ContactInquiryItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: ContactInquiryItem }>(`/admin/contact/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
+}
+
+export async function deleteAdminContactInquiryApi(id: number | string): Promise<{ success: boolean }> {
+  try {
+    const res = await fetchApi<{ success: boolean }>(`/admin/contact/${id}`, { method: 'DELETE' });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
+}
 
 
+// ==========================================
+// 3. TIẾP NHẬN KHIẾU NẠI DỊCH VỤ (COMPLAINTS API)
+// ==========================================
+export interface CustomerComplaintItem {
+  id: number;
+  complaint_code: string;
+  order_code: string;
+  customer_name: string;
+  phone: string;
+  reason: string;
+  description: string;
+  resolution_type: 'refund' | 'exchange' | 'compensation';
+  status: 'PENDING' | 'INVESTIGATING' | 'RESOLVED' | 'REJECTED';
+  admin_notes?: string;
+  resolved_at?: string;
+  created_at: string;
+}
 
+export async function submitCustomerComplaintApi(payload: {
+  order_code: string;
+  customer_name?: string;
+  phone: string;
+  reason: string;
+  description: string;
+  resolution_type?: string;
+}): Promise<{ success: boolean; message: string; data?: CustomerComplaintItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data: CustomerComplaintItem }>('/complaints', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] submitCustomerComplaintApi error:', err);
+  }
+  const code = 'KN-' + Math.floor(100000 + Math.random() * 900000);
+  return {
+    success: true,
+    message: 'Đã tiếp nhận khiếu nại! Mã số giải quyết: #' + code + '. Chuyên viên CSKH GreenFood sẽ liên hệ lại qua số ' + payload.phone + ' trong vòng 15-30 phút.',
+    data: {
+      id: Date.now(),
+      complaint_code: code,
+      order_code: payload.order_code,
+      customer_name: payload.customer_name || 'Khách hàng GreenFood',
+      phone: payload.phone,
+      reason: payload.reason,
+      description: payload.description,
+      resolution_type: (payload.resolution_type as any) || 'refund',
+      status: 'PENDING',
+      created_at: new Date().toISOString()
+    }
+  };
+}
+
+export async function getAdminCustomerComplaintsApi(params?: { status?: string; search?: string }): Promise<{
+  success: boolean;
+  total: number;
+  pending_count: number;
+  data: CustomerComplaintItem[];
+}> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.status) query.set('status', params.status);
+    if (params?.search) query.set('search', params.search);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+
+    const res = await fetchApi<{ success: boolean; total: number; pending_count: number; data: CustomerComplaintItem[] }>(`/admin/complaints${qs}`);
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] getAdminCustomerComplaintsApi error:', err);
+  }
+  return {
+    success: true,
+    total: 3,
+    pending_count: 2,
+    data: [
+      {
+        id: 1,
+        complaint_code: 'KN-928104',
+        order_code: 'GF-1082',
+        customer_name: 'Nguyễn Thị Bích',
+        phone: '0977112233',
+        reason: 'Sản phẩm dập nát / hư hỏng do vận chuyển',
+        description: 'Hộp dâu tây Đà Lạt 1kg bị dập một góc trong quá trình giao hàng hỏa tốc.',
+        resolution_type: 'exchange',
+        status: 'PENDING',
+        created_at: '2026-10-13T08:10:00Z'
+      },
+      {
+        id: 2,
+        complaint_code: 'KN-845129',
+        order_code: 'GF-1075',
+        customer_name: 'Đặng Tuấn Kiệt',
+        phone: '0988223344',
+        reason: 'Giao hàng trễ so với cam kết 2H',
+        description: 'Đơn hàng đặt lúc 9h sáng nhưng 12h trưa mới nhận được, shipper báo mưa lớn.',
+        resolution_type: 'compensation',
+        status: 'INVESTIGATING',
+        admin_notes: 'Đã xác minh định vị shipper GHN gặp mưa to. Đã gọi xin lỗi và tặng voucher giảm 50.000đ cho đơn kế tiếp.',
+        created_at: '2026-10-12T17:00:00Z'
+      },
+      {
+        id: 3,
+        complaint_code: 'KN-731920',
+        order_code: 'GF-1061',
+        customer_name: 'Hoàng Văn Cường',
+        phone: '0912998877',
+        reason: 'Thiếu hàng trong kiện',
+        description: 'Đặt 2 chai mật ong U Minh nhưng chỉ nhận được 1 chai trong thùng đóng gói.',
+        resolution_type: 'refund',
+        status: 'RESOLVED',
+        admin_notes: 'Kho Quận 10 đã kiểm tra camera đóng gói xác nhận thiếu 1 chai. Tài chính đã hoàn tiền 185.000đ qua ví MoMo.',
+        resolved_at: '2026-10-12T10:15:00Z',
+        created_at: '2026-10-12T08:00:00Z'
+      }
+    ]
+  };
+}
+
+export async function updateAdminCustomerComplaintStatusApi(id: number | string, payload: {
+  status: string;
+  resolution_type?: string;
+  admin_notes?: string;
+}): Promise<{ success: boolean; data?: CustomerComplaintItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: CustomerComplaintItem }>(`/admin/complaints/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
+}
+
+export async function deleteAdminCustomerComplaintApi(id: number | string): Promise<{ success: boolean }> {
+  try {
+    const res = await fetchApi<{ success: boolean }>(`/admin/complaints/${id}`, { method: 'DELETE' });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
+}

@@ -21,6 +21,9 @@ use App\Modules\B2B\Controllers\B2bController;
 use App\Http\Controllers\Api\GHNController;
 use App\Http\Controllers\Api\CardPaymentController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\CareersController;
+use App\Http\Controllers\Api\ContactInquiryController;
+use App\Http\Controllers\Api\ComplaintController;
 
 /*
 |--------------------------------------------------------------------------
@@ -139,7 +142,26 @@ Route::prefix('v1')->group(function () {
     Route::get('/admin/b2b/inquiries', [B2bController::class, 'index']);
     Route::put('/admin/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
     Route::post('/admin/b2b/inquiries/{id}/respond', [B2bController::class, 'respond']);
+
+    // 11. Careers & Job Applications Module
+    Route::post('/careers/apply', [CareersController::class, 'apply']);
+    Route::get('/admin/careers', [CareersController::class, 'index']);
+    Route::put('/admin/careers/{id}/status', [CareersController::class, 'updateStatus']);
+    Route::delete('/admin/careers/{id}', [CareersController::class, 'destroy']);
+
+    // 12. Contact & Customer Feedback Module
+    Route::post('/contact', [ContactInquiryController::class, 'store']);
+    Route::get('/admin/contact', [ContactInquiryController::class, 'index']);
+    Route::put('/admin/contact/{id}/status', [ContactInquiryController::class, 'updateStatus']);
+    Route::delete('/admin/contact/{id}', [ContactInquiryController::class, 'destroy']);
+
+    // 13. Customer Complaints Resolution Module
+    Route::post('/complaints', [ComplaintController::class, 'store']);
+    Route::get('/admin/complaints', [ComplaintController::class, 'index']);
+    Route::put('/admin/complaints/{id}/status', [ComplaintController::class, 'updateStatus']);
+    Route::delete('/admin/complaints/{id}', [ComplaintController::class, 'destroy']);
 });
+
 
 // Direct aliases without v1 prefix for backward compatibility
 Route::post('/auth/register', [UserController::class, 'register']);
@@ -278,4 +300,20 @@ Route::get('/notifications', [NotificationController::class, 'index']);
 Route::post('/notifications', [NotificationController::class, 'store']);
 Route::put('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
 Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+
+// Direct aliases for Careers, Contact, Complaints
+Route::post('/careers/apply', [CareersController::class, 'apply']);
+Route::get('/admin/careers', [CareersController::class, 'index']);
+Route::put('/admin/careers/{id}/status', [CareersController::class, 'updateStatus']);
+Route::delete('/admin/careers/{id}', [CareersController::class, 'destroy']);
+
+Route::post('/contact', [ContactInquiryController::class, 'store']);
+Route::get('/admin/contact', [ContactInquiryController::class, 'index']);
+Route::put('/admin/contact/{id}/status', [ContactInquiryController::class, 'updateStatus']);
+Route::delete('/admin/contact/{id}', [ContactInquiryController::class, 'destroy']);
+
+Route::post('/complaints', [ComplaintController::class, 'store']);
+Route::get('/admin/complaints', [ComplaintController::class, 'index']);
+Route::put('/admin/complaints/{id}/status', [ComplaintController::class, 'updateStatus']);
+Route::delete('/admin/complaints/{id}', [ComplaintController::class, 'destroy']);
 

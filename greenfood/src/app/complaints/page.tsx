@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, AlertTriangle, ShieldCheck, Clock, CheckCircle2, Send, PhoneCall, UploadCloud } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { submitCustomerComplaintApi } from '@/lib/api';
 
 export default function ComplaintsPage() {
   const [formData, setFormData] = useState({
@@ -14,19 +15,37 @@ export default function ComplaintsPage() {
     description: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedCode, setSubmittedCode] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.orderCode || !formData.phone || !formData.description) {
       toast.error('Vui lòng điền mã đơn hàng, số điện thoại và mô tả lỗi!');
       return;
     }
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const res = await submitCustomerComplaintApi({
+        order_code: formData.orderCode,
+        customer_name: formData.customerName,
+        phone: formData.phone,
+        reason: formData.reason,
+        description: formData.description,
+        resolution_type: 'refund',
+      });
+      if (res && res.success) {
+        const code = res.data?.complaint_code || 'KN-' + Math.floor(100000 + Math.random() * 900000);
+        setSubmittedCode(code);
+        toast.success(`Đã tiếp nhận khiếu nại #${code}! Chuyên viên sẽ gọi lại cho bạn.`, { duration: 6000 });
+        setFormData({ orderCode: '', customerName: '', phone: '', reason: 'Sản phẩm dập nát / hư hỏng', description: '' });
+      } else {
+        toast.error('Có lỗi xảy ra, vui lòng thử lại.');
+      }
+    } catch {
+      toast.error('Lỗi đường truyền, vui lòng thử lại sau.');
+    } finally {
       setIsSubmitting(false);
-      toast.success('Đã tiếp nhận khiếu nại! Mã số giải quyết: #KN-' + Math.floor(100000 + Math.random() * 900000) + '. GreenFood sẽ gọi lại trong 30 phút.');
-      setFormData({ orderCode: '', customerName: '', phone: '', reason: 'Sản phẩm dập nát / hư hỏng', description: '' });
-    }, 1200);
+    }
   };
 
   const resolutions = [
@@ -85,6 +104,19 @@ export default function ComplaintsPage() {
 
         {/* Form Card */}
         <div className="bg-white rounded-2xl p-8 lg:p-10 shadow-sm border border-gray-100 mb-8">
+          {submittedCode && (
+            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
+              <CheckCircle2 className="text-emerald-600 mt-0.5 shrink-0" size={22} />
+              <div>
+                <h3 className="font-bold text-emerald-900 text-sm">Gửi khiếu nại thành công!</h3>
+                <p className="text-xs text-emerald-700 mt-1">
+                  Mã tiếp nhận xử lý: <strong className="font-extrabold text-emerald-900 text-sm">#{submittedCode}</strong>.
+                  Hệ thống đã chuyển thông tin tới bộ phận Giám sát dịch vụ. Quý khách vui lòng để ý chuông điện thoại trong vòng 15-30 phút tới.
+                </p>
+              </div>
+            </div>
+          )}
+
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Phiếu Gửi Yêu Cầu Khiếu Nại</h2>
           <p className="text-sm text-gray-600 mb-6">Vui lòng điền thông tin đơn hàng để chúng tôi tra cứu lịch sử đóng gói và giao hàng.</p>
 
