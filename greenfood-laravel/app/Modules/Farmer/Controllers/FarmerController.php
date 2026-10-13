@@ -128,6 +128,21 @@ class FarmerController extends Controller
             'ghn_ward_code' => 'nullable|string|max:30',
             'ghn_address' => 'nullable|string|max:255',
             'ghn_shop_id' => 'nullable|integer',
+            // Owner User fields
+            'owner_name' => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            // Detailed Registration Specs
+            'tax_id' => 'nullable|string|max:100',
+            'certifications' => 'nullable|array',
+            'cert_code' => 'nullable|string|max:255',
+            'farm_area' => 'nullable|string|max:100',
+            'farming_method' => 'nullable|string|max:255',
+            'experience_years' => 'nullable|string|max:100',
+            'scale' => 'nullable|string|max:255',
+            'note' => 'nullable|string',
+            'clean_story' => 'nullable|string',
         ]);
 
         $farmer = $this->farmerService->updateFarmer($id, $validated);

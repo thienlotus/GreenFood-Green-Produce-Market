@@ -959,6 +959,18 @@ export async function checkSepayStatus(orderId: string): Promise<SepayStatusResp
 }
 
 // 9. FARMER & AGRICULTURAL MARKETPLACE API
+export interface FarmerRegistrationDetails {
+  certifications?: string[];
+  cert_code?: string;
+  tax_id?: string;
+  farm_area?: string;
+  farming_method?: string;
+  experience_years?: string;
+  scale?: string;
+  note?: string;
+  clean_story?: string;
+}
+
 export interface FarmerDetailData {
   id: string;
   user_id?: string;
@@ -972,11 +984,14 @@ export interface FarmerDetailData {
   specialty?: string;
   rating?: number;
   is_verified?: boolean;
+  created_at?: string;
+  updated_at?: string;
   ghn_province_id?: number;
   ghn_district_id?: number;
   ghn_ward_code?: string;
   ghn_address?: string;
   ghn_shop_id?: number;
+  registration_details?: FarmerRegistrationDetails;
   region?: {
     id: number;
     name: string;
@@ -984,9 +999,11 @@ export interface FarmerDetailData {
   };
   user?: {
     id: string;
-    full_name: string;
-    phone: string;
+    full_name?: string;
+    name?: string;
+    phone?: string;
     email?: string;
+    role?: string;
   };
   products?: any[];
 }
@@ -1095,6 +1112,20 @@ export async function updateFarmerProfileApi(id: string, payload: {
   ghn_ward_code?: string;
   ghn_address?: string;
   ghn_shop_id?: number;
+  // User Info
+  owner_name?: string;
+  phone?: string;
+  email?: string;
+  // Registration specs
+  tax_id?: string;
+  certifications?: string[];
+  cert_code?: string;
+  farm_area?: string;
+  farming_method?: string;
+  experience_years?: string;
+  scale?: string;
+  note?: string;
+  clean_story?: string;
 }): Promise<{ success: boolean; message: string; data?: any }> {
   try {
     const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/farmers/${id}`, {

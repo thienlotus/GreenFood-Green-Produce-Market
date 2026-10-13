@@ -19,6 +19,7 @@ import {
   Settings, 
   LogOut, 
   ExternalLink,
+  Store,
   Search,
   Sparkles,
   ShieldCheck,
@@ -252,13 +253,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             <div className="grid grid-cols-2 gap-2 pt-1">
               <Link 
-                href="/"
+                href="/farmers"
                 target="_blank"
-                className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition-colors"
-                title="Mở website giao diện khách hàng"
+                className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-800/40 transition-colors"
+                title="Mở Chợ Gian Hàng Nông Hộ ngoài website"
               >
-                <ExternalLink size={14} className="text-amber-400" />
-                <span>Xem Store</span>
+                <Store size={14} className="text-emerald-400" />
+                <span>Chợ Nông Hộ</span>
               </Link>
               <button 
                 onClick={handleLogout}
@@ -303,15 +304,50 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {/* Notification icon & interactive center */}
               <AdminNotificationCenter />
 
-              {/* Quick Store link */}
-              <Link
-                href="/"
-                target="_blank"
-                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-              >
-                <ExternalLink size={14} />
-                <span>Xem Cửa Hàng</span>
-              </Link>
+              {/* Quick Store & Market links */}
+              {pathname?.includes('/admin/farmers') ? (
+                <div className="hidden md:flex items-center gap-2">
+                  <Link
+                    href="/farmers"
+                    target="_blank"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-100/90 hover:bg-emerald-200 border border-emerald-300/80 rounded-lg transition-colors shadow-2xs"
+                    title="Mở toàn bộ danh sách gian hàng Nông Hộ ngoài website"
+                  >
+                    <Store size={14} className="text-emerald-700" />
+                    <span>Xem Chợ Nông Hộ</span>
+                  </Link>
+                  <Link
+                    href="/"
+                    target="_blank"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                    title="Mở Trang Chủ website"
+                  >
+                    <ExternalLink size={13} />
+                    <span>Trang Chủ</span>
+                  </Link>
+                </div>
+              ) : (
+                <div className="hidden md:flex items-center gap-1.5">
+                  <Link
+                    href="/farmers"
+                    target="_blank"
+                    className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded-lg transition-colors"
+                    title="Mở danh sách Gian Hàng Nông Hộ"
+                  >
+                    <Store size={13} className="text-emerald-600" />
+                    <span>Chợ Nông Hộ</span>
+                  </Link>
+                  <Link
+                    href="/"
+                    target="_blank"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                    title="Mở Trang Chủ website"
+                  >
+                    <ExternalLink size={13} />
+                    <span>Xem Web</span>
+                  </Link>
+                </div>
+              )}
 
               {/* Profile Avatar */}
               <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">

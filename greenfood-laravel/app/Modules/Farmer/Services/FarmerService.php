@@ -147,7 +147,37 @@ class FarmerService
 
         $updateData = [];
         if (isset($data['farm_name'])) $updateData['farm_name'] = $data['farm_name'];
-        if (isset($data['story'])) $updateData['story'] = $data['story'];
+
+        // Kiểm tra và cập nhật thông tin Chủ hộ trong bảng users
+        if ($farmer->user) {
+            $userUpdates = [];
+            $ownerName = $data['owner_name'] ?? $data['name'] ?? null;
+            if (!empty($ownerName)) {
+                $userUpdates['name'] = $ownerName;
+                $userUpdates['full_name'] = $ownerName;
+            }
+            if (!empty($data['phone'])) {
+                $userUpdates['phone'] = $data['phone'];
+            }
+            if (!empty($data['email'])) {
+                $userUpdates['email'] = $data['email'];
+            }
+            if (!empty($userUpdates)) {
+                $farmer->user->update($userUpdates);
+            }
+        }
+
+        // Tự động xây dựng lại nội dung hồ sơ có cấu trúc nếu có các trường chi tiết
+        $hasStructuredFields = isset($data['certifications']) || isset($data['tax_id']) || isset($data['cert_code']) ||
+            isset($data['farm_area']) || isset($data['farming_method']) || isset($data['experience_years']) ||
+            isset($data['scale']) || isset($data['note']) || isset($data['clean_story']);
+
+        if ($hasStructuredFields) {
+            $updateData['story'] = \App\Models\Farmer::buildRegistrationStory($data, $farmer->story);
+        } elseif (isset($data['story'])) {
+            $updateData['story'] = $data['story'];
+        }
+
         if (isset($data['address'])) $updateData['address'] = $address;
         if (isset($data['specialty'])) $updateData['specialty'] = $data['specialty'];
         if (isset($data['image_url'])) $updateData['image_url'] = $data['image_url'];
@@ -158,6 +188,8 @@ class FarmerService
         if (isset($data['ghn_district_id'])) $updateData['ghn_district_id'] = (int) $data['ghn_district_id'];
         if (isset($data['ghn_ward_code'])) $updateData['ghn_ward_code'] = (string) $data['ghn_ward_code'];
         if (isset($data['ghn_address'])) $updateData['ghn_address'] = (string) $data['ghn_address'];
+        if (isset($data['ghn_shop_id'])) $updateData['ghn_shop_id'] = (int) $data['ghn_shop_id'];
+        if (isset($data['is_verified'])) $updateData['is_verified'] = (bool) $data['is_verified'];
 
         $this->farmerRepository->update($farmer, $updateData);
 

@@ -329,6 +329,59 @@ export default function FarmerStorefrontPage() {
         </div>
       </div>
 
+      {/* Banner Preview dành riêng cho Quản trị viên */}
+      {user?.role === 'admin' && (
+        <div className="container mx-auto px-4 lg:px-8 pt-4">
+          <div className="bg-slate-900 text-white rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-md border border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0 font-bold text-base">
+                🛡️
+              </div>
+              <div>
+                <div className="font-bold text-sm text-white flex items-center gap-2">
+                  <span>Chế độ Xem Trước của Quản Trị Viên (Admin Preview)</span>
+                  {farmer.is_verified ? (
+                    <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/40">
+                      Đã kích hoạt
+                    </span>
+                  ) : (
+                    <span className="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/40">
+                      Đang chờ duyệt
+                    </span>
+                  )}
+                </div>
+                <p className="text-slate-300 mt-0.5">
+                  Bạn đang xem gian hàng &ldquo;{farmer.farm_name}&rdquo; trên hệ thống sàn TMĐT.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              {!farmer.is_verified && (
+                <button
+                  onClick={async () => {
+                    const res = await updateFarmerProfileApi(farmer.id, { is_verified: true });
+                    if (res.success) {
+                      toast.success('Đã phê duyệt kích hoạt gian hàng thành công!');
+                      setFarmer((prev: any) => ({ ...prev, is_verified: true }));
+                    }
+                  }}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <CheckCircle size={14} /> Duyệt gian hàng
+                </button>
+              )}
+              <Link
+                href="/admin/farmers"
+                className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl font-bold transition-colors flex items-center gap-1.5"
+              >
+                <ArrowLeft size={14} /> Về Quản lý Nông hộ
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Thông báo trạng thái kiểm duyệt (Nếu là chủ gian hàng và đang chờ duyệt) */}
       {isOwner && !farmer.is_verified && (
         <div className="container mx-auto px-4 lg:px-8 pt-4">
