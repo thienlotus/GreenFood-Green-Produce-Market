@@ -7,7 +7,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import {
   ArrowRight, Truck, ShieldCheck, RefreshCw, CreditCard, ChevronRight, ChevronLeft,
   Zap, Flame, Sparkles, Tag, Copy, Check, Leaf, Award, MapPin, Package, Heart, Star,
-  ShoppingBag, Apple, Coffee, Store, Users, Ticket, Mail
+  ShoppingBag, Apple, Coffee, Store, Users, Ticket, Mail, Video
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
@@ -62,13 +62,13 @@ const SIDEBAR_CATEGORIES = [
 const QUICK_LINKS = [
   { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: ShoppingBag, color: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/25 group-hover:bg-emerald-600 group-hover:text-white' },
   { name: 'Trái cây Việt', href: '/category/trai-cay/', icon: Apple, color: 'text-rose-600 bg-rose-500/10 border-rose-500/25 group-hover:bg-rose-600 group-hover:text-white' },
+  { name: '🎬 Reels Video', href: '#reels', icon: Video, color: 'text-rose-600 bg-rose-500/15 border-rose-500/30 group-hover:bg-rose-600 group-hover:text-white font-extrabold' },
   { name: 'Trà - Cà phê', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700 bg-amber-500/10 border-amber-500/25 group-hover:bg-amber-700 group-hover:text-white' },
   { name: 'Đặc sản', href: '/category/dac-san/', icon: Sparkles, color: 'text-purple-600 bg-purple-500/10 border-purple-500/25 group-hover:bg-purple-600 group-hover:text-white' },
   { name: 'Agrishow', href: '/category/agrishow/', icon: Store, color: 'text-teal-600 bg-teal-500/10 border-teal-500/25 group-hover:bg-teal-600 group-hover:text-white' },
   { name: 'Deal sốc', href: '#flash-sale', icon: Flame, color: 'text-red-600 bg-red-500/10 border-red-500/25 group-hover:bg-red-600 group-hover:text-white' },
   { name: 'Mã giảm giá', href: '#vouchers', icon: Ticket, color: 'text-pink-600 bg-pink-500/10 border-pink-500/25 group-hover:bg-pink-600 group-hover:text-white' },
   { name: 'Bản đồ vườn', href: '/map/', icon: MapPin, color: 'text-sky-600 bg-sky-500/10 border-sky-500/25 group-hover:bg-sky-600 group-hover:text-white' },
-  { name: 'Theo dõi đơn', href: '/tracking/', icon: Package, color: 'text-indigo-600 bg-indigo-500/10 border-indigo-500/25 group-hover:bg-indigo-600 group-hover:text-white' },
   { name: 'Nông hộ sạch', href: '/farmers/', icon: Users, color: 'text-lime-700 bg-lime-500/10 border-lime-500/25 group-hover:bg-lime-700 group-hover:text-white' },
 ];
 
@@ -822,6 +822,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ======================== REELS (VIDEO REVIEW THỰC TẾ) ======================== */}
+      <HomeVideoReviewsSection />
+
       {/* ======================= GỢI Ý HÔM NAY (TABS) ======================= */}
       <section className="container mx-auto px-4 lg:px-8 mt-12 relative z-10 reveal-on-scroll scroll-reactive-item">
         <SectionHeader 
@@ -938,9 +941,6 @@ export default function Home() {
           </section>
         )
       )}
-
-      {/* ======================== REELS (VIDEO REVIEW THỰC TẾ) ======================== */}
-      <HomeVideoReviewsSection />
 
       {/* ========================= VÌ SAO CHỌN GREENFOOD ========================= */}
       <section className="container mx-auto px-4 lg:px-8 mt-14 relative z-10 reveal-on-scroll">

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, 
   ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, List, Map, Package, LogOut, ShieldCheck, X,
-  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles, LayoutGrid, Building2
+  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles, LayoutGrid, Building2, Video, Flame
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -442,6 +442,15 @@ export default function Navbar() {
                   <Sparkles size={14} className="text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
                   <span>Triển lãm Agrishow</span>
                 </Link>
+                <Link 
+                  href="/#reels" 
+                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
+                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-extrabold text-rose-600 hover:text-rose-700 hover:bg-rose-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
+                >
+                  <Video size={14} className="text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Reels Video</span>
+                  <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase leading-none shadow-xs">Hot</span>
+                </Link>
               </nav>
 
               {/* 3. NÚT DROPDOWN "TIỆN ÍCH ▾" (Thay thế cho "... Thêm" - Tên gọi sang trọng, dễ nghe) */}
@@ -476,6 +485,19 @@ export default function Navbar() {
                     onMouseLeave={() => setIsMoreMenuOpen(false)}
                   >
                     <div className="w-56 bg-white shadow-xl border border-slate-200/90 p-1.5 rounded-2xl relative before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']">
+                      {/* Reels Video Review */}
+                      <Link 
+                        href="/#reels" 
+                        onClick={() => setIsMoreMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-rose-700 hover:text-rose-900 hover:bg-rose-50 transition-colors group"
+                      >
+                        <Video size={16} className="text-rose-600 group-hover:scale-110 transition-transform shrink-0" />
+                        <span className="flex items-center gap-1.5">
+                          <span>Reels Video Review</span>
+                          <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase leading-none">Hot</span>
+                        </span>
+                      </Link>
+
                       {/* Gian hàng nông hộ */}
                       <Link 
                         href="/farmers" 
@@ -635,6 +657,7 @@ export default function Navbar() {
                 { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700' },
                 { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: Gift, color: 'text-purple-600' },
                 { name: 'Triển lãm Agrishow', href: '/category/agrishow/', icon: Sparkles, color: 'text-teal-600' },
+                { name: '🎬 Reels Video Review', href: '/#reels', icon: Video, color: 'text-rose-600 font-bold' },
               ].map((link) => {
                 const IconComp = link.icon;
                 return (

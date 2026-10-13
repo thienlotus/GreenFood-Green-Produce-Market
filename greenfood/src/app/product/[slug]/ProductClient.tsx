@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
 import SimpleTikTokVideoSection from '@/components/ProductReviews/SimpleTikTokVideoSection';
+import ProductReviewsSection from '@/components/ProductReviews/ProductReviewsSection';
 
 interface ProductClientProps {
   initialSlug?: string;
@@ -339,6 +340,19 @@ export default function ProductClient({ initialSlug }: ProductClientProps) {
         <SimpleTikTokVideoSection
           title="Reels"
         />
+
+        {/* Hệ thống Đánh giá & Video Review thực tế Shopee Style */}
+        <div id="product-reviews" className="mt-10 scroll-mt-24">
+          <ProductReviewsSection
+            productId={String(product.id)}
+            productName={product.name}
+            productSlug={product.slug}
+            productPrice={product.variants?.[0]?.price || 0}
+            productUnit={product.variants?.[0]?.unit || '1kg'}
+            productImage={product.images?.[0] || ''}
+            variants={product.variants?.map(v => ({ id: String(v.id), unit: v.unit })) || []}
+          />
+        </div>
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (

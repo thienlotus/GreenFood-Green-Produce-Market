@@ -53,29 +53,39 @@ export default function HomeVideoReviewsSection() {
   };
 
   return (
-    <section className="container mx-auto px-4 lg:px-8 mt-14 relative z-10 reveal-on-scroll">
+    <section id="reels" className="container mx-auto px-4 lg:px-8 mt-10 scroll-mt-24 relative z-10">
       <div className="bg-white rounded-3xl p-6 md:p-10 border border-emerald-900/10 text-gray-900 relative overflow-hidden shadow-elevated-card">
         {/* Vùng hào quang nhẹ nhàng */}
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-400/8 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 right-0 w-80 h-80 bg-teal-400/8 rounded-full blur-3xl pointer-events-none" />
 
         {/* Section Header: Tiêu đề Reels */}
-        <div className="flex items-center justify-between gap-4 mb-8 relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 relative z-10 pb-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 tracking-tight uppercase">
-              Reels
-            </h2>
-            <span className="bg-rose-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
-              <Flame size={13} className="fill-white" /> Hot
-            </span>
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-white shadow-md shrink-0">
+              <Video size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                  Reels & Video Review Thực Tế
+                </h2>
+                <span className="bg-rose-500 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-xs">
+                  <Flame size={12} className="fill-white" /> Hot
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
+                Video clip trải nghiệm trực tiếp từ nông hộ VietGAP và khách hàng thực tế
+              </p>
+            </div>
           </div>
 
           <Link
             href="/product/sau-rieng-ri6#product-reviews"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 rounded-2xl transition-all shadow-md hover:scale-105 active:scale-95 shrink-0"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 rounded-2xl transition-all shadow-md hover:scale-105 active:scale-95 shrink-0 self-start sm:self-auto"
           >
             <Video size={16} />
-            <span>Xem trang sản phẩm</span>
+            <span>Xem trang đánh giá sản phẩm</span>
           </Link>
         </div>
 
