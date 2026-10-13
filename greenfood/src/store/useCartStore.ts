@@ -17,12 +17,18 @@ export interface CartItem {
     name?: string;
     farmName?: string;
     region?: string;
+    ghn_shop_id?: number;
+    ghn_province_id?: number;
+    ghn_district_id?: number;
+    ghn_ward_code?: string;
+    ghn_address?: string;
+    address?: string;
   };
 }
 
 /**
  * Tự động chuẩn hóa và chữa lành lỗi ký tự / phông chữ (Mojibake Healer)
- * Đảm bảo mọi sản phẩm hiển thị tiếng Việt chuẩn 100%
+ * Đảm bảo mọi sản phẩm hiển thị tiếng Việt chuẩn 100% và luôn gắn kèm Nông hộ & Shop GHN tương ứng
  */
 export function sanitizeCartItem(item: CartItem): CartItem {
   if (!item) return item;
@@ -44,10 +50,16 @@ export function sanitizeCartItem(item: CartItem): CartItem {
   cleanName = cleanVietnameseMojibake(cleanName);
   cleanUnit = cleanVietnameseMojibake(cleanUnit);
 
+  const mergedFarmer = {
+    ...(canonical?.farmer || {}),
+    ...(item.farmer || {})
+  };
+
   return {
     ...item,
     name: cleanName,
     unit: cleanUnit,
+    farmer: mergedFarmer,
   };
 }
 

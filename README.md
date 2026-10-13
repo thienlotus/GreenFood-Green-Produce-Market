@@ -53,34 +53,29 @@ Dự án được xây dựng theo kiến trúc **Modular Monolith** chuẩn hó
 
 Dự án bao gồm **4 thành viên** phụ trách **4 nhánh chức năng chuyên biệt**, đảm bảo công việc phân bổ đồng đều, hợp lý theo đúng chuyên môn, trong đó **Team Leader** đảm nhận khối lượng công việc nhiều nhất:
 
-| STT | Thành viên | Vai trò | Phân hệ / Service | Nhánh Git | Nhiệm vụ đã làm & Công việc phụ trách chi tiết |
+| STT | Thành viên | Vai trò | Phân hệ / Service | Nhánh Git | Nhiệm vụ đã hoàn thiện & Công việc phụ trách chi tiết |
 |:---:|---|---|---|---|---|
-| 1 | **Lê Vũ Thiên**<br>([@thienlotus](https://github.com/thienlotus)) | **Team Leader & System Architect** *(Trách nhiệm nhiều nhất)* | **Admin & Core Management Service** | [`admin-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/admin-service)<br>[`main`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/main) | **Đã làm:**<br>- Trang Quản trị Admin: Quản lý kho nông sản & biến thể giá, Quản lý đơn hàng (danh sách, chi tiết, cập nhật trạng thái đơn), Thống kê doanh thu thời gian thực.<br>**Công việc bổ sung (Leader):**<br>- Thiết kế kiến trúc tổng thể Modular Monolith / Microservices (Controller-Service-Repository).<br>- Thiết lập API Gateway, hệ thống Routing tập trung cho 65 endpoints.<br>- Cấu hình quy trình CI/CD tự động trên GitHub Actions (`.github/workflows/ci.yml`) đảm bảo check status `✓ 2/2`.<br>- Phân quyền quản trị viên Admin RBAC, xử lý Database Transactions đảm bảo an toàn giao dịch.|
-| 2 | **Lê Thiều Hưng**<br>([@0912lethieuhung-hub](https://github.com/0912lethieuhung-hub)) | **Developer & QA/QC Lead** | **Auth & User Service** | [`auth-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/auth-service) | **Đã làm:**<br>- Chức năng Đăng ký, Đăng nhập, Quản lý hồ sơ tài khoản (Khách lẻ & Khách sỉ).<br>- Phát triển bộ công cụ chọn địa chỉ hành chính Việt Nam đa cấp (Cascading Dropdown: 63 Tỉnh/Thành - Quận/Huyện - Phường/Xã + Địa chỉ chi tiết), thay thế ô nhập text thủ công, có parser và format chuẩn hóa.<br>- Sửa lỗi bảo mật Sổ địa chỉ (Address Book Data Isolation): Khắc phục triệt để lỗ hổng rò rỉ dữ liệu (tài khoản này nhìn thấy địa chỉ tài khoản khác), phân vùng lưu trữ theo `userId`, xóa sạch dữ liệu nhạy cảm khi đăng xuất (`Zero Data Leakage`).<br>- **Sprint 2 (Hoàn tất):** Phát triển tính năng Xác thực Email OTP khi đăng ký (Gmail SMTP, bảng `email_verifications`, template HTML GreenFood, bộ đếm ngược 10 phút, tự động focus 6 ô số OTP, giới hạn resend 3 lần/15 phút, tự động kích hoạt tài khoản, bộ test cases tự động PHPUnit đạt 100%).<br>**Công việc bổ sung:**<br>- Thiết kế migration bổ sung cột `address` và `email_verified` vào bảng `users` (Laravel 11), tích hợp cập nhật địa chỉ vào `UserService` và `AuthController`.<br>- Xây dựng bảo mật xác thực Session/Token, mã hóa mật khẩu an toàn (`Hash::make`), kiểm soát lỗi đăng nhập.<br>- Phân quyền người dùng (Customer, B2B, Farmer, Admin).<br>- Chủ trì mảng QA/QC: Soạn thảo bộ test cases kiểm thử Đăng ký (`Test_Cases_GreenFood_Register.xlsx`) và Feature Tests Laravel (`EmailVerificationTest.php`).|
-| 3 | **Lương Văn Quý**<br>([@QUY-LUONG-VAN](https://github.com/QUY-LUONG-VAN)) | **Backend & Frontend Developer** | **Product & Catalog Service** | [`product-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/product-service) | **Đã làm:**<br>- Giao diện Trang chủ, Phân hệ Danh mục (Đặc sản vùng miền, Trái cây, Rau củ, Nấm...), Giỏ hàng và Mã giảm giá.<br>**Công việc bổ sung:**<br>- Xây dựng Backend Module Product & Category: Logic tìm kiếm, lọc sản phẩm đa tiêu chí (danh mục, mức giá, bán chạy, vùng miền).<br>- Xử lý nghiệp vụ Giỏ hàng: Kiểm tra tồn kho biến thể, đồng bộ giỏ hàng LocalStorage với Backend API.<br>- Xây dựng hệ thống Voucher & Khuyến mãi: Kiểm tra điều kiện áp dụng mã (`GREEN10`, `FREESHIP`), tính toán mức chiết khấu tối đa.<br>- Xây dựng bộ test cases kiểm thử Quản lý sản phẩm (`Test_Case_Quan_Ly_San_Pham.xlsx`). |
-| 4 | **Nguyễn Đại Dương**<br>([@OceanDDz](https://github.com/OceanDDz)) | **Backend & Frontend Developer** | **Delivery & Logistics Service** | [`delivery-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/delivery-service) | **Đã làm:**<br>- Tích hợp bản đồ số GIS vùng trồng, Tính cước phí ship theo khu vực, Tích hợp thanh toán, Theo dõi hành trình giao hàng.<br>**Công việc bổ sung:**<br>- Xây dựng Module Logistics & GIS: Tự động định tuyến cước phí theo địa chỉ người nhận (`shipping_zones`), áp dụng quy tắc miễn phí vận chuyển (`free_ship_minimum`).<br>- Xây dựng Module Thanh toán đa phương thức: COD, Chuyển khoản nhanh VietQR 24/7, Ví điện tử MoMo, Cổng VNPAY; xác thực giao dịch thanh toán.<br>- Phát triển giao diện Live Tracking 4 bước với tọa độ GPS shipper mô phỏng trực quan.<br>- Xây dựng bộ test cases kiểm thử Nông hộ và Giao hàng (`Test_Cases_GreenFood_Duong.xlsx`). |
+| 1 | **Lê Vũ Thiên**<br>([@thienlotus](https://github.com/thienlotus)) | **Team Leader & System Architect** *(Trách nhiệm nhiều nhất)* | **Admin & Core Management Service** | [`admin-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/admin-service)<br>[`main`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/main) | **Đã hoàn thiện:**<br>- **Kiến trúc Multi-Vendor Marketplace:** Phân rã đơn hàng tổng thành các `sub-orders` độc lập theo từng nhà vườn/nông hộ, điều phối luồng doanh thu ví nông hộ, tự động khớp đơn.<br>- **Hệ thống Live Chat đa kênh Shopee-style:** Chat trực tiếp giữa Khách hàng ⟷ Nhà vườn nông hộ ⟷ Quản trị viên sàn; tích hợp trợ lý AI thông minh tự động tư vấn 24/7; đồng bộ chuẩn múi giờ `Asia/Ho_Chi_Minh`.<br>- **Cổng B2B Wholesale Portal & Quản trị:** Quản lý quy trình đặt hàng nông sản số lượng lớn, tra cứu báo giá trực tuyến, gửi email xác nhận và phản hồi khách hàng tự động.<br>- **Admin Portal & API Gateway:** Trang quản trị phân tích số liệu thời gian thực, quản lý kho nông sản & biến thể giá, kiểm soát trạng thái đơn hàng (`PENDING` ➔ `CONFIRMED` ➔ `SHIPPING` ➔ `DELIVERED`).<br>- **Hạ tầng CI/CD:** Cấu hình GitHub Actions tự động kiểm thử cú pháp, migration, PHPUnit test suite, ESLint & TypeScript build (`✓ 5/5`).|
+| 2 | **Lê Thiều Hưng**<br>([@0912lethieuhung-hub](https://github.com/0912lethieuhung-hub)) | **Developer & QA/QC Lead** | **Auth & User Service** | [`auth-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/auth-service) | **Đã hoàn thiện:**<br>- **Xác thực Email OTP khi đăng ký:** Gửi mã xác minh 6 số qua Gmail SMTP, bộ đếm ngược 10 phút, giới hạn resend 3 lần/15 phút, tự động kích hoạt tài khoản ngay sau khi xác thực thành công.<br>- **Bộ công cụ Địa chỉ hành chính Việt Nam đa cấp:** Tuyển chọn chuẩn hóa 63 Tỉnh/Thành - Quận/Huyện - Phường/Xã có cascading dropdown tự động binding mã GHN.<br>- **Bảo mật Sổ địa chỉ & Phân quyền RBAC:** Cách ly dữ liệu địa chỉ nghiêm ngặt theo `userId` (Zero Data Leakage), tự động dọn dẹp bộ nhớ đệm khi đăng xuất, cơ chế phân quyền tài khoản (Customer, B2B Wholesaler, Vendor/Farmer, Admin).<br>- **Hệ thống Email tự động:** Tự động gửi email chào mừng thành viên mới kèm mã voucher ưu đãi độc quyền.<br>- **Bộ kiểm thử QA/QC:** Xây dựng Feature Tests Laravel (`EmailVerificationTest.php`) và bộ test cases đăng ký (`Test_Cases_GreenFood_Register.xlsx`) đạt 100% tỉ lệ pass.|
+| 3 | **Lương Văn Quý**<br>([@QUY-LUONG-VAN](https://github.com/QUY-LUONG-VAN)) | **Backend & Frontend Developer** | **Product & Catalog Service** | [`product-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/product-service) | **Đã hoàn thiện:**<br>- **GreenReels & Video Reviews Shopee/TikTok:** Tính năng xem video đánh giá thực tế sản phẩm từ reviewer Việt Nam, modal nhà hát phóng to media, gửi bài đánh giá có chấm điểm sao, bình luận và tải lên ảnh/video.<br>- **Catalog & Phân hệ Danh mục sản phẩm:** Giao diện mua sắm rau củ quả, nấm tươi, đặc sản vùng miền với bộ lọc tìm kiếm đa tiêu chí (danh mục, khoảng giá, mùa vụ, độ tươi ngon).<br>- **Giỏ hàng & Khuyến mãi thông minh:** Kiểm tra tồn kho biến thể, đồng bộ giỏ hàng an toàn, áp dụng voucher chiết khấu tự động (`GREEN10`, `FREESHIP`).<br>- **Trung tâm Thông báo Shopee-style:** Dropdown thông báo đa phân loại (Cập nhật đơn hàng, Khuyến mãi hot, Tin tức hệ thống) với cơ chế đánh dấu đã đọc thời gian thực.<br>- **Postman Collection & QA:** Bộ kiểm thử API Product & Notification (`Postman_Collection_Luong_Van_Quy_Product_Service.json`).|
+| 4 | **Nguyễn Đại Dương**<br>([@OceanDDz](https://github.com/OceanDDz)) | **Backend & Frontend Developer** | **Delivery & Logistics Service** | [`delivery-service`](https://github.com/thienlotus/GreenFood-Green-Produce-Market/tree/delivery-service) | **Đã hoàn thiện:**<br>- **Tích hợp Giao Hàng Nhanh (GHN API) 3 miền:** Đồng bộ 3 kho nông hộ đại diện (Bắc - Trung - Nam), tính toán phí giao hàng theo khoảng cách thực tế giữa từng kho nhà vườn và người nhận.<br>- **Hệ thống Thanh toán đa cổng:** Tích hợp cổng thanh toán tự động SePay VietQR quét mã chuyển khoản 24/7 (khớp giao dịch tức thì không cần can thiệp thủ công), Cổng thanh toán thẻ ATM nội địa Napas / OnePay, Cổng ví điện tử MoMo, Cổng VNPAY và phương thức COD.<br>- **Bản đồ số GIS & Live Tracking GPS:** Bản đồ trực quan các vùng trồng đạt chuẩn VietGAP/GlobalGAP, theo dõi hành trình giao nhận 4 bước với tọa độ GPS shipper mô phỏng thời gian thực.<br>- **Postman Collection & Environment:** Trọn bộ Postman Collection kiểm thử Delivery & Logistics kèm môi trường Local & Production (`Postman_Delivery_Logistics_NguyenVanDaiDuong.json`).|
 
 ---
 
-## 📋 Sprint 2 — Tính Năng Mới (28/09/2026 → 05/10/2026)
+## 📋 Tổng kết Tiến độ Phát triển (Sprint 1, Sprint 2 & Sprint 3)
 
-### Tổng quan phân công Sprint 2
-
-| STT | Tính năng mới | Thành viên phụ trách | Nhánh Git | Mức độ |
+| STT | Phân hệ / Tính năng chính | Thành viên phụ trách | Nhánh Git | Trạng thái |
 |:---:|---|---|---|:---:|
-| 1 | **Xác thực Email OTP khi Đăng ký** — Gửi mã xác thực 6 số qua Gmail, xác minh trước khi kích hoạt tài khoản | **Lê Thiều Hưng** | `auth-service` | 🟢 Hoàn thành |
-| 2 | **Tích hợp Giao Hàng Nhanh (GHN API)** — Tính cước phí ship real-time, tạo đơn vận chuyển, theo dõi đơn trực tiếp từ [dev.ghn.vn](https://dev.ghn.vn) | **Nguyễn Đại Dương** | `delivery-service` | 🔴 Cao |
-| 3 | **Tích hợp Thanh Toán MoMo API** — Liên kết cổng thanh toán Ví MoMo, xử lý callback IPN, xác thực chữ ký HMAC-SHA256 | **Lương Văn Quý** | `product-service` | 🟡 Trung bình |
-| 4 | **Live Chat + Quản trị Admin nâng cao** — Hệ thống chat hỗ trợ khách hàng real-time; Bộ lọc trạng thái đơn hàng, chuyển/hủy đơn có logic nghiệp vụ (đang giao → không cho hủy), dashboard chỉ số | **Lê Vũ Thiên** *(Leader)* | `admin-service` / `main` | 🔴 Rất cao |
+| 1 | **Xác thực Email OTP khi Đăng ký & Bảo mật Sổ địa chỉ** | **Lê Thiều Hưng** | `auth-service` | 🟢 Hoàn thành 100% |
+| 2 | **Tích hợp Giao Hàng Nhanh (GHN API) 3 miền & Kho nông hộ** | **Nguyễn Đại Dương** | `delivery-service` | 🟢 Hoàn thành 100% |
+| 3 | **Cổng thanh toán tự động SePay VietQR, Thẻ ATM Napas, MoMo & VNPay** | **Nguyễn Đại Dương** / **Lương Văn Quý** | `delivery-service` / `product-service` | 🟢 Hoàn thành 100% |
+| 4 | **GreenReels Video Review sản phẩm Shopee/TikTok & Thông báo** | **Lương Văn Quý** | `product-service` | 🟢 Hoàn thành 100% |
+| 5 | **Sàn Multi-Vendor nông hộ, Tách Sub-orders & Ví nhà vườn** | **Lê Vũ Thiên** *(Leader)* | `admin-service` / `main` | 🟢 Hoàn thành 100% |
+| 6 | **Live Chat 3 bên (Khách - Nông hộ - Admin) & Gemini AI Assistant** | **Lê Vũ Thiên** *(Leader)* | `admin-service` / `main` | 🟢 Hoàn thành 100% |
+| 7 | **Hệ thống đặt sỉ B2B Wholesale Portal & Email tự động** | **Lê Vũ Thiên** *(Leader)* | `admin-service` / `main` | 🟢 Hoàn thành 100% |
+| 8 | **Bản đồ số GIS vùng trồng & Live Tracking lộ trình shipper** | **Nguyễn Đại Dương** | `delivery-service` | 🟢 Hoàn thành 100% |
 
-### Lý do phân công
-
-- **Hưng → Email OTP:** Hưng đã xây dựng toàn bộ module Auth (Đăng ký, Đăng nhập, Profile), OTP là mở rộng tự nhiên của luồng đăng ký hiện tại.
-- **Dương → GHN API:** Dương đang phụ trách Delivery & Logistics (cước phí ship, GIS, live tracking), GHN là nâng cấp trực tiếp trên nền tảng logistics sẵn có.
-- **Quý → MoMo API:** Quý đang quản lý luồng Giỏ hàng → Checkout → Voucher, MoMo là bước tiếp nối tự nhiên trong luồng thanh toán.
-- **Thiên → Live Chat + Admin:** Khối lượng công việc lớn nhất (2 tính năng lớn), phù hợp vai trò Team Leader & System Architect.
-
-> 📄 **Chi tiết đầy đủ yêu cầu từng tính năng:** Xem file [`docs/Sprint2_Task_Allocation.md`](docs/Sprint2_Task_Allocation.md)
+> 📄 **Tài liệu chi tiết phân công & kiến trúc:** Xem các tài liệu chuyên sâu trong thư mục [`docs/`](docs/)
 
 ---
 
@@ -190,46 +185,112 @@ Truy cập giao diện người dùng tại: `http://localhost:3000`
 
 ---
 
-## Danh mục API Endpoints chính
+## Danh mục API Endpoints đầy đủ (11 Modules)
 
 ### 1. Auth & User Service (Phụ trách: Lê Thiều Hưng)
 - `POST /api/v1/auth/register` — Đăng ký tài khoản khách hàng mới.
-- `POST /api/v1/auth/login` — Đăng nhập hệ thống, phát hành token.
-- `GET /api/v1/users` — Lấy danh sách người dùng (Admin).
+- `POST /api/v1/auth/verify-email` — Xác thực mã OTP 6 số kích hoạt tài khoản.
+- `POST /api/v1/auth/resend-otp` — Gửi lại mã OTP qua email (giới hạn 3 lần/15 phút).
+- `POST /api/v1/auth/login` — Đăng nhập hệ thống, phát hành access token.
+- `GET /api/v1/users` — Lấy danh sách người dùng phân trang (Admin).
 - `GET /api/v1/users/{id}` — Xem thông tin chi tiết người dùng.
-- `PUT /api/v1/users/{id}` — Cập nhật hồ sơ tài khoản.
+- `PUT /api/v1/users/{id}/profile` — Cập nhật hồ sơ tài khoản và địa chỉ nhận hàng.
+- `POST /api/v1/users/{id}/change-password` — Đổi mật khẩu an toàn.
+- `PUT /api/v1/users/{id}/role` — Cập nhật quyền hạn tài khoản (`customer`, `farmer`, `b2b`, `admin`).
 
 ### 2. Product & Catalog Service (Phụ trách: Lương Văn Quý)
 - `GET /api/v1/categories` — Danh sách danh mục rau củ, quả ngọt, nấm tươi.
 - `GET /api/v1/categories/{slug}` — Xem chi tiết danh mục theo slug.
-- `GET /api/v1/products` — Danh sách sản phẩm (hỗ trợ search, filter vùng, sort giá/bán chạy).
-- `GET /api/v1/products/{slug}` — Xem chi tiết sản phẩm.
-- `POST /api/v1/cart/calculate` — Tính toán giỏ hàng và áp dụng mã voucher chiết khấu.
-- `POST /api/v1/promotions/check-voucher` — Kiểm tra tính hợp lệ và chiết khấu mã khuyến mãi.
+- `GET /api/v1/products` — Danh sách sản phẩm (hỗ trợ search, filter vùng miền, lọc giá/bán chạy).
+- `GET /api/v1/products/{slug}` — Xem chi tiết sản phẩm và các biến thể đóng gói.
+- `POST /api/v1/cart/calculate` — Tính toán giỏ hàng, tồn kho và áp dụng mã voucher chiết khấu.
+- `POST /api/v1/promotions/check-voucher` — Kiểm tra tính hợp lệ và chiết khấu mã khuyến mãi (`GREEN10`, `FREESHIP`).
 
-### 3. Delivery & Logistics Service (Phụ trách: Nguyễn Đại Dương)
-- `GET /api/v1/farmers` — Danh sách nông hộ đối tác và tọa độ bản đồ GIS.
-- `GET /api/v1/farmers/{id}` — Chi tiết thông tin nông hộ, chứng nhận VietGAP.
-- `GET /api/v1/shipping-zones` — Danh sách biểu phí giao hàng theo khu vực.
-- `GET /api/v1/orders/tracking/{trackingNumber}` — Tra cứu tiến độ đơn hàng với shipper GPS thời gian thực.
-- `GET /api/v1/payment/methods` — Danh sách phương thức thanh toán (COD, VietQR, MoMo, VNPay).
-- `POST /api/v1/payment/process` — Xử lý và xác nhận giao dịch thanh toán đơn hàng.
+### 3. Product Reviews & GreenReels (Phụ trách: Lương Văn Quý)
+- `GET /api/v1/products/{id}/reviews` — Danh sách đánh giá của sản phẩm kèm hình ảnh/video.
+- `POST /api/v1/products/{id}/reviews` — Gửi bài đánh giá mới (số sao, nhận xét, đính kèm media).
+- `POST /api/v1/reviews/{id}/like` — Thả like / hủy like bài đánh giá của người mua khác.
+- `POST /api/v1/reviews/upload` — Upload hình ảnh hoặc video ngắn review sản phẩm.
 
-### 4. Admin & Core Management Service (Phụ trách: Lê Vũ Thiên - Leader)
-- `GET /api/v1/admin/dashboard` — Số liệu thống kê doanh thu, đơn hàng, người dùng tổng quan.
-- `GET /api/v1/admin/orders` — Quản lý danh sách đơn hàng toàn hệ thống.
-- `GET /api/v1/admin/orders/{id}` — Xem chi tiết đơn hàng quản trị.
-- `PUT /api/v1/admin/orders/{id}/status` — Cập nhật trạng thái đơn (`PENDING` -> `CONFIRMED` -> `SHIPPING` -> `DELIVERED`).
-- `POST /api/v1/products` — Thêm sản phẩm mới vào kho nông sản.
-- `PUT /api/v1/products/{id}` — Cập nhật tồn kho và giá sản phẩm.
+### 4. Customer Notifications (Phụ trách: Lương Văn Quý)
+- `GET /api/v1/notifications` — Danh sách thông báo khách hàng (Đơn hàng, Khuyến mãi, Hệ thống).
+- `POST /api/v1/notifications` — Tạo thông báo mới cho người dùng.
+- `PUT /api/v1/notifications/mark-all-read` — Đánh dấu tất cả thông báo là đã đọc.
+- `PUT /api/v1/notifications/{id}/read` — Đánh dấu 1 thông báo cụ thể là đã đọc.
+
+### 5. Delivery & Logistics Service (Phụ trách: Nguyễn Đại Dương)
+- `GET /api/v1/shipping-zones` — Danh sách biểu phí giao hàng theo khu vực địa lý.
+- `POST /api/v1/shipping-zones` — Thêm mới khu vực vận chuyển (Admin).
+- `PUT /api/v1/shipping-zones/{id}` — Cập nhật bảng phí và thời gian giao hàng.
+- `GET /api/v1/orders/tracking/{trackingNumber}` — Tra cứu tiến độ đơn hàng và tọa độ GPS shipper thời gian thực.
+- `GET /api/v1/ghn/provinces` — Danh sách 63 Tỉnh/Thành phố chuẩn Giao Hàng Nhanh.
+- `GET /api/v1/ghn/districts/{provinceId}` — Danh sách Quận/Huyện theo Tỉnh/Thành GHN.
+- `GET /api/v1/ghn/wards/{districtId}` — Danh sách Phường/Xã theo Quận/Huyện GHN.
+- `POST /api/v1/ghn/calculate-fee` — Tính cước phí ship real-time theo từng kho nông hộ GHN.
+
+### 6. Payment Gateways đa kênh (Phụ trách: Nguyễn Đại Dương & Lương Văn Quý)
+- `GET /api/v1/payment/methods` — Danh sách phương thức thanh toán khả dụng.
+- `POST /api/v1/payment/process` — Xử lý giao dịch COD và khởi tạo thanh toán.
+- `POST /api/v1/payment/sepay/create` — Tạo mã VietQR SePay thanh toán tự động khớp lệnh 24/7.
+- `POST /api/v1/payment/sepay/webhook` — Webhook nhận thông báo ngân hàng và cập nhật đơn hàng tức thì.
+- `POST /api/v1/payment/sepay/check-status` — Polling kiểm tra trạng thái thanh toán VietQR.
+- `POST /api/v1/payment/card/process` — Cổng thanh toán thẻ ATM nội địa Napas / OnePay sandbox.
+- `POST /api/v1/payment/momo/create` — Khởi tạo giao dịch cổng thanh toán Ví MoMo.
+- `POST /api/v1/payment/momo/callback` — Webhook IPN xử lý kết quả thanh toán MoMo.
+
+### 7. Multi-Vendor Farmer & GIS Service (Phụ trách: Lê Vũ Thiên - Leader)
+- `GET /api/v1/farmers` — Danh sách nông hộ đối tác và tọa độ bản đồ số GIS.
+- `POST /api/v1/farmers/register` — Form đăng ký đối tác nông hộ VietGAP/GlobalGAP mới.
+- `GET /api/v1/farmers/{id}` — Chi tiết thông tin nhà vườn, kho hàng, sản phẩm và chứng nhận.
+- `PUT /api/v1/farmers/{id}` — Cập nhật hồ sơ nhà vườn và tọa độ bản đồ GIS.
+- `GET /api/v1/farmers/{id}/orders` — Danh sách các đơn con (`sub-orders`) riêng của nhà vườn.
+- `PUT /api/v1/farmers/{id}/orders/{orderId}/status` — Cập nhật tiến độ đóng gói đơn hàng nhà vườn.
+- `GET /api/v1/farmers/{id}/wallet` — Số dư ví doanh thu nông hộ và lịch sử biến động.
+- `PUT /api/v1/farmers/{id}/bank` — Cập nhật số tài khoản ngân hàng nhận tiền rút.
+- `GET /api/v1/admin/farmers` — Quản trị danh sách nông hộ và duyệt đơn đăng ký đối tác.
+- `PUT /api/v1/admin/farmers/{id}/status` — Phê duyệt (`APPROVED`) hoặc từ chối nông hộ.
+
+### 8. Live Chat & AI Assistant (Phụ trách: Lê Vũ Thiên - Leader)
+- `GET /api/v1/chat/conversations` — Danh sách các cuộc trò chuyện của người dùng/nông hộ/admin.
+- `POST /api/v1/chat/customer/conversations/farmer` — Khách hàng mở chat trực tiếp với một gian hàng nông hộ.
+- `POST /api/v1/chat/farmer/conversations/admin` — Nông hộ chat trực tiếp với ban quản trị sàn.
+- `GET /api/v1/chat/conversations/{id}` — Chi tiết hội thoại và tin nhắn.
+- `GET /api/v1/chat/conversations/{id}/customer` — Tin nhắn hội thoại theo phía khách hàng.
+- `POST /api/v1/chat/conversations/{id}/messages` — Gửi tin nhắn mới (kích hoạt Gemini AI Auto-reply 24/7).
+- `GET /api/v1/chat/unread-count` — Số lượng tin nhắn chưa đọc.
+
+### 9. B2B Wholesale Portal (Phụ trách: Lê Vũ Thiên - Leader)
+- `GET /api/v1/b2b/inquiries` — Danh sách yêu cầu báo giá sỉ B2B toàn hệ thống.
+- `POST /api/v1/b2b/inquiries` — Gửi yêu cầu mua sỉ số lượng lớn (gửi email xác nhận tự động).
+- `GET /api/v1/b2b/inquiries/track` — Tra cứu tiến độ báo giá trực tuyến bằng mã Inquiry Code.
+- `GET /api/v1/b2b/inquiries/{id}` — Xem chi tiết yêu cầu báo giá sỉ.
+- `PUT /api/v1/b2b/inquiries/{id}/status` — Quản trị viên cập nhật trạng thái báo giá (`PENDING`, `QUOTED`, `COMPLETED`).
+- `POST /api/v1/b2b/inquiries/{id}/respond` — Admin phản hồi bảng báo giá chi tiết và gửi email tự động tới khách sỉ.
+
+### 10. Order & Sub-Orders Service (Phụ trách: Lê Vũ Thiên - Leader)
+- `POST /api/v1/orders` — Tạo đơn hàng mới (tự động phân tách sub-orders theo nhà vườn).
+- `GET /api/v1/orders/my-orders` — Danh sách lịch sử đơn hàng của tài khoản đang đăng nhập.
+- `GET /api/v1/orders/{id}` — Chi tiết đơn hàng tổng và các đơn con của từng nông hộ.
+- `POST /api/v1/orders/{id}/push-ghn` — Đẩy đơn hàng sang hệ thống Giao Hàng Nhanh tạo vận đơn.
+
+### 11. Admin & Core Management Service (Phụ trách: Lê Vũ Thiên - Leader)
+- `GET /api/v1/admin/dashboard` — Số liệu thống kê doanh thu, tỷ lệ hoàn đơn, biểu đồ tăng trưởng thời gian thực.
+- `GET /api/v1/admin/orders` — Quản lý danh sách đơn hàng toàn sàn.
+- `PUT /api/v1/admin/orders/{id}/status` — Cập nhật trạng thái đơn hàng.
+- `POST /api/v1/products` — Thêm sản phẩm mới vào kho sàn.
+- `PUT /api/v1/products/{id}` — Cập nhật tồn kho, giá và thông tin sản phẩm.
 - `DELETE /api/v1/products/{id}` — Xóa sản phẩm khỏi hệ thống.
 
 ---
 
-## Tài liệu dự án & Kiểm thử
+## Tài liệu dự án & Bộ công cụ Kiểm thử API (Postman Collections)
 
-- **Sơ đồ thiết kế UML (ERD, Class, Sequence, Activity, State):** [docs/diagrams/](docs/diagrams/)
-- **Postman API Test Collection:** [GreenFood_Postman_Test_Collection.json](greenfood-laravel/GreenFood_Postman_Test_Collection.json)
+- **Sơ đồ thiết kế UML (ERD, Class, Sequence, Activity, State):** [`docs/diagrams/`](docs/diagrams/)
+- **Postman API Test Collection tổng thể:** [`greenfood-laravel/GreenFood_Postman_Test_Collection.json`](greenfood-laravel/GreenFood_Postman_Test_Collection.json)
+- **Postman Collection - Delivery & Logistics Service (Nguyễn Đại Dương):** [`greenfood-laravel/Postman_Delivery_Logistics_NguyenVanDaiDuong.json`](greenfood-laravel/Postman_Delivery_Logistics_NguyenVanDaiDuong.json)
+- **Postman Environment - Local & Production (Nguyễn Đại Dương):** [`greenfood-laravel/Postman_Environment_GreenFood.json`](greenfood-laravel/Postman_Environment_GreenFood.json)
+- **Postman Collection - Product & Catalog Service (Lương Văn Quý):** [`greenfood-laravel/Postman_Collection_Luong_Van_Quy_Product_Service.json`](greenfood-laravel/Postman_Collection_Luong_Van_Quy_Product_Service.json)
+- **Kết quả kiểm thử Product Service (Lương Văn Quý):** [`greenfood-laravel/test_results_luong_van_quy.json`](greenfood-laravel/test_results_luong_van_quy.json)
 
 ---
 

@@ -90,10 +90,28 @@ class GHNController extends Controller
                 // Nhóm sản phẩm theo nhà vườn / nông hộ
                 $grouped = [];
                 foreach ($items as $item) {
-                    $farmerKey = $item['farmer_id'] ?? ($item['farmer']['id'] ?? ($item['farmer_name'] ?? ($item['farmer']['name'] ?? ($item['farmer'] ?? 'default'))));
-                    if (is_array($farmerKey)) {
-                        $farmerKey = $farmerKey['name'] ?? 'default';
+                    $farmerKey = $item['farmer_id'] 
+                        ?? ($item['farmer']['id'] 
+                        ?? ($item['ghn_shop_id'] 
+                        ?? ($item['farmer']['ghn_shop_id'] 
+                        ?? ($item['farmer_name'] 
+                        ?? ($item['farmer']['name'] 
+                        ?? ($item['farmer'] ?? null))))));
+
+                    // Nếu chưa có farmerKey, thử tìm qua product
+                    if (!$farmerKey && (!empty($item['product_id']) || !empty($item['id']) || !empty($item['slug']))) {
+                        $pId = $item['product_id'] ?? ($item['id'] ?? null);
+                        $slug = $item['slug'] ?? null;
+                        $prod = \App\Models\Product::where('id', $pId)->orWhere('slug', $slug)->orWhere('slug', $pId)->first();
+                        if ($prod && $prod->farmer_id) {
+                            $farmerKey = $prod->farmer_id;
+                        }
                     }
+
+                    if (is_array($farmerKey)) {
+                        $farmerKey = $farmerKey['id'] ?? ($farmerKey['name'] ?? 'default');
+                    }
+                    $farmerKey = $farmerKey ?: 'default';
                     $grouped[(string) $farmerKey][] = $item;
                 }
 
@@ -103,15 +121,26 @@ class GHNController extends Controller
                 // Load danh sách nông hộ có sẵn để tra cứu nhanh
                 $farmersCache = \App\Models\Farmer::all()->keyBy('id');
                 $farmersByName = \App\Models\Farmer::all()->keyBy(fn ($f) => mb_strtolower($f->farm_name, 'UTF-8'));
+                $farmersByShopId = \App\Models\Farmer::whereNotNull('ghn_shop_id')->get()->keyBy('ghn_shop_id');
 
                 foreach ($grouped as $key => $pkgItems) {
-                    $farmer = $farmersCache->get($key) ?? $farmersByName->get(mb_strtolower((string) $key, 'UTF-8'));
+                    $farmer = $farmersCache->get($key) 
+                        ?? $farmersByName->get(mb_strtolower((string) $key, 'UTF-8'))
+                        ?? $farmersByShopId->get((int)$key);
+
+                    // Nếu chưa thấy, thử tìm qua item attributes
+                    if (!$farmer) {
+                        $shopIdHint = $pkgItems[0]['ghn_shop_id'] ?? ($pkgItems[0]['farmer']['ghn_shop_id'] ?? null);
+                        if ($shopIdHint && $farmersByShopId->has((int)$shopIdHint)) {
+                            $farmer = $farmersByShopId->get((int)$shopIdHint);
+                        }
+                    }
 
                     // Xác định kho gửi hàng của Nông Hộ (from_district_id)
                     $fromDistrictId = null;
                     $fromWardCode = null;
-                    $farmerName = $farmer ? $farmer->farm_name : (string) $key;
-                    $fromLocation = $farmer ? ($farmer->ghn_address ?: $farmer->address) : 'Kho GreenFood';
+                    $farmerName = $farmer ? $farmer->farm_name : ($pkgItems[0]['farmer_name'] ?? ($pkgItems[0]['farmer']['name'] ?? (string) $key));
+                    $fromLocation = $farmer ? ($farmer->ghn_address ?: $farmer->address) : ($pkgItems[0]['farmer']['address'] ?? 'Kho GreenFood');
 
                     // 1. Kiểm tra trong model Farmer
                     if ($farmer && !empty($farmer->ghn_district_id)) {
@@ -122,6 +151,10 @@ class GHNController extends Controller
                     // 2. Kiểm tra nếu item truyền sẵn from_district_id
                     if (!$fromDistrictId && !empty($pkgItems[0]['from_district_id'])) {
                         $fromDistrictId = (int) $pkgItems[0]['from_district_id'];
+                        $fromWardCode = $pkgItems[0]['from_ward_code'] ?? null;
+                    } elseif (!$fromDistrictId && !empty($pkgItems[0]['farmer']['ghn_district_id'])) {
+                        $fromDistrictId = (int) $pkgItems[0]['farmer']['ghn_district_id'];
+                        $fromWardCode = $pkgItems[0]['farmer']['ghn_ward_code'] ?? null;
                     }
 
                     // 3. Fallback theo cấu hình kho mặc định
@@ -144,7 +177,11 @@ class GHNController extends Controller
                         'to_ward_code' => $toWardCode,
                     ], $ghn->packageParameters($pkgWeight));
 
-                    $shopId = $farmer && !empty($farmer->ghn_shop_id) ? (int) $farmer->ghn_shop_id : null;
+                    $shopId = $farmer && !empty($farmer->ghn_shop_id) 
+                        ? (int) $farmer->ghn_shop_id 
+                        : (!empty($pkgItems[0]['ghn_shop_id']) 
+                            ? (int) $pkgItems[0]['ghn_shop_id'] 
+                            : (!empty($pkgItems[0]['farmer']['ghn_shop_id']) ? (int) $pkgItems[0]['farmer']['ghn_shop_id'] : null));
                     if ($shopId) {
                         $feeParams['shop_id'] = $shopId;
                     }

@@ -359,6 +359,11 @@ export async function deleteShippingZone(id: string): Promise<{ success: boolean
 export interface OrderItemPayload {
   productId?: string;
   variantId?: string;
+  farmerId?: string;
+  farmerName?: string;
+  ghnShopId?: number;
+  fromDistrictId?: number;
+  fromWardCode?: string;
   productName: string;
   unit: string;
   quantity: number;
@@ -519,6 +524,11 @@ export async function createOrder(payload: {
         items: payload.items.map(it => ({
           product_id: it.productId,
           variant_id: it.variantId,
+          farmer_id: it.farmerId,
+          farmer_name: it.farmerName,
+          ghn_shop_id: it.ghnShopId,
+          from_district_id: it.fromDistrictId,
+          from_ward_code: it.fromWardCode,
           product_name: it.productName,
           unit: it.unit,
           quantity: it.quantity,

@@ -59,6 +59,7 @@
 									"    pm.expect(jsonData.success).to.eql(true);",
 									"    pm.expect(jsonData.data).to.have.property('id');",
 									"    pm.collectionVariables.set(\"test_zone_id\", jsonData.data.id);",
+									"    pm.environment.set(\"test_zone_id\", jsonData.data.id);",
 									"});"
 								],
 								"type": "text/javascript"

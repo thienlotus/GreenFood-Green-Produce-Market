@@ -122,6 +122,20 @@ class ChatService
         ];
     }
 
+    public function getCustomerMessages(string $customerId, string $conversationId): ?array
+    {
+        $conversation = $this->chatRepository->findConversation($conversationId);
+        if (!$conversation) {
+            return null;
+        }
+
+        if (!empty($conversation->customer_id) && (string) $conversation->customer_id !== (string) $customerId) {
+            return null;
+        }
+
+        return $this->getConversationMessages($conversationId, 'customer');
+    }
+
     public function createConversation(string $customerId, string $subject, ?string $initialMessage = null): array
     {
         $conversation = $this->chatRepository->findOrCreateConversation($customerId, $subject);
