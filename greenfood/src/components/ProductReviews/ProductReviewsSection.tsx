@@ -10,7 +10,6 @@ import { ProductReviewItem, ReviewStats, ReviewFilterTab } from '@/types/review'
 import { getProductReviews, likeProductReviewApi } from '@/lib/api';
 import ShopeeMediaTheaterModal, { TheaterMediaItem } from './ShopeeMediaTheaterModal';
 import WriteReviewModal from './WriteReviewModal';
-import ShopeeVideoReelsBar from './ShopeeVideoReelsBar';
 import { toast } from 'react-hot-toast';
 
 interface ProductReviewsSectionProps {
@@ -169,14 +168,7 @@ export default function ProductReviewsSection({
   };
 
   return (
-    <section className="mt-14 pt-10 border-t border-emerald-900/10" id="product-reviews">
-      {/* 1. Shopee Video Reels Bar (Shorts Showcase) */}
-      <ShopeeVideoReelsBar
-        reviews={reviews}
-        onOpenTheater={handleOpenTheater}
-        mediaList={allMediaList}
-      />
-
+    <section className="mt-8 pt-6 border-t border-emerald-900/10" id="product-reviews">
       {/* Main Reviews Container */}
       <div className="bg-white rounded-3xl p-6 lg:p-10 shadow-elevated-card border border-emerald-900/10">
         
@@ -394,7 +386,7 @@ export default function ProductReviewsSection({
                   {/* Reviewer Header */}
                   <div className="flex items-start gap-3.5 mb-3">
                     <img
-                      src={rev.userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop'}
+                      src={rev.userAvatar || '/avatars/user-levuthien.jpg'}
                       alt={rev.userName}
                       className="w-11 h-11 rounded-full object-cover border border-gray-200 shrink-0"
                     />

@@ -10,7 +10,6 @@ import { ALL_PRODUCTS, ProductItem, getProductBySlug as getMockProductBySlug } f
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
-import SimpleTikTokVideoSection from '@/components/ProductReviews/SimpleTikTokVideoSection';
 import ProductReviewsSection from '@/components/ProductReviews/ProductReviewsSection';
 
 interface ProductClientProps {
@@ -336,12 +335,7 @@ export default function ProductClient({ initialSlug }: ProductClientProps) {
           </div>
         </div>
 
-        {/* Reels (3 Video Trực Tiếp Khung Lớn) */}
-        <SimpleTikTokVideoSection
-          title="Reels"
-        />
-
-        {/* Hệ thống Đánh giá & Video Review thực tế Shopee Style */}
+        {/* Hệ thống Đánh giá thực tế */}
         <div id="product-reviews" className="mt-10 scroll-mt-24">
           <ProductReviewsSection
             productId={String(product.id)}

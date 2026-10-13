@@ -320,7 +320,7 @@ export default function ShopeeMediaTheaterModal({
             {/* Header: User Avatar & Info */}
             <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
               <img
-                src={currentMedia.review.userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop'}
+                src={currentMedia.review.userAvatar || '/avatars/user-levuthien.jpg'}
                 alt={currentMedia.review.userName}
                 className="w-12 h-12 rounded-full object-cover border-2 border-emerald-500 shadow-sm"
               />

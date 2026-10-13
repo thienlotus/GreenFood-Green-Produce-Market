@@ -62,9 +62,9 @@ export const GREEN_REELS: ReelItem[] = [
     videoSrc: '/videos/reel-durian.mp4',
     poster: '/videos/reel-durian-cover.jpg',
     tiktokUrl: 'https://www.tiktok.com/@trambichquyenn/video/7395648215904859393',
-    reviewerName: 'Lê Vũ Thiên',
-    reviewerHandle: '@levuthien322',
-    reviewerRole: 'Reviewer Nông Sản Bến Tre',
+    reviewerName: 'Trâm Bích Quyền',
+    reviewerHandle: '@trambichquyenn',
+    reviewerRole: 'Reviewer Nông Sản',
     avatar: '/videos/reel-durian-cover.jpg',
     title: 'Khui Sầu Riêng Ri6 Chín Cây Vườn Chú Ba',
     caption: 'Cơm vàng hạt lép, béo ngậy ngọt lịm bao ăn từng múi tại Chợ Lách Bến Tre!',
@@ -91,10 +91,10 @@ export const GREEN_REELS: ReelItem[] = [
     id: 'reel-strawberry',
     videoSrc: '/videos/reel-strawberry.mp4',
     poster: '/videos/reel-strawberry-cover.jpg',
-    tiktokUrl: 'https://www.tiktok.com/@eatwpeach/video/7389104829158392072',
-    reviewerName: 'Nguyễn Thị Kim Thảo',
-    reviewerHandle: '@kimthao_dalat',
-    reviewerRole: 'Vlogger Vườn Dâu Đà Lạt',
+    tiktokUrl: 'https://www.tiktok.com/@dalatfresh/video/7382074794755280135',
+    reviewerName: 'Đà Lạt Fresh Farm',
+    reviewerHandle: '@dalatfresh',
+    reviewerRole: 'Nhà Vườn Đà Lạt',
     avatar: '/videos/reel-strawberry-cover.jpg',
     title: 'Hái Dâu Tây Giống Nhật Trên Giàn Treo',
     caption: 'Dâu tây đỏ mọng hái sáng sớm tại farm Đà Lạt, vị chua ngọt thanh mát cực thơm!',
@@ -122,9 +122,9 @@ export const GREEN_REELS: ReelItem[] = [
     videoSrc: '/videos/reel-chuoi-laba.mp4',
     poster: '/videos/reel-chuoi-laba-cover.jpg',
     tiktokUrl: 'https://www.tiktok.com/@ruongbacthang1980/video/7650412727776660744',
-    reviewerName: 'Lê Văn Nam',
-    reviewerHandle: '@levannam22',
-    reviewerRole: 'Đại Diện Ruộng Bậc Thang Organic',
+    reviewerName: 'Ruộng Bậc Thang Organic',
+    reviewerHandle: '@ruongbacthang1980',
+    reviewerRole: 'Chủ Vườn Chuối Tiến Vua',
     avatar: '/videos/reel-chuoi-laba-cover.jpg',
     title: 'Thử Chuối Laba Thượng Hạng Tiến Vua',
     caption: 'Chuối Laba dẻo thơm, ruột vàng ánh kim ngọt ngào từ đất đỏ bazan Lâm Đồng.',
@@ -151,10 +151,10 @@ export const GREEN_REELS: ReelItem[] = [
     id: 'reel-pomelo',
     videoSrc: '/videos/reel-pomelo.mp4',
     poster: '/videos/reel-pomelo-cover.jpg',
-    tiktokUrl: 'https://www.tiktok.com/@quynhtrang_bentre/video/7384729185029384721',
-    reviewerName: 'Đặng Quỳnh Trang',
-    reviewerHandle: '@quynhtrang_bentre',
-    reviewerRole: 'Reviewer Miệt Vườn Nam Bộ',
+    tiktokUrl: 'https://www.tiktok.com/@nongsansach_vudao/video/7401234567890123456',
+    reviewerName: 'Nông Sản Sạch Vũ Đào',
+    reviewerHandle: '@nongsansach_vudao',
+    reviewerRole: 'Nông Sản Bến Tre',
     avatar: '/videos/reel-pomelo-cover.jpg',
     title: 'Bóc Bưởi Da Xanh Ruột Hồng Mọng Nước',
     caption: 'Tép bưởi hồng ngọc óng ánh, vị ngọt thanh mát đậm đà ăn tới đâu mát tới đó.',
@@ -181,10 +181,10 @@ export const GREEN_REELS: ReelItem[] = [
     id: 'reel-grape',
     videoSrc: '/videos/reel-grape.mp4',
     poster: '/videos/reel-grape-cover.jpg',
-    tiktokUrl: 'https://www.tiktok.com/@tieumanthaune/video/7392817491029482715',
-    reviewerName: 'Lethieuhung12',
-    reviewerHandle: '@Lethieuhung12',
-    reviewerRole: 'Food Reviewer Nông Sản',
+    tiktokUrl: 'https://www.tiktok.com/@vuonnho_ninhthuan/video/7402345678901234567',
+    reviewerName: 'Vườn Nho Ba Mọi',
+    reviewerHandle: '@vuonnho_ninhthuan',
+    reviewerRole: 'Nhà Vườn Ninh Thuận',
     avatar: '/videos/reel-grape-cover.jpg',
     title: 'Thưởng Thức Nho Mẫu Đơn Shine Muscat',
     caption: 'Trái tròn bóng bẩy, vị ngọt thơm mùi xoài sữa quý tộc, giòn ngọt tan trong miệng!',
@@ -211,10 +211,10 @@ export const GREEN_REELS: ReelItem[] = [
     id: 'reel-melon',
     videoSrc: '/videos/reel-melon.mp4',
     poster: '/videos/reel-melon-cover.jpg',
-    tiktokUrl: 'https://www.tiktok.com/@thuha_organic/video/7386291847502938471',
-    reviewerName: 'Trần Thu Hà',
-    reviewerHandle: '@thuha_organic',
-    reviewerRole: 'Chuyên Gia Nông Trại Hữu Cơ',
+    tiktokUrl: 'https://www.tiktok.com/@dualuoi_vietgap/video/7403456789012345678',
+    reviewerName: 'HTX Nông Nghiệp Xanh',
+    reviewerHandle: '@dualuoi_vietgap',
+    reviewerRole: 'Nông Trại Dưa Lưới',
     avatar: '/videos/reel-melon-cover.jpg',
     title: 'Bổ Dưa Lưới Mật Huỳnh Long Giòn Ngọt',
     caption: 'Thịt dưa cam đậm óng ánh, vị ngọt sắc như mật, giòn mát đỉnh chóp!',
@@ -582,10 +582,10 @@ export default function GreenReelsSection() {
           {/* Modal Container: Bento 2 cột (Trái: Video 9:16 - Phải: Shelf mua sản phẩm chính xác) */}
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-4xl max-h-[92vh] bg-slate-950 rounded-3xl border border-white/20 shadow-2xl overflow-hidden flex flex-col lg:flex-row relative z-30"
+            className="w-full max-w-3xl lg:max-w-4xl max-h-[88vh] bg-slate-950 rounded-3xl border border-white/20 shadow-2xl overflow-hidden flex flex-col lg:flex-row relative z-30"
           >
-            {/* CỘT TRÁI: KHUNG VIDEO 9:16 */}
-            <div className="relative w-full lg:w-[460px] h-[480px] sm:h-[540px] lg:h-[640px] bg-black flex items-center justify-center shrink-0">
+            {/* CỘT TRÁI: KHUNG VIDEO 9:16 CÂN ĐỐI KHÔNG TRÀN KHUNG */}
+            <div className="relative w-full lg:w-[380px] xl:w-[400px] h-[46vh] sm:h-[52vh] lg:h-auto lg:min-h-[540px] bg-black flex items-center justify-center shrink-0 overflow-hidden">
               <video
                 ref={modalVideoRef}
                 src={activeReel.videoSrc}
@@ -596,7 +596,7 @@ export default function GreenReelsSection() {
                 muted={isMuted}
                 onPlay={() => setIsPlayingModal(true)}
                 onPause={() => setIsPlayingModal(false)}
-                className="w-full h-full object-cover cursor-pointer"
+                className="max-h-full max-w-full w-auto h-auto object-contain bg-black cursor-pointer"
                 onClick={toggleModalPlay}
               />
 
