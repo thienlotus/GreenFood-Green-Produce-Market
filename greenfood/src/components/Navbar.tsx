@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
-  ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, 
+  ShoppingCart, Search, Menu, User, Download, Users, Bell, 
   ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, List, Map, Package, LogOut, ShieldCheck, X,
   ShoppingBag, Apple, Coffee, Gift, Store, Sparkles, LayoutGrid, Building2, Video, Flame
 } from 'lucide-react';
@@ -341,17 +341,6 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* Warehouse Pickup (Chỉ hiện trên màn hình siêu rộng 2XL để ưu tiên không gian tìm kiếm) */}
-            <div 
-              onClick={() => toast.success('Đã cập nhật kho: TP. Hồ Chí Minh')}
-              className="hidden 2xl:flex items-center gap-2 bg-emerald-50/90 text-emerald-950 px-3 py-1.5 rounded-full border border-emerald-200/80 cursor-pointer hover:bg-emerald-100/90 transition-all shadow-xs shrink-0"
-            >
-              <MapPin size={15} className="text-emerald-600 shrink-0" />
-              <div className="flex flex-col text-[11px] leading-tight">
-                <span className="text-slate-500">Kho hàng:</span>
-                <b className="text-emerald-800 font-bold">TP. HCM</b>
-              </div>
-            </div>
 
             {/* Mobile Profile Icon (Visible on small screens if logged in) */}
             {mounted && isAuthenticated && user && (
