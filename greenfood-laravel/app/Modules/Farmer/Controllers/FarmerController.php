@@ -248,4 +248,54 @@ class FarmerController extends Controller
             'message' => 'Cập nhật tài khoản ngân hàng nhận tiền thành công!'
         ]);
     }
+
+    public function requestWithdraw(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:50000',
+            'bank_name' => 'nullable|string|max:100',
+            'bank_account_number' => 'nullable|string|max:50',
+            'bank_account_name' => 'nullable|string|max:100',
+            'farmer_note' => 'nullable|string|max:500',
+        ]);
+
+        $res = $this->farmerService->createWithdrawalRequest((string)$id, $validated);
+
+        return response()->json($res, $res['status'] ?? 200);
+    }
+
+    public function getWithdrawals(Request $request, $id)
+    {
+        $res = $this->farmerService->getFarmerWithdrawalRequests((string)$id);
+
+        return response()->json($res);
+    }
+
+    public function getAdminWithdrawals(Request $request)
+    {
+        $filters = [
+            'status' => $request->get('status'),
+            'farmer_id' => $request->get('farmer_id'),
+        ];
+
+        $res = $this->farmerService->getAllWithdrawalRequests($filters);
+
+        return response()->json($res);
+    }
+
+    public function approveWithdrawal(Request $request, $id)
+    {
+        $adminNote = $request->input('admin_note');
+        $res = $this->farmerService->approveWithdrawalRequest((string)$id, $adminNote);
+
+        return response()->json($res, $res['status'] ?? 200);
+    }
+
+    public function rejectWithdrawal(Request $request, $id)
+    {
+        $adminNote = $request->input('admin_note');
+        $res = $this->farmerService->rejectWithdrawalRequest((string)$id, $adminNote);
+
+        return response()->json($res, $res['status'] ?? 200);
+    }
 }

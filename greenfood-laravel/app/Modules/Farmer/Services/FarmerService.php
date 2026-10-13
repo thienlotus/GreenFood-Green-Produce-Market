@@ -3,6 +3,8 @@
 namespace App\Modules\Farmer\Services;
 
 use App\Modules\Farmer\Repositories\FarmerRepository;
+use App\Models\WithdrawalRequest;
+use Illuminate\Support\Facades\DB;
 
 class FarmerService
 {
@@ -363,5 +365,184 @@ class FarmerService
             'bank_account_number' => $bankData['bank_account_number'] ?? $farmer->bank_account_number,
             'bank_account_name' => $bankData['bank_account_name'] ?? $farmer->bank_account_name,
         ]);
+    }
+
+    public function createWithdrawalRequest(string $farmerId, array $data): array
+    {
+        return DB::transaction(function () use ($farmerId, $data) {
+            $farmer = $this->farmerRepository->findById($farmerId);
+            if (!$farmer) {
+                return [
+                    'success' => false,
+                    'status' => 404,
+                    'message' => 'Không tìm thấy thông tin nông hộ!'
+                ];
+            }
+
+            $amount = (float)($data['amount'] ?? 0);
+            if ($amount < 50000) {
+                return [
+                    'success' => false,
+                    'status' => 400,
+                    'message' => 'Số tiền yêu cầu rút tối thiểu là 50.000đ!'
+                ];
+            }
+
+            $balance = (float)$farmer->balance_available;
+            if ($amount > $balance) {
+                return [
+                    'success' => false,
+                    'status' => 400,
+                    'message' => 'Số dư khả dụng hiện tại (' . number_format($balance, 0, ',', '.') . 'đ) không đủ để thực hiện lệnh rút!'
+                ];
+            }
+
+            $bankName = trim((string)($data['bank_name'] ?? $farmer->bank_name ?? ''));
+            $bankAccountNumber = trim((string)($data['bank_account_number'] ?? $farmer->bank_account_number ?? ''));
+            $bankAccountName = trim((string)($data['bank_account_name'] ?? $farmer->bank_account_name ?? ''));
+
+            if (empty($bankName) || empty($bankAccountNumber) || empty($bankAccountName)) {
+                return [
+                    'success' => false,
+                    'status' => 400,
+                    'message' => 'Vui lòng cung cấp đầy đủ thông tin tài khoản ngân hàng nhận tiền!'
+                ];
+            }
+
+            // Đồng bộ lại thông tin ngân hàng nếu nông hộ vừa cập nhật
+            if ($farmer->bank_name !== $bankName || $farmer->bank_account_number !== $bankAccountNumber || $farmer->bank_account_name !== $bankAccountName) {
+                $farmer->bank_name = $bankName;
+                $farmer->bank_account_number = $bankAccountNumber;
+                $farmer->bank_account_name = $bankAccountName;
+            }
+
+            // Trừ số dư khả dụng (đóng băng tiền để chờ duyệt giải ngân)
+            $farmer->balance_available = max(0, $balance - $amount);
+            $farmer->save();
+
+            $withdrawal = WithdrawalRequest::create([
+                'farmer_id' => $farmer->id,
+                'amount' => $amount,
+                'bank_name' => $bankName,
+                'bank_account_number' => $bankAccountNumber,
+                'bank_account_name' => $bankAccountName,
+                'status' => 'PENDING',
+                'farmer_note' => $data['farmer_note'] ?? null,
+            ]);
+
+            return [
+                'success' => true,
+                'status' => 201,
+                'message' => 'Yêu cầu rút ' . number_format($amount, 0, ',', '.') . 'đ đã được gửi tới Ban Quản Trị thành công!',
+                'data' => $withdrawal,
+                'remaining_balance' => (float)$farmer->balance_available
+            ];
+        });
+    }
+
+    public function getFarmerWithdrawalRequests(string $farmerId): array
+    {
+        $requests = WithdrawalRequest::where('farmer_id', $farmerId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return [
+            'success' => true,
+            'count' => $requests->count(),
+            'data' => $requests
+        ];
+    }
+
+    public function getAllWithdrawalRequests(array $filters = []): array
+    {
+        $query = WithdrawalRequest::with(['farmer.user'])
+            ->orderBy('created_at', 'desc');
+
+        if (!empty($filters['status']) && $filters['status'] !== 'all') {
+            $query->where('status', strtoupper($filters['status']));
+        }
+
+        if (!empty($filters['farmer_id'])) {
+            $query->where('farmer_id', $filters['farmer_id']);
+        }
+
+        $requests = $query->get();
+
+        return [
+            'success' => true,
+            'count' => $requests->count(),
+            'pending_count' => WithdrawalRequest::where('status', 'PENDING')->count(),
+            'data' => $requests
+        ];
+    }
+
+    public function approveWithdrawalRequest(string $requestId, ?string $adminNote = null): array
+    {
+        $request = WithdrawalRequest::with('farmer')->find($requestId);
+        if (!$request) {
+            return [
+                'success' => false,
+                'status' => 404,
+                'message' => 'Không tìm thấy yêu cầu rút tiền!'
+            ];
+        }
+
+        if ($request->status !== 'PENDING') {
+            return [
+                'success' => false,
+                'status' => 400,
+                'message' => 'Yêu cầu này đã được xử lý trước đó với trạng thái: ' . $request->status
+            ];
+        }
+
+        $request->status = 'COMPLETED';
+        $request->admin_note = $adminNote ?? 'Đã giải ngân chuyển khoản thành công tới tài khoản nông hộ';
+        $request->processed_at = now();
+        $request->save();
+
+        return [
+            'success' => true,
+            'message' => 'Đã duyệt và xác nhận giải ngân thành công cho nông hộ ' . ($request->farmer->farm_name ?? ''),
+            'data' => $request
+        ];
+    }
+
+    public function rejectWithdrawalRequest(string $requestId, ?string $adminNote = null): array
+    {
+        return DB::transaction(function () use ($requestId, $adminNote) {
+            $request = WithdrawalRequest::with('farmer')->find($requestId);
+            if (!$request) {
+                return [
+                    'success' => false,
+                    'status' => 404,
+                    'message' => 'Không tìm thấy yêu cầu rút tiền!'
+                ];
+            }
+
+            if ($request->status !== 'PENDING') {
+                return [
+                    'success' => false,
+                    'status' => 400,
+                    'message' => 'Yêu cầu này đã được xử lý trước đó với trạng thái: ' . $request->status
+                ];
+            }
+
+            $request->status = 'REJECTED';
+            $request->admin_note = $adminNote ?? 'Yêu cầu rút tiền bị từ chối';
+            $request->processed_at = now();
+            $request->save();
+
+            // Hoàn lại tiền cho nông hộ
+            if ($request->farmer) {
+                $request->farmer->balance_available += $request->amount;
+                $request->farmer->save();
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Đã từ chối lệnh rút tiền và hoàn lại ' . number_format($request->amount, 0, ',', '.') . 'đ vào số dư ví của nông hộ',
+                'data' => $request
+            ];
+        });
     }
 }

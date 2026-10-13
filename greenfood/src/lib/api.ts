@@ -141,13 +141,14 @@ function removeVietnameseAccents(str: string): string {
     .toLowerCase();
 }
 
-export async function getProducts(params?: { category?: string; search?: string; region?: string; sort?: string; limit?: number }): Promise<ProductItem[]> {
+export async function getProducts(params?: { category?: string; search?: string; region?: string; sort?: string; limit?: number; farmer_id?: string }): Promise<ProductItem[]> {
   const queryParams = new URLSearchParams();
   if (params?.category) queryParams.set('category', params.category);
   if (params?.search) queryParams.set('search', params.search);
   if (params?.region && params.region !== 'all') queryParams.set('region', params.region);
   if (params?.sort) queryParams.set('sort', params.sort);
   if (params?.limit) queryParams.set('limit', String(params.limit));
+  if (params?.farmer_id) queryParams.set('farmer_id', params.farmer_id);
 
   const queryStr = queryParams.toString() ? `?${queryParams.toString()}` : '';
   const res = await fetchApi<{ success: boolean; data: any[] }>(`/products${queryStr}`);
@@ -447,6 +448,8 @@ export async function createProduct(payload: {
   unit?: string;
   description?: string;
   image_url?: string;
+  badge?: string;
+  is_seasonal?: boolean;
 }): Promise<{ success: boolean; message: string; data?: any }> {
   const res = await fetchApi<{ success: boolean; message: string; data?: any }>('/products', {
     method: 'POST',
@@ -463,6 +466,8 @@ export async function updateProduct(id: string | number, payload: Partial<{
   description: string;
   unit: string;
   image_url: string;
+  badge: string;
+  is_seasonal: boolean;
 }>): Promise<{ success: boolean; message: string; data?: any }> {
   const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/products/${id}`, {
     method: 'PUT',
@@ -1262,6 +1267,108 @@ export async function updateFarmerBankApi(farmerId: string, bankData: {
   } catch (error) {
     console.error('[API] updateFarmerBankApi error:', error);
     return { success: false, message: 'Lỗi mạng khi cập nhật tài khoản ngân hàng' };
+  }
+}
+
+export interface FarmerWithdrawalRequest {
+  id: string;
+  farmer_id: string;
+  amount: number;
+  bank_name: string;
+  bank_account_number: string;
+  bank_account_name: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED';
+  farmer_note?: string;
+  admin_note?: string;
+  processed_at?: string;
+  created_at: string;
+  farmer?: {
+    id: string;
+    farm_name: string;
+    address?: string;
+    user?: {
+      name?: string;
+      phone?: string;
+      email?: string;
+    };
+  };
+}
+
+export async function requestFarmerWithdrawalApi(farmerId: string, payload: {
+  amount: number;
+  bank_name?: string;
+  bank_account_number?: string;
+  bank_account_name?: string;
+  farmer_note?: string;
+}): Promise<{ success: boolean; message: string; data?: FarmerWithdrawalRequest; remaining_balance?: number }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: FarmerWithdrawalRequest; remaining_balance?: number }>(`/farmers/${farmerId}/withdraw`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    return res || { success: false, message: 'Lỗi gửi yêu cầu rút tiền' };
+  } catch (error: any) {
+    console.error('[API] requestFarmerWithdrawalApi error:', error);
+    return { success: false, message: error?.message || 'Lỗi mạng khi gửi yêu cầu rút tiền' };
+  }
+}
+
+export async function getFarmerWithdrawalsApi(farmerId: string): Promise<FarmerWithdrawalRequest[]> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: FarmerWithdrawalRequest[] }>(`/farmers/${farmerId}/withdrawals`);
+    return res?.data || [];
+  } catch (error) {
+    console.error('[API] getFarmerWithdrawalsApi error:', error);
+    return [];
+  }
+}
+
+export async function getAdminWithdrawalsApi(filters: { status?: string; farmer_id?: string } = {}): Promise<{
+  success: boolean;
+  count: number;
+  pending_count: number;
+  data: FarmerWithdrawalRequest[];
+}> {
+  try {
+    const params = new URLSearchParams();
+    if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+    if (filters.farmer_id) params.append('farmer_id', filters.farmer_id);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+
+    const res = await fetchApi<{
+      success: boolean;
+      count: number;
+      pending_count: number;
+      data: FarmerWithdrawalRequest[];
+    }>(`/admin/withdrawals${qs}`);
+    return res || { success: false, count: 0, pending_count: 0, data: [] };
+  } catch (error) {
+    console.error('[API] getAdminWithdrawalsApi error:', error);
+    return { success: false, count: 0, pending_count: 0, data: [] };
+  }
+}
+
+export async function approveWithdrawalApi(requestId: string, adminNote?: string): Promise<{ success: boolean; message: string; data?: any }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/admin/withdrawals/${requestId}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ admin_note: adminNote })
+    });
+    return res || { success: false, message: 'Duyệt giải ngân thất bại' };
+  } catch (error: any) {
+    return { success: false, message: error?.message || 'Lỗi kết nối khi duyệt giải ngân' };
+  }
+}
+
+export async function rejectWithdrawalApi(requestId: string, adminNote?: string): Promise<{ success: boolean; message: string; data?: any }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/admin/withdrawals/${requestId}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ admin_note: adminNote })
+    });
+    return res || { success: false, message: 'Từ chối giải ngân thất bại' };
+  } catch (error: any) {
+    return { success: false, message: error?.message || 'Lỗi kết nối khi từ chối giải ngân' };
   }
 }
 

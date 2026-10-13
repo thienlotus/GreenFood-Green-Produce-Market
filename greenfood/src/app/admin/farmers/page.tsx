@@ -6,7 +6,7 @@ import {
   Search, Trash2, Tractor, Plus, CheckCircle, XCircle, 
   Store, MapPin, Phone, Mail, RefreshCw, AlertCircle, ShieldCheck, Edit, Compass,
   Bell, Filter, Sparkles, Eye, ExternalLink, Award, FileText, Check, Copy,
-  Calendar, Building2, Layers, CheckSquare
+  Calendar, Building2, Layers, CheckSquare, Wallet, Clock, ArrowUpRight
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { 
@@ -14,7 +14,11 @@ import {
   updateFarmerStatusApi, 
   deleteFarmerApi, 
   registerFarmerApi,
-  updateFarmerProfileApi
+  updateFarmerProfileApi,
+  getAdminWithdrawalsApi,
+  approveWithdrawalApi,
+  rejectWithdrawalApi,
+  FarmerWithdrawalRequest
 } from '@/lib/api';
 import { resolveCoordinatesFromAddress } from '@/lib/geoUtils';
 
@@ -139,6 +143,14 @@ export default function AdminFarmersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'pending'>('all');
+
+  // Tab State: Nông hộ VS Yêu cầu rút tiền
+  const [activeAdminTab, setActiveAdminTab] = useState<'farmers' | 'withdrawals'>('farmers');
+  const [withdrawals, setWithdrawals] = useState<FarmerWithdrawalRequest[]>([]);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
+  const [withdrawalFilterStatus, setWithdrawalFilterStatus] = useState<string>('all');
+  const [withdrawalSearch, setWithdrawalSearch] = useState<string>('');
+  const [processingWithdrawalId, setProcessingWithdrawalId] = useState<string | null>(null);
   
   // Modal State - Add
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -200,16 +212,77 @@ export default function AdminFarmersPage() {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
+  const loadWithdrawals = async () => {
+    setWithdrawalsLoading(true);
+    try {
+      const res = await getAdminWithdrawalsApi();
+      if (res && res.success) {
+        setWithdrawals(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to load withdrawals', err);
+    } finally {
+      setWithdrawalsLoading(false);
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
-      const data = await getAdminFarmersApi();
+      const [data, withData] = await Promise.all([
+        getAdminFarmersApi(),
+        getAdminWithdrawalsApi().catch(() => ({ success: false, data: [] }))
+      ]);
       setFarmers(Array.isArray(data) ? (data as unknown as AdminFarmerItem[]) : []);
+      if (withData && withData.success) {
+        setWithdrawals(withData.data);
+      }
     } catch (error) {
       console.error('Failed to load farmers', error);
       toast.error('Không thể tải danh sách nông hộ');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleApproveWithdrawal = async (req: FarmerWithdrawalRequest) => {
+    const farmerName = req.farmer?.farm_name || 'nông hộ';
+    if (!confirm(`Xác nhận DUYỆT & GIẢI NGÂN ${req.amount.toLocaleString('vi-VN')}đ cho nông hộ "${farmerName}"?\nSTK nhận: ${req.bank_account_number} (${req.bank_name}) - ${req.bank_account_name}`)) {
+      return;
+    }
+    setProcessingWithdrawalId(req.id);
+    try {
+      const res = await approveWithdrawalApi(req.id, 'Ban Quản Trị Sàn đã hoàn tất ủy nhiệm chi chuyển khoản giải ngân');
+      if (res.success) {
+        toast.success(`Đã duyệt giải ngân ${req.amount.toLocaleString('vi-VN')}đ thành công!`);
+        await loadWithdrawals();
+      } else {
+        toast.error(res.message || 'Duyệt giải ngân thất bại');
+      }
+    } catch {
+      toast.error('Lỗi khi duyệt giải ngân');
+    } finally {
+      setProcessingWithdrawalId(null);
+    }
+  };
+
+  const handleRejectWithdrawal = async (req: FarmerWithdrawalRequest) => {
+    const farmerName = req.farmer?.farm_name || 'nông hộ';
+    const reason = prompt(`Nhập lý do từ chối lệnh rút ${req.amount.toLocaleString('vi-VN')}đ của "${farmerName}":\n(Số tiền sẽ được tự động hoàn lại vào số dư ví của nông hộ)`, 'Thông tin tài khoản ngân hàng thụ hưởng chưa chính xác');
+    if (reason === null) return;
+    setProcessingWithdrawalId(req.id);
+    try {
+      const res = await rejectWithdrawalApi(req.id, reason.trim() || 'Yêu cầu rút tiền bị từ chối');
+      if (res.success) {
+        toast.success(`Đã từ chối lệnh và hoàn lại ${req.amount.toLocaleString('vi-VN')}đ vào ví nông hộ!`);
+        await loadWithdrawals();
+      } else {
+        toast.error(res.message || 'Thao tác thất bại');
+      }
+    } catch {
+      toast.error('Lỗi khi từ chối giải ngân');
+    } finally {
+      setProcessingWithdrawalId(null);
     }
   };
 
@@ -240,6 +313,42 @@ export default function AdminFarmersPage() {
       return matchSearch;
     });
   }, [farmers, searchTerm, filterStatus]);
+
+  const filteredWithdrawals = useMemo(() => {
+    return withdrawals.filter(w => {
+      const matchSearch =
+        (w.farmer?.farm_name || '').toLowerCase().includes(withdrawalSearch.toLowerCase()) ||
+        (w.farmer?.user?.name || '').toLowerCase().includes(withdrawalSearch.toLowerCase()) ||
+        (w.bank_name || '').toLowerCase().includes(withdrawalSearch.toLowerCase()) ||
+        (w.bank_account_number || '').includes(withdrawalSearch) ||
+        (w.bank_account_name || '').toLowerCase().includes(withdrawalSearch.toLowerCase());
+
+      if (withdrawalFilterStatus === 'PENDING') return matchSearch && w.status === 'PENDING';
+      if (withdrawalFilterStatus === 'COMPLETED') return matchSearch && (w.status === 'COMPLETED' || w.status === 'APPROVED');
+      if (withdrawalFilterStatus === 'REJECTED') return matchSearch && w.status === 'REJECTED';
+      return matchSearch;
+    });
+  }, [withdrawals, withdrawalSearch, withdrawalFilterStatus]);
+
+  const pendingWithdrawalsCount = useMemo(() => {
+    return withdrawals.filter(w => w.status === 'PENDING').length;
+  }, [withdrawals]);
+
+  const withdrawalStats = useMemo(() => {
+    const pending = withdrawals.filter(w => w.status === 'PENDING');
+    const completed = withdrawals.filter(w => w.status === 'COMPLETED' || w.status === 'APPROVED');
+    const rejected = withdrawals.filter(w => w.status === 'REJECTED');
+    const pendingAmount = pending.reduce((sum, w) => sum + Number(w.amount || 0), 0);
+    const completedAmount = completed.reduce((sum, w) => sum + Number(w.amount || 0), 0);
+    return {
+      total: withdrawals.length,
+      pendingCount: pending.length,
+      pendingAmount,
+      completedCount: completed.length,
+      completedAmount,
+      rejectedCount: rejected.length,
+    };
+  }, [withdrawals]);
 
   // Actions
   const handleToggleStatus = async (farmer: AdminFarmerItem) => {
@@ -579,8 +688,48 @@ export default function AdminFarmersPage() {
         </div>
       )}
 
-      {/* Main Table Container */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Tab Switcher: Quản lý Nông hộ VS Yêu cầu Rút tiền */}
+      <div className="flex border-b border-gray-200 bg-white rounded-2xl px-3 pt-2 shadow-sm gap-2">
+        <button
+          onClick={() => setActiveAdminTab('farmers')}
+          className={`flex items-center gap-2.5 px-6 py-3.5 font-bold text-sm border-b-2 transition-all cursor-pointer rounded-t-xl ${
+            activeAdminTab === 'farmers'
+              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
+              : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+          }`}
+        >
+          <Tractor size={18} className={activeAdminTab === 'farmers' ? 'text-emerald-600' : 'text-gray-400'} />
+          <span>Hồ Sơ Nông Hộ & Vùng Trồng</span>
+          <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+            {stats.total}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveAdminTab('withdrawals')}
+          className={`flex items-center gap-2.5 px-6 py-3.5 font-bold text-sm border-b-2 transition-all cursor-pointer rounded-t-xl relative ${
+            activeAdminTab === 'withdrawals'
+              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
+              : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+          }`}
+        >
+          <Wallet size={18} className={activeAdminTab === 'withdrawals' ? 'text-emerald-600' : 'text-gray-400'} />
+          <span>Yêu Cầu Rút Tiền Nông Hộ</span>
+          {pendingWithdrawalsCount > 0 ? (
+            <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs font-extrabold bg-rose-500 text-white animate-pulse">
+              {pendingWithdrawalsCount} chờ duyệt
+            </span>
+          ) : (
+            <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+              {withdrawals.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* TAB 1: DANH SÁCH NÔNG HỘ */}
+      {activeAdminTab === 'farmers' && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         {/* Controls */}
         <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
@@ -838,6 +987,306 @@ export default function AdminFarmersPage() {
           </table>
         </div>
       </div>
+      )}
+
+      {/* TAB 2: QUẢN LÝ YÊU CẦU RÚT TIỀN NÔNG HỘ */}
+      {activeAdminTab === 'withdrawals' && (
+        <div className="space-y-5">
+          {/* Stats Cards Rút Tiền */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl">
+                <FileText size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng lệnh rút</p>
+                <p className="text-2xl font-extrabold text-gray-900">{withdrawalStats.total}</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-amber-200/80 shadow-sm flex items-center gap-4 bg-gradient-to-br from-amber-50/30 to-white">
+              <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xl">
+                <Clock size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Chờ giải ngân ({withdrawalStats.pendingCount})</p>
+                <p className="text-xl font-extrabold text-amber-700">
+                  {withdrawalStats.pendingAmount.toLocaleString('vi-VN')}đ
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">
+                <CheckCircle size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Đã giải ngân ({withdrawalStats.completedCount})</p>
+                <p className="text-xl font-extrabold text-emerald-700">
+                  {withdrawalStats.completedAmount.toLocaleString('vi-VN')}đ
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-xl">
+                <XCircle size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Đã từ chối</p>
+                <p className="text-2xl font-extrabold text-rose-600">{withdrawalStats.rejectedCount}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Table Container Rút Tiền */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Controls */}
+            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Tìm theo tên vườn, chủ hộ, ngân hàng, STK, chủ thẻ..."
+                  value={withdrawalSearch}
+                  onChange={(e) => setWithdrawalSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setWithdrawalFilterStatus('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    withdrawalFilterStatus === 'all'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  Tất cả ({withdrawals.length})
+                </button>
+                <button
+                  onClick={() => setWithdrawalFilterStatus('PENDING')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    withdrawalFilterStatus === 'PENDING'
+                      ? 'bg-amber-600 text-white'
+                      : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'
+                  }`}
+                >
+                  Chờ duyệt ({withdrawalStats.pendingCount})
+                </button>
+                <button
+                  onClick={() => setWithdrawalFilterStatus('COMPLETED')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    withdrawalFilterStatus === 'COMPLETED'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-white text-green-700 border border-green-200 hover:bg-green-50'
+                  }`}
+                >
+                  Đã giải ngân ({withdrawalStats.completedCount})
+                </button>
+                <button
+                  onClick={() => setWithdrawalFilterStatus('REJECTED')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    withdrawalFilterStatus === 'REJECTED'
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-50'
+                  }`}
+                >
+                  Đã từ chối ({withdrawalStats.rejectedCount})
+                </button>
+                <button
+                  onClick={loadWithdrawals}
+                  disabled={withdrawalsLoading}
+                  className="p-2 text-gray-600 hover:text-emerald-600 bg-white hover:bg-emerald-50 rounded-lg transition-colors border border-gray-200 cursor-pointer"
+                  title="Làm mới danh sách rút tiền"
+                >
+                  <RefreshCw size={15} className={withdrawalsLoading ? 'animate-spin' : ''} />
+                </button>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50/80 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="py-3.5 px-4">Thời gian / Mã GD</th>
+                    <th className="py-3.5 px-4">Nông hộ yêu cầu</th>
+                    <th className="py-3.5 px-4 text-right">Số tiền rút</th>
+                    <th className="py-3.5 px-4">Tài khoản thụ hưởng</th>
+                    <th className="py-3.5 px-4">Ghi chú</th>
+                    <th className="py-3.5 px-4 text-center">Trạng thái</th>
+                    <th className="py-3.5 px-4 text-right">Thao tác giải ngân</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm">
+                  {withdrawalsLoading ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-gray-500">
+                        <RefreshCw className="animate-spin inline-block mr-2" size={20} />
+                        Đang tải danh sách yêu cầu rút tiền...
+                      </td>
+                    </tr>
+                  ) : filteredWithdrawals.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-gray-500">
+                        <Wallet size={36} className="mx-auto text-gray-300 mb-2" />
+                        Không có yêu cầu rút tiền nào phù hợp với bộ lọc.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredWithdrawals.map((req) => {
+                      const isPending = req.status === 'PENDING';
+                      const isCompleted = req.status === 'COMPLETED' || req.status === 'APPROVED';
+                      const isRejected = req.status === 'REJECTED';
+                      const isProcessing = processingWithdrawalId === req.id;
+
+                      return (
+                        <tr key={req.id} className="hover:bg-gray-50/60 transition-colors">
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <span className="font-mono text-xs font-bold text-gray-700 block">
+                              #{req.id.slice(0, 8)}
+                            </span>
+                            <span className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                              <Clock size={11} />
+                              {req.created_at ? new Date(req.created_at).toLocaleString('vi-VN') : 'Mới tạo'}
+                            </span>
+                          </td>
+
+                          <td className="py-4 px-4">
+                            <div className="font-bold text-gray-900 flex items-center gap-1.5">
+                              <span>{req.farmer?.farm_name || 'Nông hộ'}</span>
+                              {req.farmer_id && (
+                                <Link
+                                  href={`/farmers/${req.farmer_id}`}
+                                  target="_blank"
+                                  className="text-gray-400 hover:text-emerald-600"
+                                  title="Xem gian hàng"
+                                >
+                                  <ExternalLink size={13} />
+                                </Link>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              Chủ hộ: {req.farmer?.user?.name || 'Chưa rõ'}
+                            </p>
+                            {req.farmer?.user?.phone && (
+                              <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                                <Phone size={11} />
+                                {req.farmer.user.phone}
+                              </p>
+                            )}
+                          </td>
+
+                          <td className="py-4 px-4 text-right whitespace-nowrap">
+                            <span className="font-black text-base text-emerald-700 block">
+                              {Number(req.amount).toLocaleString('vi-VN')}đ
+                            </span>
+                            <span className="text-[11px] text-gray-400">Rút về tài khoản</span>
+                          </td>
+
+                          <td className="py-4 px-4">
+                            <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-100 max-w-xs">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-bold text-xs text-gray-900">{req.bank_name}</span>
+                                <button
+                                  onClick={() => copyToClipboard(req.bank_account_number, 'Số tài khoản')}
+                                  className="text-gray-400 hover:text-emerald-600 p-0.5 rounded cursor-pointer"
+                                  title="Sao chép STK"
+                                >
+                                  {copiedField === 'Số tài khoản' ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                                </button>
+                              </div>
+                              <p className="font-mono font-bold text-sm text-emerald-800 tracking-wider mt-0.5">
+                                {req.bank_account_number}
+                              </p>
+                              <p className="text-xs text-gray-600 font-semibold uppercase mt-0.5">
+                                {req.bank_account_name}
+                              </p>
+                            </div>
+                          </td>
+
+                          <td className="py-4 px-4 max-w-xs">
+                            {req.farmer_note ? (
+                              <p className="text-xs text-gray-700 italic bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                &ldquo;{req.farmer_note}&rdquo;
+                              </p>
+                            ) : (
+                              <span className="text-xs text-gray-400 italic">Không có ghi chú</span>
+                            )}
+                            {req.admin_note && (
+                              <p className="text-[11px] text-gray-500 mt-1 font-medium">
+                                <strong className="text-gray-700">Admin phản hồi:</strong> {req.admin_note}
+                              </p>
+                            )}
+                          </td>
+
+                          <td className="py-4 px-4 text-center whitespace-nowrap">
+                            {isPending && (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
+                                <Clock size={12} />
+                                Chờ duyệt
+                              </span>
+                            )}
+                            {isCompleted && (
+                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200">
+                                <CheckCircle size={12} />
+                                Đã giải ngân
+                              </span>
+                            )}
+                            {isRejected && (
+                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                <XCircle size={12} />
+                                Bị từ chối
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="py-4 px-4 text-right whitespace-nowrap">
+                            {isPending ? (
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => handleApproveWithdrawal(req)}
+                                  disabled={isProcessing}
+                                  className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                                  title="Duyệt và giải ngân khoản tiền này"
+                                >
+                                  {isProcessing ? (
+                                    <RefreshCw size={13} className="animate-spin" />
+                                  ) : (
+                                    <Check size={14} />
+                                  )}
+                                  <span>Duyệt chi</span>
+                                </button>
+                                <button
+                                  onClick={() => handleRejectWithdrawal(req)}
+                                  disabled={isProcessing}
+                                  className="flex items-center gap-1 border border-rose-300 text-rose-600 hover:bg-rose-50 disabled:opacity-50 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                                  title="Từ chối và tự động hoàn trả số dư vào ví nông hộ"
+                                >
+                                  <XCircle size={13} />
+                                  <span>Từ chối</span>
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="text-right">
+                                <span className="text-xs text-gray-400 block">
+                                  {req.processed_at ? `Đã xử lý: ${new Date(req.processed_at).toLocaleDateString('vi-VN')}` : 'Đã xử lý'}
+                                </span>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ───────────────────────────────────────────────────────────── */}
       {/* MODAL 1: XEM CHI TIẾT TOÀN BỘ HỒ SƠ ĐĂNG KÝ ĐỐI TÁC NÔNG HỘ */}

@@ -169,4 +169,9 @@ class Farmer extends Model
     {
         return $this->hasMany(ChatConversation::class, 'farmer_id');
     }
+
+    public function withdrawalRequests()
+    {
+        return $this->hasMany(WithdrawalRequest::class, 'farmer_id');
+    }
 }

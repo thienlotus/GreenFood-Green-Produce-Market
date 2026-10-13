@@ -54,6 +54,10 @@ class ProductRepository
             });
         }
 
+        if (!empty($filters['farmer_id'])) {
+            $query->where('farmer_id', $filters['farmer_id']);
+        }
+
         $sort = $filters['sort'] ?? 'default';
         if ($sort === 'popular') {
             $query->orderBy('sold_count', 'desc');
