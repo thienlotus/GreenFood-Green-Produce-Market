@@ -94,10 +94,6 @@ export default function Navbar() {
   const navRef = useRef<HTMLElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const isDraggingRef = useRef(false);
-  const startXRef = useRef(0);
-  const scrollLeftRef = useRef(0);
-  const hasMovedRef = useRef(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const categoryMenuRef = useRef<HTMLDivElement>(null);
 
@@ -128,6 +124,13 @@ export default function Navbar() {
     } else if (typeof window !== 'undefined' && window.location.hash === '#reels') {
       setSelectedNavId('reels');
     } else {
+      if (typeof window !== 'undefined') {
+        const saved = sessionStorage.getItem('gf_active_nav');
+        if (saved) {
+          setSelectedNavId(saved);
+          return;
+        }
+      }
       setSelectedNavId(null);
     }
   }, [pathname]);
@@ -180,28 +183,6 @@ export default function Navbar() {
     }
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!navRef.current) return;
-    isDraggingRef.current = true;
-    hasMovedRef.current = false;
-    startXRef.current = e.pageX - navRef.current.offsetLeft;
-    scrollLeftRef.current = navRef.current.scrollLeft;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDraggingRef.current || !navRef.current) return;
-    const x = e.pageX - navRef.current.offsetLeft;
-    const walk = x - startXRef.current;
-    if (Math.abs(walk) > 4) {
-      hasMovedRef.current = true;
-    }
-    navRef.current.scrollLeft = scrollLeftRef.current - walk;
-    checkScroll();
-  };
-
-  const handleMouseUpOrLeave = () => {
-    isDraggingRef.current = false;
-  };
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -480,12 +461,7 @@ export default function Navbar() {
             <div className="col-span-8 xl:col-span-9 flex items-center gap-2 min-w-0">
               <nav
                 ref={navRef}
-                onWheel={handleNavWheel}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUpOrLeave}
-                onMouseLeave={handleMouseUpOrLeave}
-                className="flex-1 flex items-center justify-evenly overflow-x-auto no-scrollbar scroll-smooth py-1 min-w-0 px-1 xl:px-3"
+                className="flex-1 flex items-center justify-evenly overflow-x-auto no-scrollbar scroll-smooth py-1.5 min-w-0 px-1 xl:px-3"
               >
                 {HORIZONTAL_NAV_ITEMS.map((item) => {
                   const IconComp = item.icon;
@@ -494,16 +470,15 @@ export default function Navbar() {
                     <Link 
                       key={item.id}
                       href={item.href} 
-                      onClick={(e) => {
-                        if (hasMovedRef.current) {
-                          e.preventDefault();
-                          return;
-                        }
+                      onClick={() => {
                         setSelectedNavId(item.id);
+                        if (typeof window !== 'undefined') {
+                          sessionStorage.setItem('gf_active_nav', item.id);
+                        }
                       }}
-                      className={`relative px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-[13px] transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group ${
+                      className={`relative px-3 xl:px-4 pt-1.5 pb-2.5 rounded-xl text-xs xl:text-[13px] transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group ${
                         isSelected 
-                          ? `${item.activeText} bg-slate-50/80` 
+                          ? `${item.activeText} bg-slate-50/90 shadow-2xs` 
                           : `font-bold text-slate-800 ${item.hoverText}`
                       }`}
                     >
@@ -518,12 +493,14 @@ export default function Navbar() {
                         </span>
                       )}
 
-                      {/* Dấu gạch ngang cùng màu ở dưới chân mục được chọn */}
-                      {isSelected && (
-                        <span 
-                          className={`absolute bottom-0 left-2.5 right-2.5 h-[3px] rounded-full ${item.indicatorColor} shadow-xs animate-in fade-in zoom-in-95 duration-200`} 
-                        />
-                      )}
+                      {/* Dấu gạch ngang cùng màu ở dưới chân mục: Hiển thị nổi bật khi HOVER và cố định khi ĐƯỢC CHỌN (ACTIVE) */}
+                      <span 
+                        className={`absolute bottom-0.5 left-2 right-2 h-[3.5px] rounded-full ${item.indicatorColor} transition-all duration-200 pointer-events-none shadow-xs ${
+                          isSelected 
+                            ? 'opacity-100 scale-x-100' 
+                            : 'opacity-0 scale-x-75 group-hover:opacity-100 group-hover:scale-x-100'
+                        }`} 
+                      />
                     </Link>
                   );
                 })}
