@@ -37,6 +37,7 @@ class ChatController extends Controller
             'customer_id' => $customerId,
             'farmer_id' => $farmerId,
             'type' => $request->get('type'),
+            'role' => $request->get('role'),
         ];
 
         $conversations = $this->chatService->getConversations($filters);

@@ -55,7 +55,6 @@ export default function AdminChatPage() {
   const [initialFarmerMsg, setInitialFarmerMsg] = useState<string>('');
   const [creatingChat, setCreatingChat] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Load danh sách nông hộ cho Admin chọn chat
@@ -572,7 +571,6 @@ export default function AdminChatPage() {
                   </div>
                 );
               })}
-              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Form */}

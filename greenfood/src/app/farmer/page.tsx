@@ -81,8 +81,8 @@ export default function FarmerPortalPage() {
   const [chatLoading, setChatLoading] = useState(false);
   const [chatSending, setChatSending] = useState(false);
   const [farmerUnreadChatCount, setFarmerUnreadChatCount] = useState<number>(0);
-  const chatEndRef = useRef<HTMLDivElement>(null);
   const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
+  const previousUnreadCountRef = useRef<number>(0);
 
   // Vendor Orders State
   const [orders, setOrders] = useState<VendorOrderData[]>([]);
@@ -345,31 +345,54 @@ export default function FarmerPortalPage() {
   }, [currentFarmer]);
 
   // Load danh sách hội thoại của Nông Hộ (Shopee Multi-Vendor Chat)
-  const loadFarmerChats = useCallback(async () => {
+  const loadFarmerChats = useCallback(async (isSilent = false) => {
     if (!currentFarmer?.id) return;
     try {
-      const data = await getChatConversations({ farmer_id: currentFarmer.id });
+      const data = await getChatConversations({ farmer_id: currentFarmer.id, role: 'farmer' });
       setChatConversations(data);
       const unread = data.reduce((acc, cur) => acc + (cur.unread_count || 0), 0);
       setFarmerUnreadChatCount(unread);
-      if (!selectedChatId && data.length > 0) {
-        setSelectedChatId(data[0].id);
+
+      // Nếu có tin nhắn mới phát sinh từ khách hàng
+      if (isSilent && unread > previousUnreadCountRef.current) {
+        const newlyUnread = data.find(c => (c.unread_count || 0) > 0);
+        if (newlyUnread) {
+          const senderName = newlyUnread.customer?.name || (newlyUnread.type === 'farmer_admin' ? 'Ban Quản Trị Sàn' : 'Khách mua');
+          toast.success(`💬 Có tin nhắn mới từ: ${senderName}`, {
+            duration: 4500,
+            icon: '🔔',
+          });
+        }
       }
+      previousUnreadCountRef.current = unread;
+
+      // Đồng bộ cuộc trò chuyện đang chọn
+      setSelectedChatId((prevSelected) => {
+        if (!prevSelected && data.length > 0) {
+          const unreadConv = data.find(c => (c.unread_count || 0) > 0);
+          return unreadConv ? unreadConv.id : data[0].id;
+        }
+        if (prevSelected && !data.some(c => c.id === prevSelected) && data.length > 0) {
+          return data[0].id;
+        }
+        return prevSelected;
+      });
     } catch (err) {
       console.error('Lỗi tải chat nông hộ:', err);
     }
-  }, [currentFarmer?.id, selectedChatId]);
+  }, [currentFarmer?.id]);
 
   useEffect(() => {
     if (currentFarmer?.id) {
-      loadFarmerChats();
+      loadFarmerChats(false);
     }
   }, [currentFarmer?.id, loadFarmerChats]);
 
-  // Tự động làm mới tin nhắn khi ở tab chat
+  // Tự động làm mới tin nhắn khi ở tab chat (polling nhanh 2.5s)
   useEffect(() => {
     if (activeTab === 'chat' && currentFarmer?.id) {
-      const interval = setInterval(loadFarmerChats, 6000);
+      loadFarmerChats(false);
+      const interval = setInterval(() => loadFarmerChats(true), 2500);
       return () => clearInterval(interval);
     }
   }, [activeTab, currentFarmer?.id, loadFarmerChats]);
@@ -389,11 +412,12 @@ export default function FarmerPortalPage() {
   useEffect(() => {
     if (selectedChatId && activeTab === 'chat') {
       loadFarmerChatMessages(selectedChatId);
-      const interval = setInterval(() => loadFarmerChatMessages(selectedChatId), 3500);
+      const interval = setInterval(() => loadFarmerChatMessages(selectedChatId), 2000);
       return () => clearInterval(interval);
     }
   }, [selectedChatId, activeTab, loadFarmerChatMessages]);
 
+  // Tự động cuộn NỘI BỘ khung chat (KHÔNG cuộn toàn trang window ra footer)
   useEffect(() => {
     if (chatMessagesContainerRef.current) {
       const container = chatMessagesContainerRef.current;
@@ -2037,7 +2061,7 @@ export default function FarmerPortalPage() {
                           <ArrowUpRight size={12} />
                         </Link>
                         <button
-                          onClick={loadFarmerChats}
+                          onClick={() => loadFarmerChats()}
                           className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-emerald-600 transition-colors"
                           title="Làm mới"
                         >
@@ -2058,7 +2082,12 @@ export default function FarmerPortalPage() {
                     {/* Lọc loại tin nhắn */}
                     <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 rounded-lg text-[11px] font-medium">
                       <button
-                        onClick={() => setChatTabFilter('all')}
+                        onClick={() => {
+                          setChatTabFilter('all');
+                          if (chatConversations.length > 0 && !chatConversations.some(c => c.id === selectedChatId)) {
+                            setSelectedChatId(chatConversations[0].id);
+                          }
+                        }}
                         className={`py-1 rounded-md transition-all text-center ${
                           chatTabFilter === 'all' ? 'bg-white text-emerald-800 font-bold shadow-2xs' : 'text-gray-500'
                         }`}
@@ -2066,7 +2095,13 @@ export default function FarmerPortalPage() {
                         Tất cả
                       </button>
                       <button
-                        onClick={() => setChatTabFilter('customer_farmer')}
+                        onClick={() => {
+                          setChatTabFilter('customer_farmer');
+                          const matched = chatConversations.filter(c => c.type === 'customer_farmer');
+                          if (matched.length > 0 && !matched.some(c => c.id === selectedChatId)) {
+                            setSelectedChatId(matched[0].id);
+                          }
+                        }}
                         className={`py-1 rounded-md transition-all text-center flex items-center justify-center gap-0.5 ${
                           chatTabFilter === 'customer_farmer' ? 'bg-white text-blue-700 font-bold shadow-2xs' : 'text-gray-500'
                         }`}
@@ -2074,7 +2109,13 @@ export default function FarmerPortalPage() {
                         <UserIcon size={11} /> Khách mua
                       </button>
                       <button
-                        onClick={() => setChatTabFilter('farmer_admin')}
+                        onClick={() => {
+                          setChatTabFilter('farmer_admin');
+                          const matched = chatConversations.filter(c => c.type === 'farmer_admin');
+                          if (matched.length > 0 && !matched.some(c => c.id === selectedChatId)) {
+                            setSelectedChatId(matched[0].id);
+                          }
+                        }}
                         className={`py-1 rounded-md transition-all text-center flex items-center justify-center gap-0.5 ${
                           chatTabFilter === 'farmer_admin' ? 'bg-white text-purple-700 font-bold shadow-2xs' : 'text-gray-500'
                         }`}
@@ -2191,6 +2232,30 @@ export default function FarmerPortalPage() {
 
                     return (
                       <>
+                        {/* Thông báo nếu có tin nhắn mới từ khách hàng khác */}
+                        {(() => {
+                          const otherUnread = chatConversations.filter(c => c.id !== selectedChatId && (c.unread_count || 0) > 0);
+                          if (otherUnread.length === 0) return null;
+                          return (
+                            <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3.5 py-2 text-xs flex items-center justify-between shadow-xs">
+                              <span className="font-semibold flex items-center gap-1.5 truncate">
+                                🔔 Có {otherUnread.length} cuộc trò chuyện khác có tin mới từ khách: <strong>{otherUnread[0].customer?.name || 'Khách mua'}</strong>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedChatId(otherUnread[0].id);
+                                  if (otherUnread[0].type === 'customer_farmer') setChatTabFilter('customer_farmer');
+                                  else if (otherUnread[0].type === 'farmer_admin') setChatTabFilter('farmer_admin');
+                                }}
+                                className="bg-white text-amber-900 font-bold px-2.5 py-1 rounded-md text-[11px] hover:bg-amber-100 transition-colors shrink-0 cursor-pointer shadow-xs ml-2"
+                              >
+                                Xem ngay ⚡
+                              </button>
+                            </div>
+                          );
+                        })()}
+
                         {/* Header phòng chat */}
                         <div className="p-3.5 border-b border-gray-200 bg-white flex items-center justify-between shadow-2xs">
                           <div className="flex items-center gap-3">
@@ -2235,7 +2300,7 @@ export default function FarmerPortalPage() {
                             </div>
                             {currentConv.product.slug && (
                               <Link
-                                href={`/products/${currentConv.product.slug}`}
+                                href={`/product/${currentConv.product.slug}`}
                                 target="_blank"
                                 className="px-2.5 py-1 bg-white hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg text-[11px] font-semibold shrink-0 transition-colors"
                               >
@@ -2289,7 +2354,6 @@ export default function FarmerPortalPage() {
                               );
                             })
                           )}
-                          <div ref={chatEndRef} />
                         </div>
 
                         {/* Mẫu tin nhắn phản hồi nhanh chuẩn Shopee */}

@@ -46,7 +46,6 @@ export default function FarmerChatPage() {
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // 1. Tải danh sách gian hàng & phân quyền
@@ -96,7 +95,7 @@ export default function FarmerChatPage() {
   const loadConversations = useCallback(async () => {
     if (!currentFarmer?.id) return;
     try {
-      const data = await getChatConversations({ farmer_id: currentFarmer.id });
+      const data = await getChatConversations({ farmer_id: currentFarmer.id, role: 'farmer' });
       setConversations(data);
       if (!selectedConvId && data.length > 0) {
         setSelectedConvId(data[0].id);
@@ -109,7 +108,7 @@ export default function FarmerChatPage() {
   useEffect(() => {
     if (currentFarmer?.id) {
       loadConversations();
-      const interval = setInterval(loadConversations, 5000);
+      const interval = setInterval(loadConversations, 2500);
       return () => clearInterval(interval);
     }
   }, [currentFarmer?.id, loadConversations]);
@@ -129,7 +128,7 @@ export default function FarmerChatPage() {
   useEffect(() => {
     if (selectedConvId) {
       loadMessages(selectedConvId);
-      const interval = setInterval(() => loadMessages(selectedConvId), 3000);
+      const interval = setInterval(() => loadMessages(selectedConvId), 2000);
       return () => clearInterval(interval);
     }
   }, [selectedConvId, loadMessages]);
@@ -666,7 +665,6 @@ export default function FarmerChatPage() {
                       );
                     })
                   )}
-                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Mẫu phản hồi nhanh chuẩn Shopee Seller */}
