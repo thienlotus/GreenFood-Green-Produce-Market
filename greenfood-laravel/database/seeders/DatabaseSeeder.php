@@ -130,7 +130,7 @@ class DatabaseSeeder extends Seeder
                 'address' => 'Thị Trấn Nông Trường, Huyện Mộc Châu, Sơn La', 'region' => 'mien-bac',
                 'latitude' => 20.8332, 'longitude' => 104.6724,
                 'ghn_shop_id' => 217561,
-                'ghn_province_id' => 266, 'ghn_district_id' => 1976, 'ghn_ward_code' => '141015', 'ghn_address' => 'Trang Trại Cờ Đỏ Mộc Châu, Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La',
+                'ghn_province_id' => 266, 'ghn_district_id' => 1482, 'ghn_ward_code' => '11013', 'ghn_address' => 'Trang Trại Cờ Đỏ Mộc Châu, Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La',
                 'image' => 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600',
                 'specialty' => 'Mận hậu, Cà phê Robusta', 'rating' => 4.7, 'is_verified' => true,
                 'story' => 'Đặc sản mận hậu, cà phê rang mộc và mật ong vùng cao Tây Bắc ở độ cao trên 1000m.'
