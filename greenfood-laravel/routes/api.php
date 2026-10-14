@@ -256,3 +256,19 @@ Route::get('/admin/b2b/inquiries', [B2bController::class, 'index']);
 Route::put('/admin/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
 Route::post('/admin/b2b/inquiries/{id}/respond', [B2bController::class, 'respond']);
 
+// 12. System Utility to trigger migrations on hosting without SSH
+Route::get('/system/migrate', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã chạy migrate thành công trên cơ sở dữ liệu!',
+            'output' => \Illuminate\Support\Facades\Artisan::output(),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Lỗi chạy migrate: ' . $e->getMessage(),
+        ], 500);
+    }
+});

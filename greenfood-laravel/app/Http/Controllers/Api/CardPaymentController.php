@@ -90,11 +90,23 @@ class CardPaymentController extends Controller
             $order->payment_method = 'VNPAY'; // Enum hợp lệ
             $order->save();
 
-            // 2. Ghi nhận giao dịch thanh toán
+            // 2. Ghi nhận giao dịch thanh toán (hỗ trợ cả schema mới lẫn DB cũ)
+            $payloadData = [
+                'bank' => $bankCode,
+                'card_holder' => $cardHolder,
+                'card_masked' => $maskedCard,
+                'resultCode' => 0,
+                'message' => 'Giao dịch thanh toán thẻ ATM Napas thành công',
+                'transId' => $transId,
+                'paid_at' => now()->toIso8601String(),
+            ];
+
             PaymentTransaction::create([
                 'order_id' => $order->id,
                 'gateway' => 'napas_atm',
                 'gateway_order_id' => $transId,
+                'transaction_id' => $transId,
+                'payment_method' => 'NAPAS_ATM',
                 'amount' => $amount,
                 'status' => 'success',
                 'request_payload' => [
@@ -108,6 +120,7 @@ class CardPaymentController extends Controller
                     'transId' => $transId,
                     'paid_at' => now()->toIso8601String(),
                 ],
+                'response_data' => $payloadData,
             ]);
 
             DB::commit();
