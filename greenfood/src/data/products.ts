@@ -84,7 +84,7 @@ export const CATEGORIES: CategoryInfo[] = [
 
 export const DEMO_FARMERS: Record<string, FarmerInfo> = {
   chuBa: {
-    id: "bfe149ae-f195-4a3f-b83b-0b39c0e3e668",
+    id: "6b9c95e4-27cc-4835-a192-9e29def04086",
     name: "Vườn Trái Cây Chú Ba",
     region: "Bến Tre",
     rating: 4.8,
@@ -97,20 +97,20 @@ export const DEMO_FARMERS: Record<string, FarmerInfo> = {
     story: "Hơn 20 năm gắn bó với cây ăn trái miền Tây, vườn chú Ba áp dụng chuẩn VietGAP mang lại những trái sầu riêng, bưởi da xanh và trái cây nhiệt đới ngọt lành nhất."
   },
   mocChau: {
-    id: "f576baa3-88c0-4cb8-846a-da9c54f15395",
+    id: "d5e4054f-ba7c-4cf8-b43a-f8742060c875",
     name: "Trang Trại Mộc Châu",
     region: "Sơn La",
     rating: 4.7,
     address: "Trang Trại Cờ Đỏ Mộc Châu, Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La",
     ghn_shop_id: 217561,
     ghn_province_id: 266,
-    ghn_district_id: 1976,
-    ghn_ward_code: "141015",
+    ghn_district_id: 1482,
+    ghn_ward_code: "11013",
     ghn_address: "Trang Trại Cờ Đỏ Mộc Châu, Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La",
     story: "Nằm trên cao nguyên Mộc Châu mát mẻ quanh năm, chuyên canh cà phê Robusta rang mộc và chè xanh Tân Cương chuẩn OCOP chất lượng cao."
   },
   daLat: {
-    id: "de9fd529-c612-4f0a-82c6-90c468e726ef",
+    id: "6a709d02-b0d6-439a-b540-accc423b677d",
     name: "Nông Trại Xanh Đà Lạt",
     region: "Lâm Đồng",
     rating: 4.9,

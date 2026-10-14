@@ -68,8 +68,36 @@ class OrderService
                 if ($farmerId && !\App\Models\Farmer::where('id', $farmerId)->exists()) {
                     $farmerId = null;
                 }
-                if (!$farmerId && !empty($it['ghn_shop_id'])) {
-                    $farmerId = \App\Models\Farmer::where('ghn_shop_id', (int)$it['ghn_shop_id'])->value('id');
+                $ghnShopIdHint = !empty($it['ghn_shop_id']) ? (int)$it['ghn_shop_id'] : null;
+                $farmerNameHint = $it['farmer_name'] ?? '';
+                $prodNameHint = $it['product_name'] ?? '';
+
+                // Phân giải ưu tiên theo Shop ID GHN hoặc Nông Hộ Chú Ba
+                if (!$farmerId && ($ghnShopIdHint === 217559 || stripos($farmerNameHint, 'Ba') !== false || stripos($prodNameHint, 'Sầu Riêng') !== false || stripos($prodNameHint, 'Ri6') !== false)) {
+                    $farmerId = \App\Models\Farmer::where('ghn_shop_id', 217559)
+                        ->orWhere('farm_name', 'like', '%Ba%')
+                        ->orWhere('id', '6b9c95e4-27cc-4835-a192-9e29def04086')
+                        ->value('id');
+                }
+
+                // Phân giải ưu tiên Trang Trại Mộc Châu
+                if (!$farmerId && ($ghnShopIdHint === 217561 || stripos($farmerNameHint, 'Mộc Châu') !== false || stripos($prodNameHint, 'Robusta') !== false || stripos($prodNameHint, 'Cà Phê') !== false)) {
+                    $farmerId = \App\Models\Farmer::where('ghn_shop_id', 217561)
+                        ->orWhere('farm_name', 'like', '%Mộc Châu%')
+                        ->orWhere('id', 'd5e4054f-ba7c-4cf8-b43a-f8742060c875')
+                        ->value('id');
+                }
+
+                // Phân giải ưu tiên Nông Trại Xanh Đà Lạt
+                if (!$farmerId && ($ghnShopIdHint === 227221 || stripos($farmerNameHint, 'Đà Lạt') !== false || stripos($prodNameHint, 'Dâu tây') !== false || stripos($prodNameHint, 'Dưa lưới') !== false)) {
+                    $farmerId = \App\Models\Farmer::where('ghn_shop_id', 227221)
+                        ->orWhere('farm_name', 'like', '%Đà Lạt%')
+                        ->orWhere('id', '6a709d02-b0d6-439a-b540-accc423b677d')
+                        ->value('id');
+                }
+
+                if (!$farmerId && $ghnShopIdHint) {
+                    $farmerId = \App\Models\Farmer::where('ghn_shop_id', $ghnShopIdHint)->value('id');
                 }
                 if (!$farmerId && $productId) {
                     $prod = \App\Models\Product::where('id', $productId)

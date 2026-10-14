@@ -84,7 +84,8 @@ export default function ProductClient({ initialSlug }: ProductClientProps) {
       unit: selectedVariant.unit,
       price: selectedVariant.price,
       quantity,
-      image: product.images[0]
+      image: product.images[0],
+      farmer: product.farmer
     });
     setIsAdded(true);
     toast.success(`Đã thêm ${quantity}x "${product.name}" vào giỏ hàng!`);

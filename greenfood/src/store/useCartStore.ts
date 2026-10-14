@@ -50,9 +50,17 @@ export function sanitizeCartItem(item: CartItem): CartItem {
   cleanName = cleanVietnameseMojibake(cleanName);
   cleanUnit = cleanVietnameseMojibake(cleanUnit);
 
+  const canonicalFarmer = canonical?.farmer;
   const mergedFarmer = {
-    ...(canonical?.farmer || {}),
-    ...(item.farmer || {})
+    ...(canonicalFarmer || {}),
+    ...(item.farmer || {}),
+    ghn_shop_id: item.farmer?.ghn_shop_id || canonicalFarmer?.ghn_shop_id,
+    ghn_district_id: item.farmer?.ghn_district_id || canonicalFarmer?.ghn_district_id,
+    ghn_ward_code: item.farmer?.ghn_ward_code || canonicalFarmer?.ghn_ward_code,
+    ghn_province_id: item.farmer?.ghn_province_id || canonicalFarmer?.ghn_province_id,
+    ghn_address: item.farmer?.ghn_address || canonicalFarmer?.ghn_address,
+    id: item.farmer?.id || canonicalFarmer?.id,
+    name: item.farmer?.name || canonicalFarmer?.name,
   };
 
   return {
