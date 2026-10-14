@@ -610,7 +610,7 @@ export default function B2BPage() {
                     <AlertCircle size={32} className="mx-auto text-amber-500" />
                     <h4 className="font-bold text-slate-800 text-sm">Không Tìm Thấy Hồ Sơ Nào</h4>
                     <p className="text-xs text-slate-500 max-w-md mx-auto">
-                      Không tìm thấy phiếu đăng ký nào khớp với từ khóa <strong>"{trackKeyword}"</strong>. Vui lòng kiểm tra lại chính xác mã phiếu hoặc số điện thoại người liên hệ.
+                      Không tìm thấy phiếu đăng ký nào khớp với từ khóa <strong>&quot;{trackKeyword}&quot;</strong>. Vui lòng kiểm tra lại chính xác mã phiếu hoặc số điện thoại người liên hệ.
                     </p>
                     <button
                       type="button"

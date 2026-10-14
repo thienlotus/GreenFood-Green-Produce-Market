@@ -173,9 +173,19 @@ class SepayService
     /**
      * Process incoming Webhook payload from SePay.
      */
+    /**
+     * Process incoming Webhook payload from SePay.
+     */
     public function handleWebhook(array $payload): array
     {
-        $transferType = strtolower($payload['transferType'] ?? 'in');
+        Log::info('SePay Webhook Received Payload: ' . json_encode($payload));
+
+        $amountIn = (float)($payload['transferAmount'] ?? ($payload['amount_in'] ?? 0));
+        $transferType = strtolower((string)($payload['transferType'] ?? ''));
+        if (empty($transferType)) {
+            $transferType = $amountIn > 0 ? 'in' : 'out';
+        }
+
         if ($transferType !== 'in') {
             return [
                 'success' => false,
@@ -183,16 +193,28 @@ class SepayService
             ];
         }
 
-        $transferAmount = (float)($payload['transferAmount'] ?? 0);
-        $code = trim($payload['code'] ?? '');
-        $content = (string)($payload['content'] ?? ($payload['description'] ?? ''));
+        $code = trim((string)($payload['code'] ?? ''));
+        $content = (string)($payload['content'] ?? ($payload['transaction_content'] ?? ($payload['description'] ?? '')));
 
-        // Locate order from code or content
-                if (!empty($code)) {
+        // Initialize $order safely to prevent Undefined variable error
+        $order = null;
+
+        // 1. Locate order by explicit code if available
+        if (!empty($code)) {
             $order = Order::where('tracking_number', $code)
                 ->orWhere('ghn_order_code', $code)
+                ->orWhere('ghn_order_code', 'like', "%{$code}%")
                 ->orWhere('id', $code)
                 ->first();
+
+            if (!$order) {
+                $vo = \App\Models\VendorOrder::where('ghn_order_code', $code)
+                    ->orWhere('sub_order_number', $code)
+                    ->first();
+                if ($vo) {
+                    $order = $vo->order;
+                }
+            }
 
             if (!$order) {
                 // Try alphanumeric normalization
@@ -201,50 +223,84 @@ class SepayService
                     $itemClean = preg_replace('/[^0-9A-Za-z]/', '', $item->tracking_number ?? '');
                     $itemGhn = preg_replace('/[^0-9A-Za-z]/', '', $item->ghn_order_code ?? '');
                     return strcasecmp($itemClean, $cleanedCode) === 0 ||
-                           ($itemGhn && strcasecmp($itemGhn, $cleanedCode) === 0) ||
+                           ($itemGhn && str_contains(strtoupper($itemGhn), strtoupper($cleanedCode))) ||
                            str_ends_with(strtoupper($cleanedCode), strtoupper($itemClean));
                 });
             }
         }
 
-        // Scan content against order tracking_number and ghn_order_code if order not found by code
+        // 2. Scan content against order tracking_number, ghn_order_code, note, or vendorOrders
         if (!$order && !empty($content)) {
             $cleanContent = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $content));
 
-            // Check recent unpaid or latest orders first (within last 7 days)
-            $candidateOrders = Order::where('payment_status', 'unpaid')
-                ->orWhere('created_at', '>=', now()->subDays(7))
-                ->orderByDesc('created_at')
-                ->limit(50)
-                ->get();
+            // Extract alphanumeric words from content (e.g. GHN561GW9T4, GF123456)
+            preg_match_all('/[A-Za-z0-9]{4,20}/', $content, $contentMatches);
+            $words = $contentMatches[0] ?? [];
 
-            foreach ($candidateOrders as $candidate) {
-                $candGhn = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $candidate->ghn_order_code ?? ''));
-                $candTrack = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $candidate->tracking_number ?? ''));
-
-                if (!empty($candGhn) && str_contains($cleanContent, $candGhn)) {
-                    $order = $candidate;
+            foreach ($words as $word) {
+                $upperWord = strtoupper($word);
+                $found = Order::where('tracking_number', $upperWord)
+                    ->orWhere('ghn_order_code', 'like', "%{$upperWord}%")
+                    ->orWhere('id', $word)
+                    ->first();
+                if ($found) {
+                    $order = $found;
                     break;
                 }
-                if (!empty($candTrack) && strlen($candTrack) >= 4 && str_contains($cleanContent, $candTrack)) {
-                    $order = $candidate;
-                    break;
-                }
-                $candNote = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $candidate->note ?? ''));
-                if (!empty($candNote) && strlen($candNote) >= 4 && str_contains($cleanContent, $candNote)) {
-                    $order = $candidate;
+
+                $vo = \App\Models\VendorOrder::where('ghn_order_code', $upperWord)
+                    ->orWhere('sub_order_number', $upperWord)
+                    ->first();
+                if ($vo && $vo->order) {
+                    $order = $vo->order;
                     break;
                 }
             }
 
+            // Check candidate unpaid or recent orders within 30 days
             if (!$order) {
-                // Regex word search in content
-                if (preg_match_all('/[A-Za-z0-9]{4,15}/', $content, $matches)) {
-                    foreach ($matches[0] as $matchWord) {
-                        $order = Order::where('tracking_number', $matchWord)
-                            ->orWhere('ghn_order_code', $matchWord)
-                            ->first();
-                        if ($order) break;
+                $candidateOrders = Order::where('payment_status', 'unpaid')
+                    ->orWhere('created_at', '>=', now()->subDays(30))
+                    ->orderByDesc('created_at')
+                    ->limit(100)
+                    ->get();
+
+                foreach ($candidateOrders as $candidate) {
+                    $candGhn = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $candidate->ghn_order_code ?? ''));
+                    $candTrack = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $candidate->tracking_number ?? ''));
+
+                    if (!empty($candGhn) && (str_contains($cleanContent, $candGhn) || str_contains($candGhn, $cleanContent))) {
+                        $order = $candidate;
+                        break;
+                    }
+                    if (!empty($candTrack) && strlen($candTrack) >= 4 && str_contains($cleanContent, $candTrack)) {
+                        $order = $candidate;
+                        break;
+                    }
+
+                    // Check note (e.g. "Mã ref: GFxxxxxx")
+                    if (!empty($candidate->note)) {
+                        preg_match_all('/[A-Za-z0-9]{5,20}/', $candidate->note, $noteMatches);
+                        foreach ($noteMatches[0] as $noteWord) {
+                            if (str_contains($cleanContent, strtoupper($noteWord))) {
+                                $order = $candidate;
+                                break 2;
+                            }
+                        }
+                    }
+
+                    // Check candidate vendor orders
+                    foreach ($candidate->vendorOrders as $vo) {
+                        $voGhn = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $vo->ghn_order_code ?? ''));
+                        $voSub = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $vo->sub_order_number ?? ''));
+                        if (!empty($voGhn) && strlen($voGhn) >= 4 && str_contains($cleanContent, $voGhn)) {
+                            $order = $candidate;
+                            break 2;
+                        }
+                        if (!empty($voSub) && strlen($voSub) >= 4 && str_contains($cleanContent, $voSub)) {
+                            $order = $candidate;
+                            break 2;
+                        }
                     }
                 }
             }
@@ -254,19 +310,26 @@ class SepayService
             Log::warning('SePay Webhook: Không tìm thấy đơn hàng cho nội dung: ' . $content);
             return [
                 'success' => false,
-                'message' => 'Không tìm thấy đơn hàng tương ứng',
+                'message' => 'Không tìm thấy đơn hàng tương ứng với nội dung chuyển khoản',
             ];
-        }
-
-        // Check paid amount matches order amount (allow minor rounding)
-        if ($transferAmount < ($order->total_amount - 100)) {
-            Log::warning("SePay Webhook: Số tiền chuyển ({$transferAmount}) ít hơn giá trị đơn ({$order->total_amount}) cho đơn #{$order->tracking_number}");
         }
 
         // Mark order as paid and confirmed
         $order->payment_method = 'BANK_TRANSFER';
         $order->status = 'CONFIRMED';
         $order->payment_status = 'paid';
+
+        // Update vendor orders status to PROCESSING
+        try {
+            foreach ($order->vendorOrders as $vo) {
+                if ($vo->status === 'PENDING') {
+                    $vo->status = 'PROCESSING';
+                    $vo->save();
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning("SePay Webhook: Lỗi cập nhật trạng thái vendorOrders: " . $e->getMessage());
+        }
 
         // Đảm bảo đơn hàng được đẩy lên GHN nếu chưa có mã GHN
         if (empty($order->ghn_order_code)) {
@@ -290,7 +353,7 @@ class SepayService
         $order->save();
 
         // Update or create payment transaction
-        $transId = (string)($payload['referenceCode'] ?? ('SEPAY_' . ($payload['id'] ?? time())));
+        $transId = (string)($payload['referenceCode'] ?? ($payload['reference_number'] ?? ('SEPAY_' . ($payload['id'] ?? time()))));
         PaymentTransaction::updateOrCreate(
             [
                 'order_id' => $order->id,
@@ -298,13 +361,13 @@ class SepayService
             ],
             [
                 'transaction_id' => $transId,
-                'amount' => $transferAmount > 0 ? $transferAmount : $order->total_amount,
+                'amount' => $amountIn > 0 ? $amountIn : $order->total_amount,
                 'status' => 'success',
                 'response_data' => $payload,
             ]
         );
 
-        Log::info("SePay Webhook: Xác nhận thanh toán thành công đơn hàng #{$order->tracking_number}, số tiền: {$transferAmount}");
+        Log::info("SePay Webhook: Xác nhận thanh toán thành công đơn hàng #{$order->tracking_number}, số tiền: {$amountIn}");
 
         return [
             'success' => true,
@@ -320,7 +383,17 @@ class SepayService
     {
         $order = Order::where('id', $orderId)
             ->orWhere('tracking_number', $orderId)
+            ->orWhere('ghn_order_code', 'like', "%{$orderId}%")
             ->first();
+
+        if (!$order) {
+            $vo = \App\Models\VendorOrder::where('ghn_order_code', $orderId)
+                ->orWhere('sub_order_number', $orderId)
+                ->first();
+            if ($vo) {
+                $order = $vo->order;
+            }
+        }
 
         if ($order && ($order->payment_status === 'paid' || $order->status === 'CONFIRMED')) {
             return [
@@ -339,42 +412,64 @@ class SepayService
                 $response = Http::withToken($this->apiToken)
                     ->timeout(6)
                     ->get('https://my.sepay.vn/userapi/transactions/list', [
-                        'limit' => 20,
+                        'limit' => 25,
                     ]);
 
                 if ($response->successful()) {
                     $data = $response->json();
                     $transactions = $data['transactions'] ?? [];
-                    $cleanTarget = preg_replace('/[^0-9A-Za-z]/', '', $order->tracking_number);
+
+                    // Targets to match in transfer memo
+                    $targets = array_filter([
+                        preg_replace('/[^0-9A-Za-z]/', '', $order->tracking_number ?? ''),
+                        preg_replace('/[^0-9A-Za-z]/', '', $order->ghn_order_code ?? ''),
+                    ]);
+
+                    foreach ($order->vendorOrders as $vo) {
+                        if (!empty($vo->ghn_order_code)) {
+                            $targets[] = preg_replace('/[^0-9A-Za-z]/', '', $vo->ghn_order_code);
+                        }
+                    }
+
+                    if (!empty($order->note)) {
+                        preg_match_all('/[A-Za-z0-9]{5,20}/', $order->note, $noteTokens);
+                        foreach ($noteTokens[0] as $tok) {
+                            $targets[] = strtoupper($tok);
+                        }
+                    }
 
                     foreach ($transactions as $tx) {
-                        $transferType = strtolower($tx['transferType'] ?? 'in');
-                        if ($transferType !== 'in') continue;
+                        $amountIn = (float)($tx['amount_in'] ?? ($tx['transferAmount'] ?? 0));
+                        if ($amountIn <= 0 && strtolower((string)($tx['transferType'] ?? '')) !== 'in') {
+                            continue;
+                        }
 
-                        $txContent = (string)($tx['content'] ?? ($tx['description'] ?? ''));
+                        $txContent = (string)($tx['transaction_content'] ?? ($tx['content'] ?? ($tx['description'] ?? '')));
                         $txCode = (string)($tx['code'] ?? '');
                         $combined = $txCode . ' ' . $txContent;
-                        $cleanedTx = preg_replace('/[^0-9A-Za-z]/', '', $combined);
+                        $cleanedTx = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $combined));
 
-                        if (str_contains(strtoupper($cleanedTx), strtoupper($cleanTarget))) {
-                            // Found matching transaction in SePay! Mark paid!
-                            $this->handleWebhook([
-                                'id' => $tx['id'] ?? time(),
-                                'transferType' => 'in',
-                                'transferAmount' => $tx['transferAmount'] ?? $order->total_amount,
-                                'code' => $order->tracking_number,
-                                'content' => $txContent,
-                                'referenceCode' => $tx['referenceCode'] ?? ('SEPAY_' . ($tx['id'] ?? time())),
-                            ]);
+                        foreach ($targets as $target) {
+                            if (strlen($target) >= 4 && str_contains($cleanedTx, strtoupper($target))) {
+                                // Match found! Confirm payment immediately!
+                                $this->handleWebhook([
+                                    'id' => $tx['id'] ?? time(),
+                                    'transferType' => 'in',
+                                    'transferAmount' => $amountIn > 0 ? $amountIn : $order->total_amount,
+                                    'code' => $order->tracking_number,
+                                    'content' => $txContent,
+                                    'referenceCode' => $tx['reference_number'] ?? ($tx['referenceCode'] ?? ('SEPAY_' . ($tx['id'] ?? time()))),
+                                ]);
 
-                            return [
-                                'success' => true,
-                                'isPaid' => true,
-                                'status' => 'paid',
-                                'orderId' => $order->tracking_number,
-                                'amount' => $order->total_amount,
-                                'message' => 'Thanh toán đã được tự động xác nhận qua SePay API',
-                            ];
+                                return [
+                                    'success' => true,
+                                    'isPaid' => true,
+                                    'status' => 'paid',
+                                    'orderId' => $order->tracking_number,
+                                    'amount' => $order->total_amount,
+                                    'message' => 'Thanh toán đã được tự động xác nhận qua SePay API',
+                                ];
+                            }
                         }
                     }
                 }

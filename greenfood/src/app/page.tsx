@@ -7,12 +7,12 @@ import Autoplay from 'embla-carousel-autoplay';
 import {
   ArrowRight, Truck, ShieldCheck, RefreshCw, CreditCard, ChevronRight, ChevronLeft,
   Zap, Flame, Sparkles, Tag, Copy, Check, Leaf, Award, MapPin, Package, Heart, Star,
-  ShoppingBag, Apple, Coffee, Store, Users, Ticket, Mail
+  ShoppingBag, Apple, Coffee, Store, Users, Ticket, Mail, Video
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
 import WelcomeLetterModal from '@/components/WelcomeLetterModal';
-import HomeVideoReviewsSection from '@/components/HomeVideoReviewsSection';
+import GreenReelsSection from '@/components/GreenReelsSection';
 import { getProducts, type ProductItem } from '@/lib/api';
 import { ALL_PRODUCTS } from '@/data/products';
 
@@ -48,27 +48,17 @@ const BANNERS = [
   },
 ];
 
-const SIDEBAR_CATEGORIES = [
-  { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: ShoppingBag, color: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/20' },
-  { name: 'Trái cây tươi ngon', href: '/category/trai-cay/', icon: Apple, color: 'text-rose-600 bg-rose-500/10 border-rose-500/20' },
-  { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: Sparkles, color: 'text-purple-600 bg-purple-500/10 border-purple-500/20' },
-  { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700 bg-amber-500/10 border-amber-500/20' },
-  { name: 'Agrishow Triển lãm', href: '/category/agrishow/', icon: Store, color: 'text-teal-600 bg-teal-500/10 border-teal-500/20' },
-  { name: 'Bản đồ vùng trồng', href: '/map/', icon: MapPin, color: 'text-sky-600 bg-sky-500/10 border-sky-500/20' },
-  { name: 'Nông hộ đối tác', href: '/farmers/', icon: Users, color: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20' },
-  { name: 'Theo dõi đơn hàng', href: '/tracking/', icon: Package, color: 'text-indigo-600 bg-indigo-500/10 border-indigo-500/20' },
-];
 
 const QUICK_LINKS = [
   { name: 'Đi chợ online', href: '/category/di-cho-online/', icon: ShoppingBag, color: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/25 group-hover:bg-emerald-600 group-hover:text-white' },
   { name: 'Trái cây Việt', href: '/category/trai-cay/', icon: Apple, color: 'text-rose-600 bg-rose-500/10 border-rose-500/25 group-hover:bg-rose-600 group-hover:text-white' },
+  { name: '🎬 Reels Video', href: '#reels', icon: Video, color: 'text-rose-600 bg-rose-500/15 border-rose-500/30 group-hover:bg-rose-600 group-hover:text-white font-extrabold' },
   { name: 'Trà - Cà phê', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700 bg-amber-500/10 border-amber-500/25 group-hover:bg-amber-700 group-hover:text-white' },
   { name: 'Đặc sản', href: '/category/dac-san/', icon: Sparkles, color: 'text-purple-600 bg-purple-500/10 border-purple-500/25 group-hover:bg-purple-600 group-hover:text-white' },
   { name: 'Agrishow', href: '/category/agrishow/', icon: Store, color: 'text-teal-600 bg-teal-500/10 border-teal-500/25 group-hover:bg-teal-600 group-hover:text-white' },
   { name: 'Deal sốc', href: '#flash-sale', icon: Flame, color: 'text-red-600 bg-red-500/10 border-red-500/25 group-hover:bg-red-600 group-hover:text-white' },
   { name: 'Mã giảm giá', href: '#vouchers', icon: Ticket, color: 'text-pink-600 bg-pink-500/10 border-pink-500/25 group-hover:bg-pink-600 group-hover:text-white' },
   { name: 'Bản đồ vườn', href: '/map/', icon: MapPin, color: 'text-sky-600 bg-sky-500/10 border-sky-500/25 group-hover:bg-sky-600 group-hover:text-white' },
-  { name: 'Theo dõi đơn', href: '/tracking/', icon: Package, color: 'text-indigo-600 bg-indigo-500/10 border-indigo-500/25 group-hover:bg-indigo-600 group-hover:text-white' },
   { name: 'Nông hộ sạch', href: '/farmers/', icon: Users, color: 'text-lime-700 bg-lime-500/10 border-lime-500/25 group-hover:bg-lime-700 group-hover:text-white' },
 ];
 
@@ -240,7 +230,6 @@ export default function Home() {
   }, []);
 
   const [showWelcomeLetter, setShowWelcomeLetter] = useState(false);
-  const [scrollDir, setScrollDir] = useState<'down' | 'up'>('down');
   const flashSaleScrollerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -284,34 +273,8 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [isFlashHovered, checkScrollPosition]);
 
-  // Cuộn ngang êm ái khi dùng con lăn chuột trên dải Flash Sale
+  // Hiệu ứng cuộn chuột: xuất hiện mượt mà 1 lần duy nhất, không giật nảy khi cuộn lên xuống
   useEffect(() => {
-    const el = flashSaleScrollerRef.current;
-    if (!el) return;
-    const handleWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault();
-        el.scrollBy({ left: e.deltaY * 1.3, behavior: 'smooth' });
-        checkScrollPosition();
-      }
-    };
-    el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
-  }, [checkScrollPosition]);
-
-  // Hiệu ứng cuộn chuột: khi lăn chuột xuống thì các mục sản phẩm / icon hiện dần lên như ipkeyvn.com
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (Math.abs(currentScrollY - lastScrollY) > 5) {
-        setScrollDir(currentScrollY > lastScrollY ? 'down' : 'up');
-        lastScrollY = currentScrollY;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
     let observer: IntersectionObserver | null = null;
     const timer = setTimeout(() => {
       observer = new IntersectionObserver(
@@ -319,21 +282,19 @@ export default function Home() {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               entry.target.classList.add('is-revealed');
-            } else if (entry.boundingClientRect.top > window.innerHeight * 0.75) {
-              // Khi người dùng cuộn ngược lên khiến phần tử trôi xuống dưới viewport, ẩn đi để khi cuộn xuống lại sẽ trồi lên tiếp mượt mà
-              entry.target.classList.remove('is-revealed');
+              // Khi đã hiển thị thì giữ nguyên trạng thái cố định, không gỡ class để trang không bị nhảy khi cuộn ngược lên
+              observer?.unobserve(entry.target);
             }
           });
         },
-        { threshold: 0.08, rootMargin: '0px 0px -60px 0px' }
+        { threshold: 0.05, rootMargin: '0px 0px 40px 0px' }
       );
 
       const elements = document.querySelectorAll('.reveal-on-scroll, .product-reveal-item');
       elements.forEach((el) => observer?.observe(el));
-    }, 100);
+    }, 80);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       clearTimeout(timer);
       observer?.disconnect();
     };
@@ -382,7 +343,7 @@ export default function Home() {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className={`min-h-screen bg-tech-grid pb-20 relative overflow-hidden scroll-direction-${scrollDir}`}>
+    <div className="min-h-screen bg-tech-grid pb-20 relative overflow-hidden">
       <h1 className="sr-only">GreenFood - Chợ Nông Sản Sạch Việt Nam</h1>
 
       {/* Vùng hào quang quang hợp & công nghệ chìm tinh tế phong cách SaaS */}
@@ -409,55 +370,11 @@ export default function Home() {
       </div>
 
       {/* ============================ HERO ============================ */}
-      <section className="container mx-auto px-4 lg:px-8 pt-5 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <section className="container mx-auto max-w-7xl px-4 lg:px-8 pt-5 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
           
-          {/* Sidebar danh mục sản phẩm (Desktop) - Modern Glassmorphic Elevation */}
-          <aside className="hidden xl:flex xl:col-span-3 flex-col justify-between bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden h-[500px]">
-            <div>
-              <div className="px-5 py-3.5 bg-gradient-to-r from-emerald-800 via-emerald-900 to-teal-900 text-white font-bold text-sm flex items-center justify-between shadow-xs">
-                <span className="flex items-center gap-2">
-                  <Leaf size={16} className="text-emerald-300" /> Danh mục nông sản
-                </span>
-                <span className="text-[10px] bg-white/15 border border-white/20 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider text-emerald-200">VietGAP</span>
-              </div>
-              <ul className="divide-y divide-slate-100/70 text-sm py-1">
-                {SIDEBAR_CATEGORIES.map((c) => {
-                  const Icon = c.icon;
-                  return (
-                    <li key={c.name}>
-                      <Link
-                        href={c.href}
-                        className="flex items-center justify-between px-3.5 py-1.5 mx-2 my-0.5 rounded-2xl text-slate-700 hover:text-emerald-800 hover:bg-emerald-50/90 transition-all duration-200 group font-semibold text-xs"
-                      >
-                        <span className="flex items-center gap-2.5">
-                          <span className={`w-7 h-7 rounded-xl ${c.color} flex items-center justify-center border shadow-xs group-hover:scale-110 transition-transform`}>
-                            <Icon size={14} />
-                          </span>
-                          <span>{c.name}</span>
-                        </span>
-                        <ChevronRight size={14} className="text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-
-            {/* Thẻ cam kết chất lượng lấp đầy đáy sidebar không bao giờ bị cắt chữ */}
-            <div className="p-2.5 mx-2.5 mb-2.5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-500/20">
-              <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs">
-                <Sparkles size={13} className="text-amber-500 fill-amber-500" />
-                <span>Bảo hành tươi ngon 24H</span>
-              </div>
-              <p className="text-[11px] text-emerald-800/80 mt-0.5 leading-snug">
-                Đổi trả 100% miễn phí nếu nông sản không đạt độ tươi giòn.
-              </p>
-            </div>
-          </aside>
-
           {/* Carousel Banner chính - Modern Cinematic Presentation */}
-          <div className="lg:col-span-8 xl:col-span-6 relative rounded-3xl overflow-hidden shadow-elevated-card border border-slate-200/90 group h-[320px] sm:h-[420px] lg:h-[500px]">
+          <div className="lg:col-span-8 relative rounded-3xl overflow-hidden shadow-elevated-card border border-slate-200/90 group h-[320px] sm:h-[420px] lg:h-[500px]">
             <div ref={emblaRef} className="overflow-hidden h-full">
               <div className="flex h-full">
                 {BANNERS.map((b) => (
@@ -549,7 +466,7 @@ export default function Home() {
           </div>
 
           {/* 2 Banner phụ (Desktop) - Modern Frosted Bento Cards */}
-          <div className="hidden lg:grid lg:col-span-4 xl:col-span-3 grid-rows-2 gap-4 h-[500px]">
+          <div className="hidden lg:grid lg:col-span-4 grid-rows-2 gap-4 h-[500px]">
             <Link href="/category/trai-cay/" className="relative rounded-3xl overflow-hidden group shadow-elevated-card hover:shadow-elevated-hover hover:-translate-y-1 transition-all duration-300 border border-slate-200/90 block h-[242px]">
               <img
                 src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop"
@@ -609,32 +526,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ========================= QUICK LINKS (DANH MỤC TRUY CẬP NHANH) ========================= */}
-      <section className="container mx-auto px-4 lg:px-8 mt-7 relative z-10 reveal-on-scroll scroll-reactive-item">
-        <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/80 p-5 md:p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Sparkles size={16} className="text-emerald-600" /> Danh mục truy cập nhanh
-            </h3>
-            <span className="text-xs text-slate-400 font-medium hidden sm:inline">Trực tiếp từ vùng trồng VietGAP</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-3">
-            {QUICK_LINKS.map((c) => {
-              const Icon = c.icon;
-              return (
-                <Link key={c.name} href={c.href} className="flex flex-col items-center gap-2 group p-2 rounded-2xl hover:bg-slate-50 transition-colors scroll-reactive-item">
-                  <div className={`w-13 h-13 md:w-14 md:h-14 rounded-2xl ${c.color} flex items-center justify-center border shadow-xs group-hover:-translate-y-1.5 group-hover:shadow-md transition-all duration-300`}>
-                    <Icon size={22} />
-                  </div>
-                  <span className="text-[11px] font-bold text-slate-700 text-center leading-tight group-hover:text-emerald-800 transition-colors">
-                    {c.name}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* ========================= GREENREELS (VIDEO REVIEW THỰC TẾ SOOPI STYLE) ========================= */}
+      <GreenReelsSection />
 
       {/* ========================== FLASH SALE ========================== */}
       <section id="flash-sale" className="container mx-auto px-4 lg:px-8 mt-10 scroll-mt-28 relative z-10 reveal-on-scroll scroll-reactive-item">
@@ -938,9 +831,6 @@ export default function Home() {
           </section>
         )
       )}
-
-      {/* ======================== REELS (VIDEO REVIEW THỰC TẾ) ======================== */}
-      <HomeVideoReviewsSection />
 
       {/* ========================= VÌ SAO CHỌN GREENFOOD ========================= */}
       <section className="container mx-auto px-4 lg:px-8 mt-14 relative z-10 reveal-on-scroll">

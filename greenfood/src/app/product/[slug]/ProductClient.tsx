@@ -10,7 +10,7 @@ import { ALL_PRODUCTS, ProductItem, getProductBySlug as getMockProductBySlug } f
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
-import SimpleTikTokVideoSection from '@/components/ProductReviews/SimpleTikTokVideoSection';
+import ProductReviewsSection from '@/components/ProductReviews/ProductReviewsSection';
 
 interface ProductClientProps {
   initialSlug?: string;
@@ -38,10 +38,6 @@ export default function ProductClient({ initialSlug }: ProductClientProps) {
   const handleChatWithShop = () => {
     if (!product.farmer?.id) {
       toast.error('Gian hàng chưa kích hoạt kênh chat trực tuyến');
-      return;
-    }
-    if (!user) {
-      toast.error('Vui lòng đăng nhập để chat với chủ gian hàng!');
       return;
     }
     if (typeof window !== 'undefined') {
@@ -335,10 +331,18 @@ export default function ProductClient({ initialSlug }: ProductClientProps) {
           </div>
         </div>
 
-        {/* Reels (3 Video Trực Tiếp Khung Lớn) */}
-        <SimpleTikTokVideoSection
-          title="Reels"
-        />
+        {/* Hệ thống Đánh giá thực tế */}
+        <div id="product-reviews" className="mt-10 scroll-mt-24">
+          <ProductReviewsSection
+            productId={String(product.id)}
+            productName={product.name}
+            productSlug={product.slug}
+            productPrice={product.variants?.[0]?.price || 0}
+            productUnit={product.variants?.[0]?.unit || '1kg'}
+            productImage={product.images?.[0] || ''}
+            variants={product.variants?.map(v => ({ id: String(v.id), unit: v.unit })) || []}
+          />
+        </div>
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (

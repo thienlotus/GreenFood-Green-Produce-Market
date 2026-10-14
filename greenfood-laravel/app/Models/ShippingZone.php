@@ -29,4 +29,19 @@ class ShippingZone extends Model
         'free_ship_minimum' => 'float',
         'is_active' => 'boolean',
     ];
+
+    public function getNameAttribute($value): string
+    {
+        return \App\Services\MojibakeHealerService::clean((string)$value);
+    }
+
+    public function getProvincesAttribute($value): string
+    {
+        return \App\Services\MojibakeHealerService::clean((string)$value);
+    }
+
+    public function getEstimatedDaysAttribute($value): string
+    {
+        return \App\Services\MojibakeHealerService::clean((string)$value);
+    }
 }

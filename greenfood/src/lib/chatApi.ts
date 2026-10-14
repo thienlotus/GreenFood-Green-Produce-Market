@@ -198,12 +198,14 @@ export async function getChatConversations(params?: {
   customer_id?: string;
   farmer_id?: string;
   type?: string;
+  role?: 'admin' | 'customer' | 'farmer';
 }): Promise<ChatConversation[]> {
   const queryParams = new URLSearchParams();
   if (params?.status && params.status !== 'all') queryParams.set('status', params.status);
   if (params?.customer_id) queryParams.set('customer_id', params.customer_id);
   if (params?.farmer_id) queryParams.set('farmer_id', params.farmer_id);
   if (params?.type && params.type !== 'all') queryParams.set('type', params.type);
+  if (params?.role) queryParams.set('role', params.role);
 
   const queryStr = queryParams.toString() ? `?${queryParams.toString()}` : '';
   const res = await chatFetch<{ success: boolean; data: ChatConversation[] }>(`/chat/conversations${queryStr}`);
@@ -267,6 +269,30 @@ export async function startFarmerAdminChat(
       method: 'POST',
       body: JSON.stringify({
         farmer_id: farmerId,
+        message,
+      }),
+    }
+  );
+  return { success: res?.success || false, data: res?.data };
+}
+
+/**
+ * Nông hộ chủ động mở chat với Khách Mua Hàng
+ */
+export async function startFarmerCustomerChat(
+  farmerId: string,
+  customerId: string,
+  productId?: string,
+  message?: string
+): Promise<{ success: boolean; data?: { id: string; type: string; status: string } }> {
+  const res = await chatFetch<{ success: boolean; data?: { id: string; type: string; status: string } }>(
+    '/chat/farmer/conversations/customer',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        farmer_id: farmerId,
+        customer_id: customerId,
+        product_id: productId,
         message,
       }),
     }

@@ -33,13 +33,27 @@ class ProductService
                 $farmerId = $firstFarmer ? $firstFarmer->id : null;
             }
 
+            $categoryId = $data['category_id'] ?? null;
+            if (!$categoryId && !empty($data['category'])) {
+                $foundCat = \App\Models\Category::where('name', 'like', '%' . $data['category'] . '%')
+                    ->orWhere('slug', Str::slug($data['category']))
+                    ->first();
+                $categoryId = $foundCat ? $foundCat->id : null;
+            }
+            if (!$categoryId) {
+                $firstCat = \App\Models\Category::first();
+                $categoryId = $firstCat ? $firstCat->id : 1;
+            }
+
+            $imageUrl = $data['image_url'] ?? $data['image'] ?? 'https://images.unsplash.com/photo-1542838132-92c53300491e';
+
             $product = $this->productRepository->create([
                 'name' => $data['name'],
                 'slug' => $slug,
-                'category_id' => $data['category_id'],
+                'category_id' => $categoryId,
                 'farmer_id' => $farmerId,
                 'description' => $data['description'] ?? '',
-                'image_url' => $data['image_url'] ?? 'https://images.unsplash.com/photo-1542838132-92c53300491e',
+                'image_url' => $imageUrl,
                 'badge' => $data['badge'] ?? 'Mới',
                 'sold_count' => 0,
                 'rating' => 5.0,
@@ -88,6 +102,12 @@ class ProductService
         }
         if (array_key_exists('category_id', $data)) {
             $updateData['category_id'] = $data['category_id'];
+        }
+        if (array_key_exists('badge', $data)) {
+            $updateData['badge'] = $data['badge'];
+        }
+        if (array_key_exists('is_seasonal', $data)) {
+            $updateData['is_seasonal'] = (bool)$data['is_seasonal'];
         }
 
         if (!empty($updateData)) {

@@ -126,28 +126,30 @@ class GHNService
     /**
      * Lấy các gói dịch vụ GHN khả dụng giữa 2 quận/huyện
      */
-    public function getAvailableServices(int $fromDistrict, int $toDistrict): array
+    public function getAvailableServices(int $fromDistrict, int $toDistrict, ?int $customShopId = null): array
     {
+        $shopId = ($customShopId && $customShopId > 0) ? $customShopId : $this->shopId;
         return $this->post('/v2/shipping-order/available-services', [
-            'shop_id' => $this->shopId,
+            'shop_id' => $shopId,
             'from_district' => $fromDistrict,
             'to_district' => $toDistrict,
-        ]);
+        ], $shopId);
     }
 
     /**
      * Gọi API tính phí vận chuyển GHN theo thời gian thực
      * Tự động dò service_id và có cơ chế fallback thông minh khi tuyến đường chưa có trên sandbox
      */
-    public function calculateFee(array $params): array
+    public function calculateFee(array $params, ?int $customShopId = null): array
     {
+        $shopId = ($customShopId && $customShopId > 0) ? $customShopId : (int) ($params['shop_id'] ?? $this->shopId);
         $fromDistrict = (int) ($params['from_district_id'] ?? config('services.ghn.from_district_id', 3440));
         $toDistrict = (int) ($params['to_district_id'] ?? 0);
         $weight = (int) ($params['weight'] ?? 200);
 
         // 1. Tự động lấy service_id nếu chưa được truyền
         if (empty($params['service_id']) && $toDistrict > 0) {
-            $available = $this->getAvailableServices($fromDistrict, $toDistrict);
+            $available = $this->getAvailableServices($fromDistrict, $toDistrict, $shopId);
             if (!empty($available['data']) && is_array($available['data'])) {
                 $standardService = collect($available['data'])->firstWhere('service_type_id', 2) ?? $available['data'][0];
                 if (!empty($standardService['service_id'])) {
@@ -157,7 +159,6 @@ class GHNService
         }
 
         // 2. Nếu có service_id, gọi cổng tính cước GHN chính thức
-        $shopId = (int) ($params['shop_id'] ?? $this->shopId);
         if (!empty($params['service_id'])) {
             $res = $this->post('/v2/shipping-order/fee', array_merge([
                 'shop_id' => $shopId,
@@ -204,13 +205,13 @@ class GHNService
      */
     public function createOrder(array $orderData, ?int $customShopId = null): array
     {
-        $shopId = $customShopId ?: (int) ($orderData['shop_id'] ?? $this->shopId);
+        $shopId = ($customShopId && $customShopId > 0) ? $customShopId : (int) ($orderData['shop_id'] ?? $this->shopId);
         $fromDistrict = (int) ($orderData['from_district_id'] ?? config('services.ghn.from_district_id', 3440));
         $toDistrict = (int) ($orderData['to_district_id'] ?? 0);
 
         // Tự động gán service_id nếu chưa có
         if (empty($orderData['service_id']) && $toDistrict > 0) {
-            $available = $this->getAvailableServices($fromDistrict, $toDistrict);
+            $available = $this->getAvailableServices($fromDistrict, $toDistrict, $shopId);
             if (!empty($available['data']) && is_array($available['data'])) {
                 $standardService = collect($available['data'])->firstWhere('service_type_id', 2) ?? $available['data'][0];
                 if (!empty($standardService['service_id'])) {

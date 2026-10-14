@@ -122,6 +122,20 @@ class ChatService
         ];
     }
 
+    public function getCustomerMessages(string $customerId, string $conversationId): ?array
+    {
+        $conversation = $this->chatRepository->findConversation($conversationId);
+        if (!$conversation) {
+            return null;
+        }
+
+        if (!empty($conversation->customer_id) && (string) $conversation->customer_id !== (string) $customerId) {
+            return null;
+        }
+
+        return $this->getConversationMessages($conversationId, 'customer');
+    }
+
     public function createConversation(string $customerId, string $subject, ?string $initialMessage = null): array
     {
         $conversation = $this->chatRepository->findOrCreateConversation($customerId, $subject);
@@ -205,6 +219,44 @@ class ChatService
                     'message_type' => 'text',
                 ]);
             }
+        }
+
+        return [
+            'id' => $conversation->id,
+            'type' => $conversation->type,
+            'status' => $conversation->status,
+        ];
+    }
+
+    public function createFarmerCustomerConversation(
+        string $farmerId,
+        string $customerId,
+        ?string $productId = null,
+        ?string $initialMessage = null
+    ): array {
+        $conversation = $this->chatRepository->findOrCreateCustomerFarmerConversation(
+            $customerId,
+            $farmerId,
+            $productId,
+            'Nhà vườn tư vấn khách hàng'
+        );
+
+        if ($initialMessage) {
+            $farmer = \App\Models\Farmer::find($farmerId);
+            $senderId = $farmer ? ($farmer->user_id ?? $farmerId) : $farmerId;
+            $userExists = \App\Models\User::find($senderId);
+            if (!$userExists) {
+                $fallback = \App\Models\User::where('role', 'VENDOR')->first() ?? \App\Models\User::first();
+                $senderId = $fallback ? $fallback->id : $customerId;
+            }
+
+            $this->chatRepository->createMessage([
+                'conversation_id' => $conversation->id,
+                'sender_id' => $senderId,
+                'sender_role' => 'farmer',
+                'message' => $initialMessage,
+                'message_type' => 'text',
+            ]);
         }
 
         return [

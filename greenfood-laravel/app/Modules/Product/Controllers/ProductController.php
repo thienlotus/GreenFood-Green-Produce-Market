@@ -20,6 +20,7 @@ class ProductController extends Controller
             'category' => $request->get('category'),
             'search' => $request->get('search'),
             'region' => $request->get('region'),
+            'farmer_id' => $request->get('farmer_id'),
             'sort' => $request->get('sort', 'default'),
         ];
         $limit = (int)$request->get('limit', 50);
@@ -72,6 +73,8 @@ class ProductController extends Controller
             'category_id' => 'nullable|integer|exists:categories,id',
             'description' => 'nullable|string',
             'image_url' => 'nullable|string',
+            'badge' => 'nullable|string|max:50',
+            'is_seasonal' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {

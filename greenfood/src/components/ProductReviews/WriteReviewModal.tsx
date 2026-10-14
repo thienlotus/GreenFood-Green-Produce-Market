@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X, Star, Video, Image as ImageIcon, Trash2, Upload,
   Gift, Check, AlertCircle, Play, Pause, Sparkles
@@ -65,12 +66,29 @@ export default function WriteReviewModal({
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState<string[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const videoInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const previewVideoRef = useRef<HTMLVideoElement>(null);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -196,46 +214,54 @@ export default function WriteReviewModal({
 
   const activeRating = hoverRating || rating;
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-150">
-      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-gray-100 overflow-hidden my-auto max-h-[92vh] flex flex-col">
-        {/* Header Modal */}
-        <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-emerald-50/70 to-teal-50/70">
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 md:p-6 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col relative z-10 animate-in zoom-in-95 duration-200"
+      >
+        {/* Header Modal - Cố định không bị trôi (shrink-0) */}
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-50/80 to-teal-50/80 shrink-0">
           <div>
-            <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
               <span>Đánh Giá & Video Review</span>
-              <span className="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
+              <span className="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-2xs">
                 <Gift size={12} /> +200 Xu
               </span>
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5 truncate max-w-md">
-              Sản phẩm: <strong className="text-gray-800">{productName}</strong>
+            <p className="text-xs text-slate-500 mt-0.5 truncate max-w-md">
+              Sản phẩm: <strong className="text-slate-800">{productName}</strong>
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white hover:bg-gray-100 text-gray-500 flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
+            aria-label="Đóng cửa sổ đánh giá"
+            className="w-10 h-10 rounded-full bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all shadow-xs hover:scale-105 active:scale-95 cursor-pointer shrink-0"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Incentive Banner Shopee style */}
-        <div className="bg-amber-50/80 border-b border-amber-200/60 px-6 py-2.5 flex items-center gap-2 text-amber-900 text-xs font-medium">
+        {/* Incentive Banner Shopee style - Cố định (shrink-0) */}
+        <div className="bg-amber-50/90 border-b border-amber-200/60 px-5 py-2.5 flex items-center gap-2 text-amber-900 text-xs font-medium shrink-0">
           <Sparkles size={16} className="text-amber-600 shrink-0" />
           <span>
-            Đăng <strong>Video Review</strong> kèm hình ảnh thực tế để tích lũy <strong>200 GreenXu</strong> và nhận Voucher giảm 10% cho lần mua tiếp theo!
+            Đăng <strong>Video Review</strong> kèm hình ảnh thực tế để tích lũy <strong>200 GreenXu</strong> và nhận Voucher giảm 10%!
           </span>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-6">
-          {/* 1. Chọn mức sao */}
-          <div className="text-center py-2 bg-gray-50 rounded-2xl border border-gray-100">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">
+        {/* Form Body - Chỉ cuộn phần nội dung này, hitbox các ô luôn ổn định */}
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
+          {/* 1. Chọn mức sao - Hitbox cố định 48-56px, không bị giật lùi */}
+          <div className="text-center py-3 px-4 bg-slate-50/90 rounded-2xl border border-slate-200/80">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
               Chất lượng sản phẩm
             </span>
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 py-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   type="button"
@@ -243,20 +269,21 @@ export default function WriteReviewModal({
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
                   onClick={() => setRating(star)}
-                  className="p-1 transition-transform hover:scale-125 focus:outline-hidden cursor-pointer"
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center hover:bg-amber-100/60 transition-colors cursor-pointer group focus:outline-hidden"
+                  aria-label={`${star} sao`}
                 >
                   <Star
                     size={36}
-                    className={`transition-colors ${
+                    className={`transition-all duration-150 pointer-events-none group-hover:scale-115 ${
                       star <= activeRating
                         ? 'fill-amber-400 text-amber-400 drop-shadow-sm'
-                        : 'text-gray-200'
+                        : 'text-slate-300 group-hover:text-amber-300'
                     }`}
                   />
                 </button>
               ))}
             </div>
-            <div className="mt-2 text-sm font-bold text-emerald-800 flex items-center justify-center gap-1.5">
+            <div className="mt-2 text-sm font-bold text-emerald-800 flex items-center justify-center gap-1.5 min-h-[22px]">
               <span>{RATING_LABELS[activeRating]?.emoji}</span>
               <span>{RATING_LABELS[activeRating]?.text}</span>
             </div>
@@ -265,7 +292,7 @@ export default function WriteReviewModal({
           {/* 2. Chọn phân loại đã mua */}
           {variants.length > 0 && (
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-2">
+              <label className="block text-xs font-bold text-slate-700 mb-2">
                 Phân loại sản phẩm đã mua:
               </label>
               <div className="flex flex-wrap gap-2">
@@ -274,10 +301,10 @@ export default function WriteReviewModal({
                     type="button"
                     key={v.id}
                     onClick={() => setSelectedVariant(v.unit)}
-                    className={`text-xs px-3.5 py-2 rounded-xl font-semibold border-2 transition-all cursor-pointer ${
+                    className={`text-xs px-4 py-2.5 rounded-xl font-bold border-2 transition-all cursor-pointer select-none active:scale-95 ${
                       selectedVariant === v.unit
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                        : 'border-gray-200 text-gray-600 hover:border-emerald-300 bg-white'
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800 shadow-xs ring-2 ring-emerald-600/20'
+                        : 'border-slate-200 text-slate-700 hover:border-emerald-300 bg-white'
                     }`}
                   >
                     {v.unit}
@@ -287,9 +314,9 @@ export default function WriteReviewModal({
             </div>
           )}
 
-          {/* 3. Tiêu chí nhanh (Tags Shopee) */}
+          {/* 3. Tiêu chí nhanh (Tags Shopee) - Hitbox ổn định không nhảy kích thước */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">
+            <label className="block text-xs font-bold text-slate-700 mb-2">
               Điểm bạn hài lòng nhất:
             </label>
             <div className="flex flex-wrap gap-2">
@@ -300,14 +327,18 @@ export default function WriteReviewModal({
                     type="button"
                     key={tag}
                     onClick={() => toggleTag(tag)}
-                    className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-all flex items-center gap-1.5 cursor-pointer ${
+                    className={`text-xs px-3.5 py-2 rounded-full font-semibold border transition-all flex items-center gap-2 cursor-pointer select-none active:scale-95 ${
                       isSelected
-                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300'
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-600/20'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-emerald-300 hover:bg-slate-100'
                     }`}
                   >
-                    {isSelected && <Check size={12} />}
-                    {tag}
+                    <span className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                      isSelected ? 'bg-white text-emerald-700' : 'border border-slate-300 text-transparent'
+                    }`}>
+                      <Check size={11} strokeWidth={3} />
+                    </span>
+                    <span>{tag}</span>
                   </button>
                 );
               })}
@@ -316,7 +347,7 @@ export default function WriteReviewModal({
 
           {/* 4. Nội dung đánh giá */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">
+            <label className="block text-xs font-bold text-slate-700 mb-2">
               Cảm nhận chi tiết của bạn: <span className="text-rose-500">*</span>
             </label>
             <textarea
@@ -324,26 +355,26 @@ export default function WriteReviewModal({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Chia sẻ trải nghiệm về độ tươi, mùi vị, độ ngọt, bao bì đóng gói và thời gian giao hàng nhé..."
-              className="w-full text-sm p-4 rounded-2xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-gray-400 bg-gray-50/50"
+              className="w-full text-sm p-4 rounded-2xl border-2 border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all placeholder:text-slate-400 bg-slate-50/50 resize-y min-h-[110px]"
             />
-            <div className="flex justify-between items-center text-[11px] text-gray-400 mt-1">
+            <div className="flex justify-between items-center text-[11px] text-slate-400 mt-1">
               <span>Tối thiểu 5 ký tự</span>
               <span>{comment.length}/2000</span>
             </div>
           </div>
 
           {/* 5. TẢI LÊN VIDEO REVIEW (Đặc trưng Shopee) */}
-          <div className="border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-2xl p-4">
+          <div className="border-2 border-dashed border-emerald-300 bg-emerald-50/40 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                   <Video size={18} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-gray-900">
+                  <h4 className="text-xs font-bold text-slate-900">
                     Video Review thực tế (Shopee Style)
                   </h4>
-                  <p className="text-[11px] text-gray-500">
+                  <p className="text-[11px] text-slate-500">
                     Quay cận cảnh sản phẩm, unbox hoặc thưởng thức (tối đa 50MB)
                   </p>
                 </div>
@@ -353,7 +384,7 @@ export default function WriteReviewModal({
                 <button
                   type="button"
                   onClick={() => videoInputRef.current?.click()}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer select-none shrink-0"
                 >
                   <Upload size={14} /> Thêm Video
                 </button>
@@ -391,15 +422,15 @@ export default function WriteReviewModal({
           </div>
 
           {/* 6. TẢI LÊN HÌNH ẢNH REVIEW */}
-          <div className="border border-gray-200 rounded-2xl p-4">
+          <div className="border border-slate-200 bg-white rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
                   <ImageIcon size={18} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-gray-900">Hình ảnh chụp thực tế</h4>
-                  <p className="text-[11px] text-gray-500">Tối đa 5 hình ảnh ({photoFiles.length}/5)</p>
+                  <h4 className="text-xs font-bold text-slate-900">Hình ảnh chụp thực tế</h4>
+                  <p className="text-[11px] text-slate-500">Tối đa 5 hình ảnh ({photoFiles.length}/5)</p>
                 </div>
               </div>
 
@@ -407,7 +438,7 @@ export default function WriteReviewModal({
                 <button
                   type="button"
                   onClick={() => photoInputRef.current?.click()}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 transition-colors cursor-pointer"
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer select-none shrink-0"
                 >
                   <Upload size={14} /> Chọn ảnh
                 </button>
@@ -426,7 +457,7 @@ export default function WriteReviewModal({
             {photoPreviewUrls.length > 0 && (
               <div className="flex flex-wrap gap-2.5 mt-2">
                 {photoPreviewUrls.map((url, idx) => (
-                  <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 shadow-2xs group">
+                  <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-2xs group">
                     <img src={url} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"
@@ -442,46 +473,46 @@ export default function WriteReviewModal({
           </div>
 
           {/* 7. Thông tin người gửi & Ẩn danh */}
-          <div className="bg-gray-50 p-4 rounded-2xl space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-xs font-bold text-gray-800 block">Tên người đánh giá:</label>
+          <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-200/80">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex-1">
+                <label className="text-xs font-bold text-slate-800 block">Tên người đánh giá:</label>
                 <input
                   type="text"
                   value={reviewerName}
                   onChange={(e) => setReviewerName(e.target.value)}
-                  className="mt-1 text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-hidden focus:border-emerald-500"
+                  className="mt-1 text-xs px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 focus:outline-hidden focus:border-emerald-500 w-full sm:max-w-xs"
                 />
               </div>
 
-              <label className="flex items-center gap-2 cursor-pointer mt-4">
+              <label className="flex items-center gap-2 cursor-pointer p-2 rounded-xl hover:bg-white transition-colors border border-transparent hover:border-slate-200">
                 <input
                   type="checkbox"
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded-md focus:ring-emerald-500"
+                  className="w-4 h-4 text-emerald-600 rounded-md focus:ring-emerald-500 cursor-pointer"
                 />
-                <span className="text-xs text-gray-700 font-medium select-none">
+                <span className="text-xs text-slate-700 font-medium select-none">
                   Hiển thị ẩn danh (ví dụ: n*****9)
                 </span>
               </label>
             </div>
           </div>
 
-          {/* Nút gửi đánh giá */}
-          <div className="pt-2 flex gap-3">
+          {/* Nút gửi đánh giá - Sticky Footer ổn định */}
+          <div className="pt-3 border-t border-slate-100 flex gap-3 sticky bottom-0 bg-white/95 backdrop-blur-xs py-2">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 py-3.5 px-4 rounded-2xl border-2 border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors cursor-pointer"
+              className="flex-1 py-3 px-4 rounded-2xl border-2 border-slate-200 text-slate-700 font-bold text-sm hover:bg-slate-50 transition-all active:scale-98 cursor-pointer"
             >
               Hủy bỏ
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-2 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-950/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="flex-2 py-3 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-950/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <span>Đang tải lên video & đánh giá...</span>
@@ -495,6 +526,7 @@ export default function WriteReviewModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

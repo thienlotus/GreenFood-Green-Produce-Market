@@ -21,6 +21,9 @@ use App\Modules\B2B\Controllers\B2bController;
 use App\Http\Controllers\Api\GHNController;
 use App\Http\Controllers\Api\CardPaymentController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\CareersController;
+use App\Http\Controllers\Api\ContactInquiryController;
+use App\Http\Controllers\Api\ComplaintController;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,6 +114,11 @@ Route::prefix('v1')->group(function () {
     Route::put('/farmers/{id}/orders/{orderId}/status', [FarmerController::class, 'updateSubOrderStatus']);
     Route::get('/farmers/{id}/wallet', [FarmerController::class, 'getWallet']);
     Route::put('/farmers/{id}/bank', [FarmerController::class, 'updateBank']);
+    Route::post('/farmers/{id}/withdraw', [FarmerController::class, 'requestWithdraw']);
+    Route::get('/farmers/{id}/withdrawals', [FarmerController::class, 'getWithdrawals']);
+    Route::get('/admin/withdrawals', [FarmerController::class, 'getAdminWithdrawals']);
+    Route::post('/admin/withdrawals/{id}/approve', [FarmerController::class, 'approveWithdrawal']);
+    Route::post('/admin/withdrawals/{id}/reject', [FarmerController::class, 'rejectWithdrawal']);
     Route::get('/admin/farmers', [FarmerController::class, 'adminIndex']);
     Route::put('/admin/farmers/{id}', [FarmerController::class, 'update']);
     Route::put('/admin/farmers/{id}/status', [FarmerController::class, 'updateStatus']);
@@ -139,7 +147,41 @@ Route::prefix('v1')->group(function () {
     Route::get('/admin/b2b/inquiries', [B2bController::class, 'index']);
     Route::put('/admin/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
     Route::post('/admin/b2b/inquiries/{id}/respond', [B2bController::class, 'respond']);
+
+    // 11. Careers & Job Applications Module
+    Route::post('/careers/apply', [CareersController::class, 'apply']);
+    Route::get('/admin/careers', [CareersController::class, 'index']);
+    Route::put('/admin/careers/{id}/status', [CareersController::class, 'updateStatus']);
+    Route::delete('/admin/careers/{id}', [CareersController::class, 'destroy']);
+
+    // 12. Contact & Customer Feedback Module
+    Route::post('/contact', [ContactInquiryController::class, 'store']);
+    Route::get('/admin/contact', [ContactInquiryController::class, 'index']);
+    Route::put('/admin/contact/{id}/status', [ContactInquiryController::class, 'updateStatus']);
+    Route::delete('/admin/contact/{id}', [ContactInquiryController::class, 'destroy']);
+
+    // 13. Customer Complaints Resolution Module
+    Route::post('/complaints', [ComplaintController::class, 'store']);
+    Route::get('/admin/complaints', [ComplaintController::class, 'index']);
+    Route::put('/admin/complaints/{id}/status', [ComplaintController::class, 'updateStatus']);
+    Route::delete('/admin/complaints/{id}', [ComplaintController::class, 'destroy']);
+
+    // 14. Chat Module (v1)
+    Route::prefix('chat')->group(function () {
+        Route::get('/conversations', [ChatController::class, 'index']);
+        Route::post('/conversations', [ChatController::class, 'store']);
+        Route::post('/customer/conversations/farmer', [ChatController::class, 'startCustomerFarmerChat']);
+        Route::post('/farmer/conversations/customer', [ChatController::class, 'startFarmerCustomerChat']);
+        Route::post('/farmer/conversations/admin', [ChatController::class, 'startFarmerAdminChat']);
+        Route::get('/conversations/{id}', [ChatController::class, 'show']);
+        Route::get('/conversations/{id}/customer', [ChatController::class, 'customerMessages']);
+        Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']);
+        Route::match(['put', 'post'], '/conversations/{id}/assign', [ChatController::class, 'assign']);
+        Route::match(['put', 'post'], '/conversations/{id}/close', [ChatController::class, 'close']);
+        Route::get('/unread-count', [ChatController::class, 'unreadCount']);
+    });
 });
+
 
 // Direct aliases without v1 prefix for backward compatibility
 Route::post('/auth/register', [UserController::class, 'register']);
@@ -170,6 +212,29 @@ Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
 Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
 Route::post('/reviews/{id}/like', [ReviewController::class, 'toggleLike']);
 Route::post('/reviews/upload', [ReviewController::class, 'uploadMedia']);
+Route::get('/storage/{path}', function ($path) {
+    $searchPaths = [
+        public_path('storage/' . $path),
+        storage_path('app/public/' . $path),
+        storage_path('app/' . $path),
+        '/home/ajmylihnhosting/domains/greenfood.asia/public_html/storage/' . $path,
+        '/home/ajmylihnhosting/domains/greenfood.asia/storage/' . $path,
+        '/home/ajmylihnhosting/storage/app/public/' . $path,
+        base_path('storage/app/public/' . $path),
+    ];
+
+    foreach ($searchPaths as $file) {
+        if (file_exists($file) && is_file($file)) {
+            $mime = mime_content_type($file) ?: 'application/octet-stream';
+            return response()->file($file, [
+                'Content-Type' => $mime,
+                'Cache-Control' => 'public, max-age=31536000',
+            ]);
+        }
+    }
+
+    return response('File not found', 404);
+})->where('path', '.*');
 
 Route::post('/cart/calculate', [CartController::class, 'calculate']);
 
@@ -209,6 +274,11 @@ Route::get('/farmers/{id}/orders', [FarmerController::class, 'getOrders']);
 Route::put('/farmers/{id}/orders/{orderId}/status', [FarmerController::class, 'updateSubOrderStatus']);
 Route::get('/farmers/{id}/wallet', [FarmerController::class, 'getWallet']);
 Route::put('/farmers/{id}/bank', [FarmerController::class, 'updateBank']);
+Route::post('/farmers/{id}/withdraw', [FarmerController::class, 'requestWithdraw']);
+Route::get('/farmers/{id}/withdrawals', [FarmerController::class, 'getWithdrawals']);
+Route::get('/admin/withdrawals', [FarmerController::class, 'getAdminWithdrawals']);
+Route::post('/admin/withdrawals/{id}/approve', [FarmerController::class, 'approveWithdrawal']);
+Route::post('/admin/withdrawals/{id}/reject', [FarmerController::class, 'rejectWithdrawal']);
 Route::get('/admin/farmers', [FarmerController::class, 'adminIndex']);
 Route::put('/admin/farmers/{id}', [FarmerController::class, 'update']);
 Route::put('/admin/farmers/{id}/status', [FarmerController::class, 'updateStatus']);
@@ -229,12 +299,13 @@ Route::prefix('chat')->group(function () {
     Route::get('/conversations', [ChatController::class, 'index']);
     Route::post('/conversations', [ChatController::class, 'store']);
     Route::post('/customer/conversations/farmer', [ChatController::class, 'startCustomerFarmerChat']);
+    Route::post('/farmer/conversations/customer', [ChatController::class, 'startFarmerCustomerChat']);
     Route::post('/farmer/conversations/admin', [ChatController::class, 'startFarmerAdminChat']);
     Route::get('/conversations/{id}', [ChatController::class, 'show']);
     Route::get('/conversations/{id}/customer', [ChatController::class, 'customerMessages']);
     Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']);
-    Route::put('/conversations/{id}/assign', [ChatController::class, 'assign']);
-    Route::put('/conversations/{id}/close', [ChatController::class, 'close']);
+    Route::match(['put', 'post'], '/conversations/{id}/assign', [ChatController::class, 'assign']);
+    Route::match(['put', 'post'], '/conversations/{id}/close', [ChatController::class, 'close']);
     Route::get('/unread-count', [ChatController::class, 'unreadCount']);
 });
 
@@ -255,6 +326,22 @@ Route::delete('/b2b/inquiries/{id}', [B2bController::class, 'destroy']);
 Route::get('/admin/b2b/inquiries', [B2bController::class, 'index']);
 Route::put('/admin/b2b/inquiries/{id}/status', [B2bController::class, 'updateStatus']);
 Route::post('/admin/b2b/inquiries/{id}/respond', [B2bController::class, 'respond']);
+
+// Direct aliases for Careers, Contact, Complaints
+Route::post('/careers/apply', [CareersController::class, 'apply']);
+Route::get('/admin/careers', [CareersController::class, 'index']);
+Route::put('/admin/careers/{id}/status', [CareersController::class, 'updateStatus']);
+Route::delete('/admin/careers/{id}', [CareersController::class, 'destroy']);
+
+Route::post('/contact', [ContactInquiryController::class, 'store']);
+Route::get('/admin/contact', [ContactInquiryController::class, 'index']);
+Route::put('/admin/contact/{id}/status', [ContactInquiryController::class, 'updateStatus']);
+Route::delete('/admin/contact/{id}', [ContactInquiryController::class, 'destroy']);
+
+Route::post('/complaints', [ComplaintController::class, 'store']);
+Route::get('/admin/complaints', [ComplaintController::class, 'index']);
+Route::put('/admin/complaints/{id}/status', [ComplaintController::class, 'updateStatus']);
+Route::delete('/admin/complaints/{id}', [ComplaintController::class, 'destroy']);
 
 // 12. System Utility to trigger migrations on hosting without SSH
 Route::get('/system/migrate', function () {

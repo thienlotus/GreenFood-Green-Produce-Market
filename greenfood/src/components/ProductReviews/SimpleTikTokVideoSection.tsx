@@ -14,24 +14,24 @@ export interface LocalVideoItem {
 export const REVIEW_VIDEOS: LocalVideoItem[] = [
   {
     id: 'tiktok-1',
-    src: '/videos/tiktok-1.mp4',
-    poster: '/videos/tiktok-1-cover.jpg',
-    tiktokUrl: 'https://www.tiktok.com/@haidangrevieww/video/7478650791054642450?is_from_webapp=1&sender_device=pc',
-    title: 'Video Review #1',
+    src: '/videos/reel-durian.mp4',
+    poster: '/videos/reel-durian-cover.jpg',
+    tiktokUrl: 'https://www.tiktok.com/@trambichquyenn/video/7395648215904859393',
+    title: 'Review Sầu Riêng Ri6 Chín Cây',
   },
   {
     id: 'tiktok-2',
-    src: '/videos/tiktok-2.mp4',
-    poster: '/videos/tiktok-2-cover.jpg',
-    tiktokUrl: 'https://www.tiktok.com/@haidangrevieww/video/7382074794755280135?is_from_webapp=1&sender_device=pc',
-    title: 'Video Review #2',
+    src: '/videos/reel-strawberry.mp4',
+    poster: '/videos/reel-strawberry-cover.jpg',
+    tiktokUrl: 'https://www.tiktok.com/@dalatfresh/video/7382074794755280135',
+    title: 'Review Dâu Tây Bạch Tuyết Đà Lạt',
   },
   {
     id: 'tiktok-3',
-    src: '/videos/tiktok-3.mp4',
-    poster: '/videos/tiktok-3-cover.jpg',
-    tiktokUrl: 'https://www.tiktok.com/@ruongbacthang1980/video/7650412727776660744?is_from_webapp=1&sender_device=pc',
-    title: 'Video Review #3',
+    src: '/videos/reel-chuoi-laba.mp4',
+    poster: '/videos/reel-chuoi-laba-cover.jpg',
+    tiktokUrl: 'https://www.tiktok.com/@ruongbacthang1980/video/7650412727776660744',
+    title: 'Review Chuối Laba Núi Tiến Vua',
   },
 ];
 

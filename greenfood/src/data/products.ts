@@ -82,6 +82,48 @@ export const CATEGORIES: CategoryInfo[] = [
   }
 ];
 
+export const DEMO_FARMERS: Record<string, FarmerInfo> = {
+  chuBa: {
+    id: "bfe149ae-f195-4a3f-b83b-0b39c0e3e668",
+    name: "Vườn Trái Cây Chú Ba",
+    region: "Bến Tre",
+    rating: 4.8,
+    address: "Khu Phố 2, Thị trấn Chợ Lách, Huyện Chợ Lách, Bến Tre",
+    ghn_shop_id: 217559,
+    ghn_province_id: 213,
+    ghn_district_id: 3158,
+    ghn_ward_code: "560301",
+    ghn_address: "Khu Pho 2 Thi Tran Cho Lach Huyen Cho Lach Tinh Ben Tre, Thị trấn Chợ Lách, Huyện Chợ Lách, Bến Tre",
+    story: "Hơn 20 năm gắn bó với cây ăn trái miền Tây, vườn chú Ba áp dụng chuẩn VietGAP mang lại những trái sầu riêng, bưởi da xanh và trái cây nhiệt đới ngọt lành nhất."
+  },
+  mocChau: {
+    id: "f576baa3-88c0-4cb8-846a-da9c54f15395",
+    name: "Trang Trại Mộc Châu",
+    region: "Sơn La",
+    rating: 4.7,
+    address: "Trang Trại Cờ Đỏ Mộc Châu, Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La",
+    ghn_shop_id: 217561,
+    ghn_province_id: 266,
+    ghn_district_id: 1976,
+    ghn_ward_code: "141015",
+    ghn_address: "Trang Trại Cờ Đỏ Mộc Châu, Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La",
+    story: "Nằm trên cao nguyên Mộc Châu mát mẻ quanh năm, chuyên canh cà phê Robusta rang mộc và chè xanh Tân Cương chuẩn OCOP chất lượng cao."
+  },
+  daLat: {
+    id: "de9fd529-c612-4f0a-82c6-90c468e726ef",
+    name: "Nông Trại Xanh Đà Lạt",
+    region: "Lâm Đồng",
+    rating: 4.9,
+    address: "Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng",
+    ghn_shop_id: 227221,
+    ghn_province_id: 209,
+    ghn_district_id: 2104,
+    ghn_ward_code: "420701",
+    ghn_address: "Nhà Văn Hóa Thôn Đạ Nhar, Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng",
+    story: "Nông trại rau củ và trái cây sạch ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100% tại Lâm Đồng."
+  }
+};
+
 export const ALL_PRODUCTS: ProductItem[] = [
   {
     id: "p1",
@@ -90,18 +132,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "trai-cay",
     categoryName: "Trái cây tươi ngon",
     description: "Sầu riêng Ri6 trứ danh được trồng tại vùng phù sa màu mỡ Chợ Lách, Bến Tre. Cơm vàng óng, hạt lép, độ ngọt vừa phải và béo ngậy. Cam kết chín cây tự nhiên, không nhúng thuốc ép chín.",
-    farmer: {
-      name: "Vườn Trái Cây Chú Ba",
-      region: "Bến Tre",
-      rating: 4.8,
-      address: "Khu Phố 2, Thị trấn Chợ Lách, Huyện Chợ Lách, Bến Tre",
-      ghn_shop_id: 217559,
-      ghn_province_id: 213,
-      ghn_district_id: 3158,
-      ghn_ward_code: "560301",
-      ghn_address: "Khu Pho 2 Thi Tran Cho Lach Huyen Cho Lach Tinh Ben Tre, Thị trấn Chợ Lách, Huyện Chợ Lách, Bến Tre",
-      story: "Hơn 20 năm gắn bó với cây sầu riêng, vườn chú Ba áp dụng chuẩn VietGAP mang lại những trái sầu riêng an toàn nhất."
-    },
+    farmer: DEMO_FARMERS.chuBa,
+    farmerId: DEMO_FARMERS.chuBa.id,
     images: [
       "/products/sau-rieng-ri6.jpg"
     ],
@@ -121,17 +153,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "trai-cay",
     categoryName: "Trái cây tươi ngon",
     description: "Bưởi da xanh Bến Tre vỏ mỏng, múi căng mọng, tép bưởi màu hồng tự nhiên, vị ngọt thanh mát đậm đà. Đạt chuẩn chứng nhận VietGAP an toàn tuyệt đối.",
-    farmer: {
-      name: "HTX Bưởi Da Xanh",
-      region: "Vĩnh Long",
-      rating: 4.6,
-      address: "Bình Minh, Vĩnh Long",
-      ghn_province_id: 213,
-      ghn_district_id: 3158,
-      ghn_ward_code: "560311",
-      ghn_address: "Bình Minh, Vĩnh Long",
-      story: "Hợp tác xã quy tụ 50 hộ gia đình trồng bưởi truyền thống với tiêu chuẩn sinh học sạch."
-    },
+    farmer: DEMO_FARMERS.chuBa,
+    farmerId: DEMO_FARMERS.chuBa.id,
     images: [
       "/products/buoi-da-xanh.jpg"
     ],
@@ -151,18 +174,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "trai-cay",
     categoryName: "Trái cây tươi ngon",
     description: "Dưa lưới mật trồng trong nhà màng công nghệ cao tại Đà Lạt. Ruột màu cam đậm, vị ngọt lịm như mật, giòn thơm nức mũi.",
-    farmer: {
-      name: "Nông Trại Xanh Đà Lạt",
-      region: "Lâm Đồng",
-      rating: 4.9,
-      address: "Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng",
-      ghn_shop_id: 227221,
-      ghn_province_id: 209,
-      ghn_district_id: 2104,
-      ghn_ward_code: "91597",
-      ghn_address: "Nhà Văn Hóa Thôn Đạ Nhar Thôn Đạ Nhar, Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng",
-      story: "Nông trại ứng dụng công nghệ tưới nhỏ giọt Israel và phân bón vi sinh hữu cơ 100%."
-    },
+    farmer: DEMO_FARMERS.daLat,
+    farmerId: DEMO_FARMERS.daLat.id,
     images: [
       "/products/dua-luoi-mat.jpg"
     ],
@@ -181,17 +194,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "trai-cay",
     categoryName: "Trái cây tươi ngon",
     description: "Xoài cát Hòa Lộc Đồng Tháp loại 1 quả thon dài, vỏ vàng tươi khi chín, thịt quả dẻo mịn không xơ, hương thơm ngào ngạt.",
-    farmer: {
-      name: "Vườn Xoài Ông Năm",
-      region: "Đồng Tháp",
-      rating: 4.7,
-      address: "Cao Lãnh, Đồng Tháp",
-      ghn_province_id: 213,
-      ghn_district_id: 3158,
-      ghn_ward_code: "560311",
-      ghn_address: "Cao Lãnh, Đồng Tháp",
-      story: "Truyền thống 3 đời canh tác giống xoài quý trên đất phù sa sông Tiền."
-    },
+    farmer: DEMO_FARMERS.chuBa,
+    farmerId: DEMO_FARMERS.chuBa.id,
     images: [
       "/products/xoai-cat-hoa-loc.jpg"
     ],
@@ -210,18 +214,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "trai-cay",
     categoryName: "Trái cây tươi ngon",
     description: "Dâu tây giống New Zealand quả đỏ tươi, vị chua ngọt hài hòa tự nhiên. Thu hoạch sáng sớm và cấp đông nhanh chuẩn IQF giữ trọn dinh dưỡng.",
-    farmer: {
-      name: "Nông Trại Xanh Đà Lạt",
-      region: "Đà Lạt",
-      rating: 4.9,
-      address: "Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng",
-      ghn_shop_id: 227221,
-      ghn_province_id: 209,
-      ghn_district_id: 2104,
-      ghn_ward_code: "91597",
-      ghn_address: "Nhà Văn Hóa Thôn Đạ Nhar Thôn Đạ Nhar, Xã Quốc Oai, Huyện Đạ Huoai, Lâm Đồng",
-      story: "Canh tác giá thể xơ dừa treo cao, không tiếp xúc đất, sạch tuyệt đối."
-    },
+    farmer: DEMO_FARMERS.daLat,
+    farmerId: DEMO_FARMERS.daLat.id,
     images: [
       "/products/dau-tay.jpg"
     ],
@@ -240,12 +234,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "trai-cay",
     categoryName: "Trái cây tươi ngon",
     description: "Nho mẫu đơn quả to tròn, vỏ mỏng không hạt, vị ngọt đậm thơm mùi xoài sữa quý tộc.",
-    farmer: {
-      name: "GreenFood Global",
-      region: "Nhập khẩu",
-      rating: 4.9,
-      story: "Kiểm nghiệm chất lượng nghiêm ngặt từng chùm trước khi đóng gói."
-    },
+    farmer: DEMO_FARMERS.chuBa,
+    farmerId: DEMO_FARMERS.chuBa.id,
     images: [
       "/products/nho-mau-don.jpg"
     ],
@@ -263,12 +253,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "di-cho-online",
     categoryName: "Đi chợ online",
     description: "Cam sành Vĩnh Long vỏ sần mọng nước, tép vàng ươm, vắt nước uống giải nhiệt và tăng sức đề kháng mỗi ngày.",
-    farmer: {
-      name: "Miệt Vườn Miền Tây",
-      region: "Vĩnh Long",
-      rating: 4.5,
-      story: "Vườn cam phù sa bồi đắp quanh năm cho trái mọng nước tự nhiên."
-    },
+    farmer: DEMO_FARMERS.chuBa,
+    farmerId: DEMO_FARMERS.chuBa.id,
     images: [
       "/products/cam-sanh.jpg"
     ],
@@ -285,12 +271,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "di-cho-online",
     categoryName: "Đi chợ online",
     description: "Chuối Laba Đà Lạt dẻo thơm, ruột vàng ánh kim, vị ngọt đậm đà đặc trưng từng dâng vua ngày xưa.",
-    farmer: {
-      name: "Laba Farm",
-      region: "Lâm Đồng",
-      rating: 4.8,
-      story: "Giống chuối cổ truyền thống vùng đất đỏ bazan Lâm Đồng."
-    },
+    farmer: DEMO_FARMERS.daLat,
+    farmerId: DEMO_FARMERS.daLat.id,
     images: [
       "/products/chuoi-laba.jpg"
     ],
@@ -307,18 +289,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "tra-ca-phe",
     categoryName: "Trà - Cà phê - Socola",
     description: "Cà phê nguyên chất rang mộc hương vị đậm đà, vị đắng thanh quyến rũ, thu hoạch từ cao nguyên Mộc Châu.",
-    farmer: {
-      name: "Trang Trại Mộc Châu",
-      region: "Sơn La",
-      rating: 4.7,
-      address: "Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La",
-      ghn_shop_id: 217561,
-      ghn_province_id: 266,
-      ghn_district_id: 1976,
-      ghn_ward_code: "141015",
-      ghn_address: "Trang Trại Cờ Đỏ Mộc Châu, Phường Mộc Lỵ, Huyện Mộc Châu, Sơn La",
-      story: "Cà phê trồng ở độ cao trên 1000m cho hương thơm tinh khiết."
-    },
+    farmer: DEMO_FARMERS.mocChau,
+    farmerId: DEMO_FARMERS.mocChau.id,
     images: [
       "/products/ca-phe-robusta.jpg"
     ],
@@ -337,17 +309,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "tra-ca-phe",
     categoryName: "Trà - Cà phê - Socola",
     description: "Trà nõn tôm Tân Cương cánh xoăn hương cốm nồng nàn, nước xanh ánh vàng, hậu ngọt sâu lắng chuẩn vị.",
-    farmer: {
-      name: "HTX Chè Thái Nguyên",
-      region: "Thái Nguyên",
-      rating: 4.6,
-      address: "Tân Cương, Thái Nguyên",
-      ghn_province_id: 244,
-      ghn_district_id: 1976,
-      ghn_ward_code: "90792",
-      ghn_address: "Tân Cương, Thái Nguyên",
-      story: "Búp chè hái tay 1 tôm 2 lá lúc sáng sớm giữ trọn hương sương mai."
-    },
+    farmer: DEMO_FARMERS.mocChau,
+    farmerId: DEMO_FARMERS.mocChau.id,
     images: [
       "/products/che-thai-nguyen.jpg"
     ],
@@ -365,12 +328,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "dac-san",
     categoryName: "Đặc sản vùng miền",
     description: "Mật ong hoa tràm nguyên chất 100% thu hoạch tự nhiên từ rừng tràm U Minh Cà Mau, màu vàng óng, thơm nồng dịu.",
-    farmer: {
-      name: "Vườn Trái Cây Chú Ba",
-      region: "Cà Mau",
-      rating: 4.9,
-      story: "Người gác kèo ong rừng U Minh kinh nghiệm trên 30 năm khai thác bền vững."
-    },
+    farmer: DEMO_FARMERS.chuBa,
+    farmerId: DEMO_FARMERS.chuBa.id,
     images: [
       "/products/mat-ong-rung-tram.jpg"
     ],
@@ -389,12 +348,8 @@ export const ALL_PRODUCTS: ProductItem[] = [
     categorySlug: "agrishow",
     categoryName: "Agrishow Triển Lãm",
     description: "Combo 5 loại rau củ hữu cơ Đà Lạt: Xà lách lolo, cải kale, cà chua bi cherry, cà rốt baby, ớt chuông ngọt.",
-    farmer: {
-      name: "Nông Trại Xanh Đà Lạt",
-      region: "Lâm Đồng",
-      rating: 4.9,
-      story: "Canh tác hữu cơ chuẩn quốc tế được trưng bày tại hội chợ Agrishow 2026."
-    },
+    farmer: DEMO_FARMERS.daLat,
+    farmerId: DEMO_FARMERS.daLat.id,
     images: [
       "/products/rau-huu-co-tong-hop.jpg"
     ],

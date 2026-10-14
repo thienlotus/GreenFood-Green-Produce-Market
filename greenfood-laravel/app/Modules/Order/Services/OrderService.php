@@ -64,15 +64,27 @@ class OrderService
 
                 $itemsTotal += ($realPrice * $qty);
 
-                $farmerId = null;
-                if ($productId) {
-                    $prod = \App\Models\Product::find($productId);
+                $farmerId = $it['farmer_id'] ?? null;
+                if ($farmerId && !\App\Models\Farmer::where('id', $farmerId)->exists()) {
+                    $farmerId = null;
+                }
+                if (!$farmerId && !empty($it['ghn_shop_id'])) {
+                    $farmerId = \App\Models\Farmer::where('ghn_shop_id', (int)$it['ghn_shop_id'])->value('id');
+                }
+                if (!$farmerId && $productId) {
+                    $prod = \App\Models\Product::where('id', $productId)
+                        ->orWhere('slug', $productId)
+                        ->orWhere('name', $it['product_name'])
+                        ->first();
                     if ($prod) {
                         $farmerId = $prod->farmer_id;
                     }
                 }
+                if (!$farmerId && !empty($it['farmer_name'])) {
+                    $farmerId = \App\Models\Farmer::where('farm_name', 'like', '%' . $it['farmer_name'] . '%')->value('id');
+                }
                 if (!$farmerId) {
-                    $farmerId = \App\Models\Farmer::value('id');
+                    $farmerId = \App\Models\Farmer::whereNotNull('ghn_shop_id')->value('id') ?? \App\Models\Farmer::value('id');
                 }
 
                 $validatedItems[] = [

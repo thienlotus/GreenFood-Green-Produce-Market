@@ -1,11 +1,11 @@
 "use client";
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { 
-  ShoppingCart, Search, Menu, User, Download, Users, Bell, MapPin, 
+  ShoppingCart, Search, Menu, User, Download, Users, Bell, 
   ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, List, Map, Package, LogOut, ShieldCheck, X,
-  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles, LayoutGrid, Building2
+  ShoppingBag, Apple, Coffee, Gift, Store, Sparkles, LayoutGrid, Building2, Video, Flame, MessageCircle
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -14,8 +14,73 @@ import { toast } from 'react-hot-toast';
 import BrandLogo from '@/components/BrandLogo';
 import NotificationDropdown from '@/components/NotificationDropdown';
 
+const HORIZONTAL_NAV_ITEMS = [
+  {
+    id: 'di-cho-online',
+    name: 'Đi chợ online',
+    href: '/category/di-cho-online/',
+    icon: ShoppingBag,
+    color: 'text-emerald-600',
+    indicatorColor: 'bg-emerald-600',
+    activeText: 'text-emerald-900 font-extrabold',
+    hoverText: 'hover:text-emerald-900 hover:bg-emerald-50/90',
+  },
+  {
+    id: 'trai-cay',
+    name: 'Trái cây tươi',
+    href: '/category/trai-cay/',
+    icon: Apple,
+    color: 'text-rose-500',
+    indicatorColor: 'bg-rose-500',
+    activeText: 'text-rose-900 font-extrabold',
+    hoverText: 'hover:text-rose-900 hover:bg-rose-50/90',
+  },
+  {
+    id: 'tra-ca-phe',
+    name: 'Trà & Cà phê',
+    href: '/category/tra-ca-phe/',
+    icon: Coffee,
+    color: 'text-amber-700',
+    indicatorColor: 'bg-amber-700',
+    activeText: 'text-amber-900 font-extrabold',
+    hoverText: 'hover:text-amber-900 hover:bg-amber-50/90',
+  },
+  {
+    id: 'dac-san',
+    name: 'Đặc sản',
+    href: '/category/dac-san/',
+    icon: Gift,
+    color: 'text-purple-600',
+    indicatorColor: 'bg-purple-600',
+    activeText: 'text-purple-900 font-extrabold',
+    hoverText: 'hover:text-purple-900 hover:bg-purple-50/90',
+  },
+  {
+    id: 'agrishow',
+    name: 'Triển lãm Agrishow',
+    href: '/category/agrishow/',
+    icon: Sparkles,
+    color: 'text-teal-600',
+    indicatorColor: 'bg-teal-600',
+    activeText: 'text-teal-900 font-extrabold',
+    hoverText: 'hover:text-teal-900 hover:bg-teal-50/90',
+  },
+  {
+    id: 'reels',
+    name: 'Reels Video',
+    href: '/#reels',
+    isReels: true,
+    icon: Video,
+    color: 'text-rose-500',
+    indicatorColor: 'bg-rose-600',
+    activeText: 'text-rose-700 font-black',
+    hoverText: 'hover:text-rose-700 hover:bg-rose-50/90',
+  },
+];
+
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { items, setIsOpen } = useCartStore();
   const { user, isAuthenticated, logout } = useAuthStore();
   const [mounted, setMounted] = useState(false);
@@ -23,15 +88,12 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [selectedNavId, setSelectedNavId] = useState<string | null>(null);
 
   // Scrollable ribbon states & drag controls
   const navRef = useRef<HTMLElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const isDraggingRef = useRef(false);
-  const startXRef = useRef(0);
-  const scrollLeftRef = useRef(0);
-  const hasMovedRef = useRef(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const categoryMenuRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +108,32 @@ export default function Navbar() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Tự động nhận diện mục active trên thanh ngang dựa vào pathname hoặc hash
+  useEffect(() => {
+    if (pathname.includes('/category/di-cho-online')) {
+      setSelectedNavId('di-cho-online');
+    } else if (pathname.includes('/category/trai-cay')) {
+      setSelectedNavId('trai-cay');
+    } else if (pathname.includes('/category/tra-ca-phe')) {
+      setSelectedNavId('tra-ca-phe');
+    } else if (pathname.includes('/category/dac-san')) {
+      setSelectedNavId('dac-san');
+    } else if (pathname.includes('/category/agrishow')) {
+      setSelectedNavId('agrishow');
+    } else if (typeof window !== 'undefined' && window.location.hash === '#reels') {
+      setSelectedNavId('reels');
+    } else {
+      if (typeof window !== 'undefined') {
+        const saved = sessionStorage.getItem('gf_active_nav');
+        if (saved) {
+          setSelectedNavId(saved);
+          return;
+        }
+      }
+      setSelectedNavId(null);
+    }
+  }, [pathname]);
 
   // Đóng dropdown khi click ra ngoài màn hình
   useEffect(() => {
@@ -95,28 +183,6 @@ export default function Navbar() {
     }
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!navRef.current) return;
-    isDraggingRef.current = true;
-    hasMovedRef.current = false;
-    startXRef.current = e.pageX - navRef.current.offsetLeft;
-    scrollLeftRef.current = navRef.current.scrollLeft;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDraggingRef.current || !navRef.current) return;
-    const x = e.pageX - navRef.current.offsetLeft;
-    const walk = x - startXRef.current;
-    if (Math.abs(walk) > 4) {
-      hasMovedRef.current = true;
-    }
-    navRef.current.scrollLeft = scrollLeftRef.current - walk;
-    checkScroll();
-  };
-
-  const handleMouseUpOrLeave = () => {
-    isDraggingRef.current = false;
-  };
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -275,17 +341,6 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* Warehouse Pickup (Chỉ hiện trên màn hình siêu rộng 2XL để ưu tiên không gian tìm kiếm) */}
-            <div 
-              onClick={() => toast.success('Đã cập nhật kho: TP. Hồ Chí Minh')}
-              className="hidden 2xl:flex items-center gap-2 bg-emerald-50/90 text-emerald-950 px-3 py-1.5 rounded-full border border-emerald-200/80 cursor-pointer hover:bg-emerald-100/90 transition-all shadow-xs shrink-0"
-            >
-              <MapPin size={15} className="text-emerald-600 shrink-0" />
-              <div className="flex flex-col text-[11px] leading-tight">
-                <span className="text-slate-500">Kho hàng:</span>
-                <b className="text-emerald-800 font-bold">TP. HCM</b>
-              </div>
-            </div>
 
             {/* Mobile Profile Icon (Visible on small screens if logged in) */}
             {mounted && isAuthenticated && user && (
@@ -395,53 +450,49 @@ export default function Navbar() {
             <div className="col-span-8 xl:col-span-9 flex items-center gap-2 min-w-0">
               <nav
                 ref={navRef}
-                onWheel={handleNavWheel}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUpOrLeave}
-                onMouseLeave={handleMouseUpOrLeave}
-                className="flex-1 flex items-center justify-evenly overflow-x-auto no-scrollbar scroll-smooth py-1 min-w-0 px-1 xl:px-3"
+                className="flex-1 flex items-center justify-evenly overflow-x-auto no-scrollbar scroll-smooth py-1.5 min-w-0 px-1 xl:px-3"
               >
-                <Link 
-                  href="/category/di-cho-online/" 
-                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-emerald-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
-                >
-                  <ShoppingBag size={14} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
-                  <span>Đi chợ online</span>
-                </Link>
-                <Link 
-                  href="/category/trai-cay/" 
-                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-rose-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
-                >
-                  <Apple size={14} className="text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
-                  <span>Trái cây tươi</span>
-                </Link>
-                <Link 
-                  href="/category/tra-ca-phe/" 
-                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-amber-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
-                >
-                  <Coffee size={14} className="text-amber-700 group-hover:scale-110 transition-transform shrink-0" />
-                  <span>Trà & Cà phê</span>
-                </Link>
-                <Link 
-                  href="/category/dac-san/" 
-                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-purple-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
-                >
-                  <Gift size={14} className="text-purple-600 group-hover:scale-110 transition-transform shrink-0" />
-                  <span>Đặc sản</span>
-                </Link>
-                <Link 
-                  href="/category/agrishow/" 
-                  onClick={(e) => { if (hasMovedRef.current) e.preventDefault(); }}
-                  className="px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl text-xs xl:text-[13px] font-bold text-slate-800 hover:text-emerald-900 hover:bg-teal-50/90 transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group"
-                >
-                  <Sparkles size={14} className="text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
-                  <span>Triển lãm Agrishow</span>
-                </Link>
+                {HORIZONTAL_NAV_ITEMS.map((item) => {
+                  const IconComp = item.icon;
+                  const isSelected = selectedNavId === item.id;
+                  return (
+                    <Link 
+                      key={item.id}
+                      href={item.href} 
+                      onClick={() => {
+                        setSelectedNavId(item.id);
+                        if (typeof window !== 'undefined') {
+                          sessionStorage.setItem('gf_active_nav', item.id);
+                        }
+                      }}
+                      className={`relative px-3 xl:px-4 pt-1.5 pb-2.5 rounded-xl text-xs xl:text-[13px] transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 group ${
+                        isSelected 
+                          ? `${item.activeText} bg-slate-50/90 shadow-2xs` 
+                          : `font-bold text-slate-800 ${item.hoverText}`
+                      }`}
+                    >
+                      <IconComp 
+                        size={14} 
+                        className={`${item.color} group-hover:scale-110 transition-transform shrink-0`} 
+                      />
+                      <span>{item.name}</span>
+                      {item.isReels && (
+                        <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase leading-none shadow-xs">
+                          Hot
+                        </span>
+                      )}
+
+                      {/* Dấu gạch ngang cùng màu ở dưới chân mục: Hiển thị nổi bật khi HOVER và cố định khi ĐƯỢC CHỌN (ACTIVE) */}
+                      <span 
+                        className={`absolute bottom-0.5 left-2 right-2 h-[3.5px] rounded-full ${item.indicatorColor} transition-all duration-200 pointer-events-none shadow-xs ${
+                          isSelected 
+                            ? 'opacity-100 scale-x-100' 
+                            : 'opacity-0 scale-x-75 group-hover:opacity-100 group-hover:scale-x-100'
+                        }`} 
+                      />
+                    </Link>
+                  );
+                })}
               </nav>
 
               {/* 3. NÚT DROPDOWN "TIỆN ÍCH ▾" (Thay thế cho "... Thêm" - Tên gọi sang trọng, dễ nghe) */}
@@ -476,6 +527,19 @@ export default function Navbar() {
                     onMouseLeave={() => setIsMoreMenuOpen(false)}
                   >
                     <div className="w-56 bg-white shadow-xl border border-slate-200/90 p-1.5 rounded-2xl relative before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']">
+                      {/* Reels Video Review */}
+                      <Link 
+                        href="/#reels" 
+                        onClick={() => setIsMoreMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-rose-700 hover:text-rose-900 hover:bg-rose-50 transition-colors group"
+                      >
+                        <Video size={16} className="text-rose-600 group-hover:scale-110 transition-transform shrink-0" />
+                        <span className="flex items-center gap-1.5">
+                          <span>Reels Video Review</span>
+                          <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase leading-none">Hot</span>
+                        </span>
+                      </Link>
+
                       {/* Gian hàng nông hộ */}
                       <Link 
                         href="/farmers" 
@@ -516,6 +580,19 @@ export default function Navbar() {
                       >
                         <Users size={16} className="text-blue-600 group-hover:scale-110 transition-transform shrink-0" />
                         <span>Kênh người bán</span>
+                      </Link>
+
+                      {/* Chat Kênh Người Bán */}
+                      <Link 
+                        href="/farmer/chat" 
+                        onClick={() => setIsMoreMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50 transition-colors group"
+                      >
+                        <MessageCircle size={16} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
+                        <span className="flex items-center justify-between flex-1">
+                          <span>Tin nhắn nông hộ</span>
+                          <span className="bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">Chat</span>
+                        </span>
                       </Link>
 
                       {/* Khách Sỉ & Doanh Nghiệp B2B */}
@@ -635,6 +712,7 @@ export default function Navbar() {
                 { name: 'Trà - Cà phê - Socola', href: '/category/tra-ca-phe/', icon: Coffee, color: 'text-amber-700' },
                 { name: 'Đặc sản vùng miền', href: '/category/dac-san/', icon: Gift, color: 'text-purple-600' },
                 { name: 'Triển lãm Agrishow', href: '/category/agrishow/', icon: Sparkles, color: 'text-teal-600' },
+                { name: '🎬 Reels Video Review', href: '/#reels', icon: Video, color: 'text-rose-600 font-bold' },
               ].map((link) => {
                 const IconComp = link.icon;
                 return (
@@ -659,6 +737,7 @@ export default function Navbar() {
                 { name: 'Bản đồ nhà vườn', href: '/map/', icon: Map, color: 'text-teal-600' },
                 { name: 'Theo dõi đơn hàng', href: '/tracking/', icon: Package, color: 'text-amber-600' },
                 { name: 'Kênh người bán', href: '/farmer', icon: Users, color: 'text-slate-600' },
+                { name: 'Tin nhắn nông hộ', href: '/farmer/chat', icon: MessageCircle, color: 'text-emerald-700 font-bold' },
                 { name: 'Thông báo của tôi', href: '/notifications/', icon: Bell, color: 'text-emerald-600' },
                 { name: 'Hồ sơ cá nhân & VIP', href: '/profile/', icon: User, color: 'text-teal-600' },
               ].map((link) => {

@@ -39,6 +39,20 @@ export default function ChatWidget() {
   const [adminName, setAdminName] = useState<string | null>(null);
   const [status, setStatus] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const getActiveCustomerId = useCallback(() => {
+    if (user?.id) return user.id;
+    if (typeof window !== 'undefined') {
+      let guestId = localStorage.getItem('gf_guest_chat_id');
+      if (!guestId) {
+        guestId = 'guest_' + Math.random().toString(36).substring(2, 10);
+        localStorage.setItem('gf_guest_chat_id', guestId);
+      }
+      return guestId;
+    }
+    return 'usr-cust-02';
+  }, [user?.id]);
 
   // Lắng nghe sự kiện mở chat từ trang chi tiết nhà vườn hoặc chi tiết sản phẩm
   useEffect(() => {
@@ -51,15 +65,16 @@ export default function ChatWidget() {
         initial_message?: string;
       }>;
 
-      if (!customEvent.detail || !user?.id) return;
+      if (!customEvent.detail) return;
       const { farmer_id, farmer_name, product_id, product_name, initial_message } = customEvent.detail;
+      const customerId = getActiveCustomerId();
 
       setIsOpen(true);
       setShowConvList(false);
       setCurrentChatType('customer_farmer');
       setCurrentFarmerInfo({ id: farmer_id, name: farmer_name, product_name });
 
-      const res = await startCustomerFarmerChat(user.id, farmer_id, product_id, initial_message);
+      const res = await startCustomerFarmerChat(customerId, farmer_id, product_id, initial_message);
       if (res.success && res.data) {
         setConversationId(res.data.id);
         const data = await getChatMessages(res.data.id, 'customer');
@@ -71,41 +86,43 @@ export default function ChatWidget() {
 
     window.addEventListener('gf-open-chat', handleOpenChatEvent);
     return () => window.removeEventListener('gf-open-chat', handleOpenChatEvent);
-  }, [user?.id]);
+  }, [getActiveCustomerId]);
 
   // Poll for unread count
   useEffect(() => {
-    if (!isAuthenticated || !user?.id) return;
+    const customerId = getActiveCustomerId();
+    if (!customerId) return;
     const checkUnread = async () => {
-      const count = await getChatUnreadCount(user.id, 'customer');
+      const count = await getChatUnreadCount(customerId, 'customer');
       setUnreadCount(count);
     };
     checkUnread();
     const interval = setInterval(checkUnread, 15000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, user?.id]);
+  }, [getActiveCustomerId]);
 
   // Load danh sách hội thoại của khách hàng
   const loadConversations = useCallback(async () => {
-    if (!user?.id) return;
+    const customerId = getActiveCustomerId();
+    if (!customerId) return;
     try {
-      const data = await getChatConversations({ customer_id: user.id });
+      const data = await getChatConversations({ customer_id: customerId });
       setCustomerConversations(data);
     } catch {
       // Ignored
     }
-  }, [user?.id]);
+  }, [getActiveCustomerId]);
 
   // Load messages when conversation is open
   const loadMessages = useCallback(async () => {
-    if (!conversationId || !user?.id) return;
+    if (!conversationId) return;
     const data = await getChatMessages(conversationId, 'customer');
     if (data) {
       setMessages(data.messages);
       setAdminName(data.conversation.admin_name || null);
       setStatus(data.conversation.status);
     }
-  }, [conversationId, user?.id]);
+  }, [conversationId]);
 
   useEffect(() => {
     if (isOpen && conversationId) {
@@ -116,15 +133,18 @@ export default function ChatWidget() {
   }, [isOpen, conversationId, loadMessages]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   }, [messages, sending]);
 
   const handleOpen = async () => {
     setIsOpen(true);
     setUnreadCount(0);
     loadConversations();
-    if (!conversationId && user?.id) {
-      const result = await createChatConversation(user.id, 'Hỗ trợ khách hàng');
+    const customerId = getActiveCustomerId();
+    if (!conversationId && customerId) {
+      const result = await createChatConversation(customerId, 'Hỗ trợ khách hàng');
       if (result.success && result.data) {
         setConversationId(result.data.id);
         setCurrentChatType('customer_admin');
@@ -158,9 +178,10 @@ export default function ChatWidget() {
   };
 
   const handleSendPrompt = async (textToSend: string) => {
-    if (!textToSend.trim() || !conversationId || !user?.id || sending) return;
+    const customerId = getActiveCustomerId();
+    if (!textToSend.trim() || !conversationId || !customerId || sending) return;
     setSending(true);
-    const result = await sendChatMessage(conversationId, user.id, 'customer', textToSend.trim());
+    const result = await sendChatMessage(conversationId, customerId, 'customer', textToSend.trim());
     if (result.success && result.data) {
       const newMsgs: ChatMessageItem[] = [
         {
@@ -186,8 +207,8 @@ export default function ChatWidget() {
     handleSendPrompt(newMessage);
   };
 
-  // Don't show widget if not logged in or is admin
-  if (!isAuthenticated || user?.role === 'admin') return null;
+  // Don't show floating widget if is admin (admin has their own chat panel)
+  if (user?.role === 'admin') return null;
 
   return (
     <>
@@ -324,7 +345,7 @@ export default function ChatWidget() {
           )}
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/60">
+          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/60">
             {messages.length === 0 && (
               <div className="text-center text-gray-400 text-sm py-10">
                 <Bot size={36} className="mx-auto mb-2 text-emerald-500 opacity-60 animate-bounce" />

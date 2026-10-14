@@ -33,7 +33,8 @@ import {
   Check,
   AlertCircle,
   ChevronRight,
-  Tag
+  Tag,
+  Store
 } from 'lucide-react';
 import { useAuthStore, AVAILABLE_VOUCHERS, SavedAddress, VoucherItem } from '@/store/useAuthStore';
 import { useCartStore } from '@/store/useCartStore';
@@ -75,7 +76,7 @@ interface UserOrder {
   item_details?: OrderItemDetail[];
 }
 
-import { getMyOrders } from '@/lib/api';
+import { getMyOrders, getAdminFarmersApi } from '@/lib/api';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -99,6 +100,37 @@ export default function ProfilePage() {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<ProfileTab>('overview');
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [myFarmId, setMyFarmId] = useState<string>('');
+  const [myFarmName, setMyFarmName] = useState<string>('');
+
+  // Tự động phân giải gian hàng nông hộ của tài khoản đang đăng nhập
+  useEffect(() => {
+    if (user && (user.role === 'vendor' || (user.role as string)?.toLowerCase() === 'vendor')) {
+      getAdminFarmersApi().then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const myFarm = data.find((f: any) => {
+            if (f.user_id && user.id && String(f.user_id) === String(user.id)) return true;
+            if (f.user?.email && user.email && f.user.email.toLowerCase() === user.email.toLowerCase()) return true;
+            if (f.user?.phone && user.phone && f.user.phone === user.phone) return true;
+            if (user.farmName && (f.farm_name || '').toLowerCase().includes(user.farmName.toLowerCase())) return true;
+            if (user.name && ((f.farm_name || '').toLowerCase().includes(user.name.toLowerCase()) || (f.user?.name && f.user.name.toLowerCase().includes(user.name.toLowerCase())))) return true;
+            if (
+              ((user.email && (user.email.includes('chuba') || user.email.includes('thieuhung') || user.email.includes('0912'))) ||
+               (user.name && (user.name.toLowerCase().includes('ba') || user.name.toLowerCase().includes('thiều hưng') || user.name.toLowerCase().includes('hưng')))) &&
+              ((f.farm_name || '').toLowerCase().includes('ba') || (f.farm_name || '').toLowerCase().includes('thiều hưng'))
+            ) {
+              return true;
+            }
+            return false;
+          });
+          if (myFarm) {
+            setMyFarmId(myFarm.id);
+            setMyFarmName(myFarm.farm_name || '');
+          }
+        }
+      }).catch(() => {});
+    }
+  }, [user]);
 
   // Edit Profile Form State
   const [name, setName] = useState('');
@@ -506,14 +538,26 @@ export default function ProfilePage() {
               </Link>
             )}
 
-            {user.role === 'vendor' && (
-              <Link
-                href="/partners"
-                className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
-              >
-                <Tractor size={16} />
-                <span>Gian Hàng Nông Hộ</span>
-              </Link>
+            {(user.role === 'vendor' || (user.role as string)?.toLowerCase() === 'vendor') && (
+              <>
+                <Link
+                  href="/farmer"
+                  className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                  title="Vào Kênh Người Bán Nông Hộ để quản lý đơn hàng, kho sản phẩm, ví tiền và chat"
+                >
+                  <Tractor size={16} />
+                  <span>Kênh Người Bán</span>
+                </Link>
+
+                <Link
+                  href={myFarmId ? `/farmers/${myFarmId}` : '/farmers/store'}
+                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                  title="Xem gian hàng của bạn hiển thị ngoài website"
+                >
+                  <Store size={16} />
+                  <span>Xem Gian Hàng{myFarmName ? `: ${myFarmName}` : ''}</span>
+                </Link>
+              </>
             )}
 
             {user.role === 'customer' && (

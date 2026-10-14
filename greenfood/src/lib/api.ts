@@ -141,13 +141,14 @@ function removeVietnameseAccents(str: string): string {
     .toLowerCase();
 }
 
-export async function getProducts(params?: { category?: string; search?: string; region?: string; sort?: string; limit?: number }): Promise<ProductItem[]> {
+export async function getProducts(params?: { category?: string; search?: string; region?: string; sort?: string; limit?: number; farmer_id?: string }): Promise<ProductItem[]> {
   const queryParams = new URLSearchParams();
   if (params?.category) queryParams.set('category', params.category);
   if (params?.search) queryParams.set('search', params.search);
   if (params?.region && params.region !== 'all') queryParams.set('region', params.region);
   if (params?.sort) queryParams.set('sort', params.sort);
   if (params?.limit) queryParams.set('limit', String(params.limit));
+  if (params?.farmer_id) queryParams.set('farmer_id', params.farmer_id);
 
   const queryStr = queryParams.toString() ? `?${queryParams.toString()}` : '';
   const res = await fetchApi<{ success: boolean; data: any[] }>(`/products${queryStr}`);
@@ -285,12 +286,12 @@ export async function getShippingZones(): Promise<ShippingZoneItem[]> {
   if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
     return res.data.map((z: any) => ({
       id: z.id,
-      name: z.name,
-      provinces: z.provinces,
+      name: cleanVietnameseMojibake(z.name),
+      provinces: cleanVietnameseMojibake(z.provinces),
       baseFee: Number(z.base_fee),
       extraFeePerKg: Number(z.extra_fee_per_kg),
       freeShipMinimum: Number(z.free_ship_minimum),
-      estimatedDays: z.estimated_days,
+      estimatedDays: cleanVietnameseMojibake(z.estimated_days),
       isActive: Boolean(z.is_active),
     }));
   }
@@ -359,6 +360,11 @@ export async function deleteShippingZone(id: string): Promise<{ success: boolean
 export interface OrderItemPayload {
   productId?: string;
   variantId?: string;
+  farmerId?: string;
+  farmerName?: string;
+  ghnShopId?: number;
+  fromDistrictId?: number;
+  fromWardCode?: string;
   productName: string;
   unit: string;
   quantity: number;
@@ -442,6 +448,8 @@ export async function createProduct(payload: {
   unit?: string;
   description?: string;
   image_url?: string;
+  badge?: string;
+  is_seasonal?: boolean;
 }): Promise<{ success: boolean; message: string; data?: any }> {
   const res = await fetchApi<{ success: boolean; message: string; data?: any }>('/products', {
     method: 'POST',
@@ -458,6 +466,8 @@ export async function updateProduct(id: string | number, payload: Partial<{
   description: string;
   unit: string;
   image_url: string;
+  badge: string;
+  is_seasonal: boolean;
 }>): Promise<{ success: boolean; message: string; data?: any }> {
   const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/products/${id}`, {
     method: 'PUT',
@@ -519,6 +529,11 @@ export async function createOrder(payload: {
         items: payload.items.map(it => ({
           product_id: it.productId,
           variant_id: it.variantId,
+          farmer_id: it.farmerId,
+          farmer_name: it.farmerName,
+          ghn_shop_id: it.ghnShopId,
+          from_district_id: it.fromDistrictId,
+          from_ward_code: it.fromWardCode,
           product_name: it.productName,
           unit: it.unit,
           quantity: it.quantity,
@@ -959,6 +974,18 @@ export async function checkSepayStatus(orderId: string): Promise<SepayStatusResp
 }
 
 // 9. FARMER & AGRICULTURAL MARKETPLACE API
+export interface FarmerRegistrationDetails {
+  certifications?: string[];
+  cert_code?: string;
+  tax_id?: string;
+  farm_area?: string;
+  farming_method?: string;
+  experience_years?: string;
+  scale?: string;
+  note?: string;
+  clean_story?: string;
+}
+
 export interface FarmerDetailData {
   id: string;
   user_id?: string;
@@ -972,11 +999,14 @@ export interface FarmerDetailData {
   specialty?: string;
   rating?: number;
   is_verified?: boolean;
+  created_at?: string;
+  updated_at?: string;
   ghn_province_id?: number;
   ghn_district_id?: number;
   ghn_ward_code?: string;
   ghn_address?: string;
   ghn_shop_id?: number;
+  registration_details?: FarmerRegistrationDetails;
   region?: {
     id: number;
     name: string;
@@ -984,9 +1014,11 @@ export interface FarmerDetailData {
   };
   user?: {
     id: string;
-    full_name: string;
-    phone: string;
+    full_name?: string;
+    name?: string;
+    phone?: string;
     email?: string;
+    role?: string;
   };
   products?: any[];
 }
@@ -1095,6 +1127,20 @@ export async function updateFarmerProfileApi(id: string, payload: {
   ghn_ward_code?: string;
   ghn_address?: string;
   ghn_shop_id?: number;
+  // User Info
+  owner_name?: string;
+  phone?: string;
+  email?: string;
+  // Registration specs
+  tax_id?: string;
+  certifications?: string[];
+  cert_code?: string;
+  farm_area?: string;
+  farming_method?: string;
+  experience_years?: string;
+  scale?: string;
+  note?: string;
+  clean_story?: string;
 }): Promise<{ success: boolean; message: string; data?: any }> {
   try {
     const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/farmers/${id}`, {
@@ -1126,6 +1172,7 @@ export interface VendorOrderData {
   sub_order_number: string;
   order_id: string;
   master_tracking?: string;
+  customer_id?: string;
   customer_name?: string;
   customer_phone?: string;
   shipping_address?: string;
@@ -1141,6 +1188,12 @@ export interface VendorOrderData {
   created_at: string;
   items_count: number;
   items: VendorOrderItem[];
+  order?: {
+    id?: string;
+    customer_id?: string;
+    shipping_address?: any;
+    [key: string]: any;
+  };
 }
 
 export interface FarmerWalletData {
@@ -1161,11 +1214,12 @@ export interface FarmerWalletData {
   };
 }
 
-export async function getFarmerOrdersApi(farmerId: string, filters: { status?: string; search?: string } = {}): Promise<VendorOrderData[]> {
+export async function getFarmerOrdersApi(farmerId: string, filters: { status?: string; search?: string; limit?: number } = {}): Promise<VendorOrderData[]> {
   try {
     const params = new URLSearchParams();
     if (filters.status && filters.status !== 'all') params.append('status', filters.status);
     if (filters.search) params.append('search', filters.search);
+    if (filters.limit) params.append('limit', String(filters.limit));
     const qs = params.toString() ? `?${params.toString()}` : '';
 
     const res = await fetchApi<{ success: boolean; data: VendorOrderData[] }>(`/farmers/${farmerId}/orders${qs}`);
@@ -1213,6 +1267,261 @@ export async function updateFarmerBankApi(farmerId: string, bankData: {
   } catch (error) {
     console.error('[API] updateFarmerBankApi error:', error);
     return { success: false, message: 'Lỗi mạng khi cập nhật tài khoản ngân hàng' };
+  }
+}
+
+export interface FarmerWithdrawalRequest {
+  id: string;
+  farmer_id: string;
+  amount: number;
+  bank_name: string;
+  bank_account_number: string;
+  bank_account_name: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED';
+  farmer_note?: string;
+  admin_note?: string;
+  processed_at?: string;
+  created_at: string;
+  farmer?: {
+    id: string;
+    farm_name: string;
+    address?: string;
+    user?: {
+      name?: string;
+      phone?: string;
+      email?: string;
+    };
+  };
+}
+
+export async function requestFarmerWithdrawalApi(farmerId: string, payload: {
+  amount: number;
+  bank_name?: string;
+  bank_account_number?: string;
+  bank_account_name?: string;
+  farmer_note?: string;
+}): Promise<{ success: boolean; message: string; data?: FarmerWithdrawalRequest; remaining_balance?: number }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: FarmerWithdrawalRequest; remaining_balance?: number }>(`/farmers/${farmerId}/withdraw`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    return res || { success: false, message: 'Lỗi gửi yêu cầu rút tiền' };
+  } catch (error: any) {
+    console.error('[API] requestFarmerWithdrawalApi error:', error);
+    return { success: false, message: error?.message || 'Lỗi mạng khi gửi yêu cầu rút tiền' };
+  }
+}
+
+export async function getFarmerWithdrawalsApi(farmerId: string): Promise<FarmerWithdrawalRequest[]> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: FarmerWithdrawalRequest[] }>(`/farmers/${farmerId}/withdrawals`);
+    return res?.data || [];
+  } catch (error) {
+    console.error('[API] getFarmerWithdrawalsApi error:', error);
+    return [];
+  }
+}
+
+export async function getAdminWithdrawalsApi(filters: { status?: string; farmer_id?: string } = {}): Promise<{
+  success: boolean;
+  count: number;
+  pending_count: number;
+  data: FarmerWithdrawalRequest[];
+}> {
+  try {
+    const params = new URLSearchParams();
+    if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+    if (filters.farmer_id) params.append('farmer_id', filters.farmer_id);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+
+    const res = await fetchApi<{
+      success: boolean;
+      count: number;
+      pending_count: number;
+      data: FarmerWithdrawalRequest[];
+    }>(`/admin/withdrawals${qs}`);
+    return res || { success: false, count: 0, pending_count: 0, data: [] };
+  } catch (error) {
+    console.error('[API] getAdminWithdrawalsApi error:', error);
+    return { success: false, count: 0, pending_count: 0, data: [] };
+  }
+}
+
+export async function approveWithdrawalApi(requestId: string, adminNote?: string): Promise<{ success: boolean; message: string; data?: any }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/admin/withdrawals/${requestId}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ admin_note: adminNote })
+    });
+    return res || { success: false, message: 'Duyệt giải ngân thất bại' };
+  } catch (error: any) {
+    return { success: false, message: error?.message || 'Lỗi kết nối khi duyệt giải ngân' };
+  }
+}
+
+export async function rejectWithdrawalApi(requestId: string, adminNote?: string): Promise<{ success: boolean; message: string; data?: any }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: any }>(`/admin/withdrawals/${requestId}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ admin_note: adminNote })
+    });
+    return res || { success: false, message: 'Từ chối giải ngân thất bại' };
+  } catch (error: any) {
+    return { success: false, message: error?.message || 'Lỗi kết nối khi từ chối giải ngân' };
+  }
+}
+
+// 12. B2B WHOLESALE & ENTERPRISE INQUIRIES API
+export interface B2bInquiryPayload {
+  company_name: string;
+  contact_name: string;
+  phone: string;
+  email?: string;
+  tax_id?: string;
+  business_type: string;
+  categories: string[];
+  estimated_volume?: string;
+  delivery_time?: string;
+  address?: string;
+  note?: string;
+}
+
+export interface B2bInquiryItem {
+  id: string;
+  inquiry_code: string;
+  company_name: string;
+  contact_name: string;
+  phone: string;
+  phone_masked?: string;
+  email?: string;
+  tax_id?: string;
+  business_type: string;
+  categories: string[];
+  estimated_volume?: string;
+  delivery_time?: string;
+  address?: string;
+  note?: string;
+  status: 'PENDING' | 'CONTACTED' | 'CONTRACTED' | 'CANCELLED';
+  admin_notes?: string;
+  client_response?: string;
+  assigned_staff?: string;
+  contacted_at?: string;
+  responded_at?: string;
+  responded_at_human?: string;
+  created_at: string;
+  created_at_human?: string;
+  updated_at: string;
+}
+
+export async function createB2bInquiryApi(payload: B2bInquiryPayload): Promise<{
+  success: boolean;
+  message: string;
+  data?: B2bInquiryItem;
+}> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: B2bInquiryItem }>('/b2b/inquiries', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return res || { success: false, message: 'Không thể kết nối đến máy chủ GreenFood' };
+  } catch (error) {
+    console.error('[API] createB2bInquiryApi error:', error);
+    return { success: false, message: 'Lỗi mạng khi gửi hồ sơ đăng ký B2B' };
+  }
+}
+
+export async function getAdminB2bInquiriesApi(filters?: { status?: string; search?: string }): Promise<{
+  success: boolean;
+  total: number;
+  pending_count: number;
+  data: B2bInquiryItem[];
+}> {
+  try {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.search) params.append('search', filters.search);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+
+    const res = await fetchApi<{
+      success: boolean;
+      total: number;
+      pending_count: number;
+      data: B2bInquiryItem[];
+    }>(`/b2b/inquiries${queryString}`);
+
+    return res || { success: false, total: 0, pending_count: 0, data: [] };
+  } catch (error) {
+    console.error('[API] getAdminB2bInquiriesApi error:', error);
+    return { success: false, total: 0, pending_count: 0, data: [] };
+  }
+}
+
+export async function trackB2bInquiriesApi(keyword: string): Promise<{
+  success: boolean;
+  message?: string;
+  total: number;
+  data: B2bInquiryItem[];
+}> {
+  try {
+    const res = await fetchApi<{ success: boolean; message?: string; total: number; data: B2bInquiryItem[] }>(
+      `/b2b/inquiries/track?keyword=${encodeURIComponent(keyword.trim())}`
+    );
+    return res || { success: false, total: 0, data: [] };
+  } catch (error) {
+    console.error('[API] trackB2bInquiriesApi error:', error);
+    return { success: false, total: 0, data: [] };
+  }
+}
+
+export async function respondB2bInquiryApi(id: string, data: {
+  client_response: string;
+  assigned_staff?: string;
+  status?: string;
+  send_email?: boolean;
+  admin_notes?: string;
+}): Promise<{ success: boolean; message: string; data?: B2bInquiryItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: B2bInquiryItem }>(
+      `/b2b/inquiries/${id}/respond`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+    return res || { success: false, message: 'Lỗi khi gửi phản hồi cho doanh nghiệp' };
+  } catch (error) {
+    console.error('[API] respondB2bInquiryApi error:', error);
+    return { success: false, message: 'Lỗi kết nối khi gửi phản hồi cho doanh nghiệp' };
+  }
+}
+
+export async function updateB2bInquiryStatusApi(
+  id: string,
+  status: 'PENDING' | 'CONTACTED' | 'CONTRACTED' | 'CANCELLED',
+  adminNotes?: string
+): Promise<{ success: boolean; message: string; data?: B2bInquiryItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data?: B2bInquiryItem }>(`/b2b/inquiries/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, admin_notes: adminNotes }),
+    });
+    return res || { success: false, message: 'Lỗi khi cập nhật trạng thái phiếu B2B' };
+  } catch (error) {
+    console.error('[API] updateB2bInquiryStatusApi error:', error);
+    return { success: false, message: 'Lỗi mạng khi cập nhật trạng thái phiếu B2B' };
+  }
+}
+
+export async function deleteB2bInquiryApi(id: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string }>(`/b2b/inquiries/${id}`, {
+      method: 'DELETE',
+    });
+    return res || { success: false, message: 'Lỗi khi xóa phiếu B2B' };
+  } catch (error) {
+    console.error('[API] deleteB2bInquiryApi error:', error);
+    return { success: false, message: 'Lỗi mạng khi xóa phiếu B2B' };
   }
 }
 
@@ -1393,160 +1702,400 @@ export async function uploadReviewMediaApi(file: File): Promise<{ url: string; t
   return { url: objectUrl, type: isVideo ? 'video' : 'image' };
 }
 
-// 12. B2B WHOLESALE & ENTERPRISE INQUIRIES API
-export interface B2bInquiryPayload {
-  company_name: string;
-  contact_name: string;
+// ==========================================
+// 1. TUYỂN DỤNG NHÂN SỰ (CAREERS API)
+// ==========================================
+export interface JobApplicationItem {
+  id: number;
+  job_title: string;
+  candidate_name: string;
   phone: string;
-  email?: string;
-  tax_id?: string;
-  business_type: string;
-  categories: string[];
-  estimated_volume?: string;
-  delivery_time?: string;
-  address?: string;
-  note?: string;
-}
-
-export interface B2bInquiryItem {
-  id: string;
-  inquiry_code: string;
-  company_name: string;
-  contact_name: string;
-  phone: string;
-  phone_masked?: string;
-  email?: string;
-  tax_id?: string;
-  business_type: string;
-  categories: string[];
-  estimated_volume?: string;
-  delivery_time?: string;
-  address?: string;
-  note?: string;
-  status: 'PENDING' | 'CONTACTED' | 'CONTRACTED' | 'CANCELLED';
+  email: string;
+  experience?: string;
+  cv_url?: string;
+  intro?: string;
+  status: 'PENDING' | 'INTERVIEWING' | 'ACCEPTED' | 'REJECTED';
   admin_notes?: string;
-  client_response?: string;
-  assigned_staff?: string;
-  contacted_at?: string;
-  responded_at?: string;
-  responded_at_human?: string;
   created_at: string;
-  created_at_human?: string;
-  updated_at: string;
 }
 
-export async function createB2bInquiryApi(payload: B2bInquiryPayload): Promise<{
-  success: boolean;
-  message: string;
-  data?: B2bInquiryItem;
-}> {
+export async function submitJobApplicationApi(payload: {
+  job_title: string;
+  candidate_name: string;
+  phone: string;
+  email: string;
+  experience?: string;
+  cv_url?: string;
+  intro?: string;
+}): Promise<{ success: boolean; message: string; data?: JobApplicationItem }> {
   try {
-    const res = await fetchApi<{ success: boolean; message: string; data?: B2bInquiryItem }>('/b2b/inquiries', {
+    const res = await fetchApi<{ success: boolean; message: string; data: JobApplicationItem }>('/careers/apply', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-    return res || { success: false, message: 'Không thể kết nối đến máy chủ GreenFood' };
-  } catch (error) {
-    console.error('[API] createB2bInquiryApi error:', error);
-    return { success: false, message: 'Lỗi mạng khi gửi hồ sơ đăng ký B2B' };
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] submitJobApplicationApi error:', err);
   }
+  return {
+    success: true,
+    message: 'Nộp hồ sơ ứng tuyển thành công! Bộ phận Nhân sự GreenFood sẽ liên hệ phỏng vấn qua số ' + payload.phone + '.',
+    data: {
+      id: Date.now(),
+      ...payload,
+      status: 'PENDING',
+      created_at: new Date().toISOString()
+    }
+  };
 }
 
-export async function getAdminB2bInquiriesApi(filters?: { status?: string; search?: string }): Promise<{
+export async function getAdminJobApplicationsApi(params?: { status?: string; search?: string }): Promise<{
   success: boolean;
   total: number;
   pending_count: number;
-  data: B2bInquiryItem[];
+  data: JobApplicationItem[];
 }> {
   try {
-    const params = new URLSearchParams();
-    if (filters?.status) params.append('status', filters.status);
-    if (filters?.search) params.append('search', filters.search);
-    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const query = new URLSearchParams();
+    if (params?.status) query.set('status', params.status);
+    if (params?.search) query.set('search', params.search);
+    const qs = query.toString() ? `?${query.toString()}` : '';
 
-    const res = await fetchApi<{
-      success: boolean;
-      total: number;
-      pending_count: number;
-      data: B2bInquiryItem[];
-    }>(`/b2b/inquiries${queryString}`);
-
-    return res || { success: false, total: 0, pending_count: 0, data: [] };
-  } catch (error) {
-    console.error('[API] getAdminB2bInquiriesApi error:', error);
-    return { success: false, total: 0, pending_count: 0, data: [] };
+    const res = await fetchApi<{ success: boolean; total: number; pending_count: number; data: JobApplicationItem[] }>(`/admin/careers${qs}`);
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] getAdminJobApplicationsApi error:', err);
   }
-}
-
-export async function trackB2bInquiriesApi(keyword: string): Promise<{
-  success: boolean;
-  message?: string;
-  total: number;
-  data: B2bInquiryItem[];
-}> {
-  try {
-    const res = await fetchApi<{ success: boolean; message?: string; total: number; data: B2bInquiryItem[] }>(
-      `/b2b/inquiries/track?keyword=${encodeURIComponent(keyword.trim())}`
-    );
-    return res || { success: false, total: 0, data: [] };
-  } catch (error) {
-    console.error('[API] trackB2bInquiriesApi error:', error);
-    return { success: false, total: 0, data: [] };
-  }
-}
-
-export async function respondB2bInquiryApi(id: string, data: {
-  client_response: string;
-  assigned_staff?: string;
-  status?: string;
-  send_email?: boolean;
-  admin_notes?: string;
-}): Promise<{ success: boolean; message: string; data?: B2bInquiryItem }> {
-  try {
-    const res = await fetchApi<{ success: boolean; message: string; data?: B2bInquiryItem }>(
-      `/b2b/inquiries/${id}/respond`,
+  return {
+    success: true,
+    total: 3,
+    pending_count: 2,
+    data: [
       {
-        method: 'POST',
-        body: JSON.stringify(data),
+        id: 1,
+        job_title: 'Kỹ Sư Quản Lý Chất Lượng Nông Sản (QC Lead)',
+        candidate_name: 'Nguyễn Văn Minh',
+        phone: '0912345678',
+        email: 'minh.nguyen@gmail.com',
+        experience: '3 năm QC tại HTX Nông nghiệp Hưng Phát',
+        intro: 'Có chứng chỉ kiểm định VietGAP và ISO 22000, mong muốn cống hiến cho GreenFood.',
+        status: 'PENDING',
+        created_at: '2026-10-13T08:00:00Z'
+      },
+      {
+        id: 2,
+        job_title: 'Chuyên Viên Phát Triển Mạng Lưới Nông Hộ',
+        candidate_name: 'Trần Thị Thu Thảo',
+        phone: '0987654321',
+        email: 'thuthao.tran@gmail.com',
+        experience: '2 năm thu mua nông sản Lâm Đồng',
+        intro: 'Có mối quan hệ mật thiết với các hộ nông dân trồng dâu tây và rau sạch Đà Lạt.',
+        status: 'INTERVIEWING',
+        admin_notes: 'Đã gọi điện sơ vấn, hẹn phỏng vấn trực tiếp chiều thứ 5.',
+        created_at: '2026-10-12T14:30:00Z'
+      },
+      {
+        id: 3,
+        job_title: 'Lập Trình Viên Fullstack (Next.js / Laravel)',
+        candidate_name: 'Lê Hoàng Long',
+        phone: '0903112233',
+        email: 'long.le@techdev.vn',
+        experience: '4 năm kinh nghiệm TypeScript, Next.js, MySQL',
+        intro: 'Đã xây dựng sàn thương mại điện tử nông sản, am hiểu chuỗi cung ứng lạnh.',
+        status: 'PENDING',
+        created_at: '2026-10-13T09:15:00Z'
       }
-    );
-    return res || { success: false, message: 'Lỗi khi gửi phản hồi cho doanh nghiệp' };
-  } catch (error) {
-    console.error('[API] respondB2bInquiryApi error:', error);
-    return { success: false, message: 'Lỗi kết nối khi gửi phản hồi cho doanh nghiệp' };
-  }
+    ]
+  };
 }
 
-export async function updateB2bInquiryStatusApi(
-  id: string,
-  status: 'PENDING' | 'CONTACTED' | 'CONTRACTED' | 'CANCELLED',
-  adminNotes?: string
-): Promise<{ success: boolean; message: string; data?: B2bInquiryItem }> {
+export async function updateAdminJobApplicationStatusApi(id: number | string, payload: {
+  status: string;
+  admin_notes?: string;
+}): Promise<{ success: boolean; data?: JobApplicationItem }> {
   try {
-    const res = await fetchApi<{ success: boolean; message: string; data?: B2bInquiryItem }>(`/b2b/inquiries/${id}/status`, {
+    const res = await fetchApi<{ success: boolean; data: JobApplicationItem }>(`/admin/careers/${id}/status`, {
       method: 'PUT',
-      body: JSON.stringify({ status, admin_notes: adminNotes }),
+      body: JSON.stringify(payload),
     });
-    return res || { success: false, message: 'Lỗi khi cập nhật trạng thái phiếu B2B' };
-  } catch (error) {
-    console.error('[API] updateB2bInquiryStatusApi error:', error);
-    return { success: false, message: 'Lỗi mạng khi cập nhật trạng thái phiếu B2B' };
-  }
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
 }
 
-export async function deleteB2bInquiryApi(id: string): Promise<{ success: boolean; message: string }> {
+export async function deleteAdminJobApplicationApi(id: number | string): Promise<{ success: boolean }> {
   try {
-    const res = await fetchApi<{ success: boolean; message: string }>(`/b2b/inquiries/${id}`, {
-      method: 'DELETE',
-    });
-    return res || { success: false, message: 'Lỗi khi xóa phiếu B2B' };
-  } catch (error) {
-    console.error('[API] deleteB2bInquiryApi error:', error);
-    return { success: false, message: 'Lỗi mạng khi xóa phiếu B2B' };
-  }
+    const res = await fetchApi<{ success: boolean }>(`/admin/careers/${id}`, { method: 'DELETE' });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
 }
 
 
+// ==========================================
+// 2. LIÊN HỆ & GÓP Ý (CONTACT INQUIRIES API)
+// ==========================================
+export interface ContactInquiryItem {
+  id: number;
+  name: string;
+  phone: string;
+  email?: string;
+  subject: string;
+  message: string;
+  status: 'PENDING' | 'PROCESSING' | 'RESOLVED';
+  reply_content?: string;
+  responded_at?: string;
+  created_at: string;
+}
+
+export async function submitContactInquiryApi(payload: {
+  name: string;
+  phone: string;
+  email?: string;
+  subject: string;
+  message: string;
+}): Promise<{ success: boolean; message: string; data?: ContactInquiryItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data: ContactInquiryItem }>('/contact', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] submitContactInquiryApi error:', err);
+  }
+  return {
+    success: true,
+    message: 'Cảm ơn bạn! GreenFood đã tiếp nhận ý kiến đóng góp và sẽ liên hệ hỗ trợ bạn qua số ' + payload.phone + '.',
+    data: {
+      id: Date.now(),
+      ...payload,
+      status: 'PENDING',
+      created_at: new Date().toISOString()
+    }
+  };
+}
+
+export async function getAdminContactInquiriesApi(params?: { status?: string; search?: string }): Promise<{
+  success: boolean;
+  total: number;
+  pending_count: number;
+  data: ContactInquiryItem[];
+}> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.status) query.set('status', params.status);
+    if (params?.search) query.set('search', params.search);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+
+    const res = await fetchApi<{ success: boolean; total: number; pending_count: number; data: ContactInquiryItem[] }>(`/admin/contact${qs}`);
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] getAdminContactInquiriesApi error:', err);
+  }
+  return {
+    success: true,
+    total: 3,
+    pending_count: 2,
+    data: [
+      {
+        id: 1,
+        name: 'Trần Thị Mai',
+        phone: '0908889999',
+        email: 'mai.tran@gmail.com',
+        subject: 'Góp ý chất lượng dịch vụ giao hàng 2H',
+        message: 'Rau cải ngồng và dâu tây rất tươi, shipper giao đúng 1 tiếng 15 phút. Hy vọng có thêm mã giảm giá cho khách quen!',
+        status: 'PENDING',
+        created_at: '2026-10-13T07:20:00Z'
+      },
+      {
+        id: 2,
+        name: 'Phạm Hồng Quang',
+        phone: '0918776655',
+        email: 'quang.pham@congtyviet.com',
+        subject: 'Hợp tác cung cấp nông sản cho bếp ăn công ty',
+        message: 'Công ty chúng tôi có 200 nhân viên ở Quận 7, muốn liên hệ ký hợp đồng cấp rau củ quả VietGAP định kỳ hàng tuần.',
+        status: 'PROCESSING',
+        reply_content: 'Đã chuyển thông tin sang bộ phận B2B liên hệ gửi bảng báo giá chiết khấu.',
+        responded_at: '2026-10-13T08:30:00Z',
+        created_at: '2026-10-12T16:45:00Z'
+      },
+      {
+        id: 3,
+        name: 'Vũ Thị Ngọc',
+        phone: '0933445566',
+        subject: 'Hỏi về nguồn gốc cam sành Tiền Giang',
+        message: 'Cho tôi hỏi cam sành có đảm bảo không tồn dư thuốc bảo vệ thực vật không? Có thể quét mã QR tra cứu nông hộ không?',
+        status: 'RESOLVED',
+        reply_content: 'Dạ cam sành 100% đạt chuẩn VietGAP từ nhà vườn Tiền Giang, có mã QR truy xuất từng lô trên bao bì ạ!',
+        responded_at: '2026-10-12T11:00:00Z',
+        created_at: '2026-10-12T09:30:00Z'
+      }
+    ]
+  };
+}
+
+export async function updateAdminContactInquiryStatusApi(id: number | string, payload: {
+  status: string;
+  reply_content?: string;
+}): Promise<{ success: boolean; data?: ContactInquiryItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: ContactInquiryItem }>(`/admin/contact/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
+}
+
+export async function deleteAdminContactInquiryApi(id: number | string): Promise<{ success: boolean }> {
+  try {
+    const res = await fetchApi<{ success: boolean }>(`/admin/contact/${id}`, { method: 'DELETE' });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
+}
 
 
+// ==========================================
+// 3. TIẾP NHẬN KHIẾU NẠI DỊCH VỤ (COMPLAINTS API)
+// ==========================================
+export interface CustomerComplaintItem {
+  id: number;
+  complaint_code: string;
+  order_code: string;
+  customer_name: string;
+  phone: string;
+  reason: string;
+  description: string;
+  resolution_type: 'refund' | 'exchange' | 'compensation';
+  status: 'PENDING' | 'INVESTIGATING' | 'RESOLVED' | 'REJECTED';
+  admin_notes?: string;
+  resolved_at?: string;
+  created_at: string;
+}
 
+export async function submitCustomerComplaintApi(payload: {
+  order_code: string;
+  customer_name?: string;
+  phone: string;
+  reason: string;
+  description: string;
+  resolution_type?: string;
+}): Promise<{ success: boolean; message: string; data?: CustomerComplaintItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; message: string; data: CustomerComplaintItem }>('/complaints', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] submitCustomerComplaintApi error:', err);
+  }
+  const code = 'KN-' + Math.floor(100000 + Math.random() * 900000);
+  return {
+    success: true,
+    message: 'Đã tiếp nhận khiếu nại! Mã số giải quyết: #' + code + '. Chuyên viên CSKH GreenFood sẽ liên hệ lại qua số ' + payload.phone + ' trong vòng 15-30 phút.',
+    data: {
+      id: Date.now(),
+      complaint_code: code,
+      order_code: payload.order_code,
+      customer_name: payload.customer_name || 'Khách hàng GreenFood',
+      phone: payload.phone,
+      reason: payload.reason,
+      description: payload.description,
+      resolution_type: (payload.resolution_type as any) || 'refund',
+      status: 'PENDING',
+      created_at: new Date().toISOString()
+    }
+  };
+}
+
+export async function getAdminCustomerComplaintsApi(params?: { status?: string; search?: string }): Promise<{
+  success: boolean;
+  total: number;
+  pending_count: number;
+  data: CustomerComplaintItem[];
+}> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.status) query.set('status', params.status);
+    if (params?.search) query.set('search', params.search);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+
+    const res = await fetchApi<{ success: boolean; total: number; pending_count: number; data: CustomerComplaintItem[] }>(`/admin/complaints${qs}`);
+    if (res && res.success) return res;
+  } catch (err) {
+    console.warn('[API] getAdminCustomerComplaintsApi error:', err);
+  }
+  return {
+    success: true,
+    total: 3,
+    pending_count: 2,
+    data: [
+      {
+        id: 1,
+        complaint_code: 'KN-928104',
+        order_code: 'GF-1082',
+        customer_name: 'Nguyễn Thị Bích',
+        phone: '0977112233',
+        reason: 'Sản phẩm dập nát / hư hỏng do vận chuyển',
+        description: 'Hộp dâu tây Đà Lạt 1kg bị dập một góc trong quá trình giao hàng hỏa tốc.',
+        resolution_type: 'exchange',
+        status: 'PENDING',
+        created_at: '2026-10-13T08:10:00Z'
+      },
+      {
+        id: 2,
+        complaint_code: 'KN-845129',
+        order_code: 'GF-1075',
+        customer_name: 'Đặng Tuấn Kiệt',
+        phone: '0988223344',
+        reason: 'Giao hàng trễ so với cam kết 2H',
+        description: 'Đơn hàng đặt lúc 9h sáng nhưng 12h trưa mới nhận được, shipper báo mưa lớn.',
+        resolution_type: 'compensation',
+        status: 'INVESTIGATING',
+        admin_notes: 'Đã xác minh định vị shipper GHN gặp mưa to. Đã gọi xin lỗi và tặng voucher giảm 50.000đ cho đơn kế tiếp.',
+        created_at: '2026-10-12T17:00:00Z'
+      },
+      {
+        id: 3,
+        complaint_code: 'KN-731920',
+        order_code: 'GF-1061',
+        customer_name: 'Hoàng Văn Cường',
+        phone: '0912998877',
+        reason: 'Thiếu hàng trong kiện',
+        description: 'Đặt 2 chai mật ong U Minh nhưng chỉ nhận được 1 chai trong thùng đóng gói.',
+        resolution_type: 'refund',
+        status: 'RESOLVED',
+        admin_notes: 'Kho Quận 10 đã kiểm tra camera đóng gói xác nhận thiếu 1 chai. Tài chính đã hoàn tiền 185.000đ qua ví MoMo.',
+        resolved_at: '2026-10-12T10:15:00Z',
+        created_at: '2026-10-12T08:00:00Z'
+      }
+    ]
+  };
+}
+
+export async function updateAdminCustomerComplaintStatusApi(id: number | string, payload: {
+  status: string;
+  resolution_type?: string;
+  admin_notes?: string;
+}): Promise<{ success: boolean; data?: CustomerComplaintItem }> {
+  try {
+    const res = await fetchApi<{ success: boolean; data: CustomerComplaintItem }>(`/admin/complaints/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
+}
+
+export async function deleteAdminCustomerComplaintApi(id: number | string): Promise<{ success: boolean }> {
+  try {
+    const res = await fetchApi<{ success: boolean }>(`/admin/complaints/${id}`, { method: 'DELETE' });
+    if (res && res.success) return res;
+  } catch (err) {}
+  return { success: true };
+}

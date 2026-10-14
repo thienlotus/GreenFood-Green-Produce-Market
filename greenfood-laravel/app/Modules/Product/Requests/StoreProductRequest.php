@@ -16,6 +16,27 @@ class StoreProductRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (!$this->has('category_id') && $this->has('category')) {
+            $cat = \App\Models\Category::where('name', 'like', '%' . $this->category . '%')
+                ->orWhere('slug', \Illuminate\Support\Str::slug($this->category))
+                ->first();
+            if ($cat) {
+                $this->merge(['category_id' => $cat->id]);
+            } else {
+                $firstCat = \App\Models\Category::first();
+                if ($firstCat) {
+                    $this->merge(['category_id' => $firstCat->id]);
+                }
+            }
+        }
+
+        if (!$this->has('image_url') && $this->has('image')) {
+            $this->merge(['image_url' => $this->image]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      */

@@ -2,11 +2,53 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Briefcase, MapPin, DollarSign, Clock, Users, Heart, Award, ArrowUpRight } from 'lucide-react';
+import { ChevronRight, Briefcase, MapPin, DollarSign, Clock, Users, Heart, Award, ArrowUpRight, X, Send, CheckCircle2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { submitJobApplicationApi } from '@/lib/api';
 
 export default function CareersPage() {
   const [selectedDept, setSelectedDept] = useState('all');
+  const [applyingJob, setApplyingJob] = useState<any | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [appForm, setAppForm] = useState({
+    candidate_name: '',
+    phone: '',
+    email: '',
+    experience: '',
+    cv_url: '',
+    intro: '',
+  });
+
+  const handleApplySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!appForm.candidate_name || !appForm.phone || !appForm.email) {
+      toast.error('Vui lòng điền đầy đủ Họ tên, Số điện thoại và Email!');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const res = await submitJobApplicationApi({
+        job_title: applyingJob?.title || 'Ứng tuyển chung',
+        candidate_name: appForm.candidate_name,
+        phone: appForm.phone,
+        email: appForm.email,
+        experience: appForm.experience,
+        cv_url: appForm.cv_url,
+        intro: appForm.intro,
+      });
+      if (res.success) {
+        toast.success(res.message);
+        setApplyingJob(null);
+        setAppForm({ candidate_name: '', phone: '', email: '', experience: '', cv_url: '', intro: '' });
+      } else {
+        toast.error('Có lỗi xảy ra, vui lòng thử lại.');
+      }
+    } catch {
+      toast.error('Không thể kết nối đến máy chủ, vui lòng thử lại.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const jobs = [
     {
@@ -181,10 +223,13 @@ export default function CareersPage() {
 
                 <div className="shrink-0 pt-2 lg:pt-0">
                   <button 
-                    onClick={() => toast.success(`Bạn đã chọn ứng tuyển "${job.title}". Vui lòng gửi CV về tuyendung@greenfood.vn`)}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg transition-colors inline-flex items-center gap-1 w-full lg:w-auto justify-center"
+                    onClick={() => {
+                      setApplyingJob(job);
+                      setAppForm(prev => ({ ...prev, candidate_name: '', phone: '', email: '', experience: '', cv_url: '', intro: '' }));
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg transition-colors inline-flex items-center gap-1 w-full lg:w-auto justify-center cursor-pointer shadow-xs"
                   >
-                    Ứng tuyển <ArrowUpRight size={16} />
+                    Ứng tuyển ngay <ArrowUpRight size={16} />
                   </button>
                 </div>
               </div>
@@ -198,6 +243,131 @@ export default function CareersPage() {
           </p>
         </div>
       </div>
+
+      {/* MODAL ỨNG TUYỂN TRỰC TUYẾN */}
+      {applyingJob && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative border border-slate-100 my-8">
+            <button
+              onClick={() => setApplyingJob(null)}
+              className="absolute right-4 top-4 p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="mb-5">
+              <span className="text-[11px] font-bold text-emerald-700 uppercase bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                Nộp Hồ Sơ Trực Tuyến
+              </span>
+              <h3 className="text-xl font-bold text-slate-900 mt-2">{applyingJob.title}</h3>
+              <p className="text-xs text-slate-500 mt-1">Phòng ban: {applyingJob.deptName} • {applyingJob.location}</p>
+            </div>
+
+            <form onSubmit={handleApplySubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Họ và tên của bạn <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={appForm.candidate_name}
+                  onChange={e => setAppForm(prev => ({ ...prev, candidate_name: e.target.value }))}
+                  placeholder="Ví dụ: Nguyễn Văn An"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Số điện thoại <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={appForm.phone}
+                    onChange={e => setAppForm(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="0912 345 678"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Email liên hệ <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={appForm.email}
+                    onChange={e => setAppForm(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="ungvien@gmail.com"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Kinh nghiệm làm việc gần nhất
+                </label>
+                <input
+                  type="text"
+                  value={appForm.experience}
+                  onChange={e => setAppForm(prev => ({ ...prev, experience: e.target.value }))}
+                  placeholder="Ví dụ: 2 năm kinh nghiệm QC / Nông nghiệp / Tech"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Đường dẫn CV / Hồ sơ (Google Drive, LinkedIn, v.v.)
+                </label>
+                <input
+                  type="url"
+                  value={appForm.cv_url}
+                  onChange={e => setAppForm(prev => ({ ...prev, cv_url: e.target.value }))}
+                  placeholder="https://drive.google.com/your-cv..."
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Lời giới thiệu bản thân / Lý do muốn gia nhập GreenFood
+                </label>
+                <textarea
+                  rows={3}
+                  value={appForm.intro}
+                  onChange={e => setAppForm(prev => ({ ...prev, intro: e.target.value }))}
+                  placeholder="Chia sẻ ngắn về bạn và mong muốn phát triển cùng GreenFood..."
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setApplyingJob(null)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Send size={14} />
+                  <span>{isSubmitting ? 'Đang gửi hồ sơ...' : 'Nộp hồ sơ ngay'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

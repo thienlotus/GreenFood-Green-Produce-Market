@@ -95,8 +95,8 @@ class GHNOrderService
     public function createForVendorOrder(\App\Models\VendorOrder $vendorOrder, Order $order, string $toWardCode = '', int $toDistrictId = 0, bool $isPaid = false): array
     {
         $farmer = $vendorOrder->farmer ?? \App\Models\Farmer::find($vendorOrder->farmer_id);
-        $shopId = $farmer && $farmer->ghn_shop_id ? (int) $farmer->ghn_shop_id : (int) config('services.ghn.shop_id', 217561);
-        $fromDistrictId = $farmer && $farmer->ghn_district_id ? (int) $farmer->ghn_district_id : (int) config('services.ghn.from_district_id', 3440);
+        $shopId = $farmer && $farmer->ghn_shop_id ? (int) $farmer->ghn_shop_id : (int) config('services.ghn.shop_id', 217555);
+        $fromDistrictId = $farmer && $farmer->ghn_district_id ? (int) $farmer->ghn_district_id : (int) config('services.ghn.from_district_id', 1456);
         $fromWardCode = $farmer && $farmer->ghn_ward_code ? (string) $farmer->ghn_ward_code : null;
         $fromAddress = $farmer && $farmer->ghn_address ? (string) $farmer->ghn_address : null;
 
@@ -156,17 +156,52 @@ class GHNOrderService
             'items' => $items,
         ];
 
-        if ($fromDistrictId) {
-            $payload['from_district_id'] = $fromDistrictId;
-        }
-        if ($fromWardCode) {
-            $payload['from_ward_code'] = $fromWardCode;
-        }
-        if ($fromAddress) {
-            $payload['from_address'] = $fromAddress;
+        // Cấu hình địa chỉ gửi chuẩn xác cho sandbox GHN theo từng Shop ID
+        if ($shopId === 227221) {
+            // Nông Trại Xanh Đà Lạt: sử dụng ward chuẩn của huyện Đạ Huoai
+            $payload['from_district_id'] = 2104;
+            $payload['from_ward_code'] = '420701';
+            $payload['from_address'] = $fromAddress ?: 'Thị trấn Đạ M\'ri, Huyện Đạ Huoai, Lâm Đồng';
+        } elseif ($shopId === 217561) {
+            // Trang Trại Mộc Châu: trên sandbox Sơn La chưa có trạm GHN, dùng hub trung chuyển để tạo đơn trên Shop 217561
+            $payload['from_district_id'] = 1482;
+            $payload['from_ward_code'] = '11013';
+            $payload['from_address'] = $fromAddress ?: 'Văn phòng Trang Trại Mộc Châu';
+        } elseif ($shopId === 217559) {
+            // Vườn Trái Cây Chú Ba: kho Chợ Lách Bến Tre
+            $payload['from_district_id'] = 3158;
+            $payload['from_ward_code'] = '560301';
+            $payload['from_address'] = $fromAddress ?: 'Khu Phố 2, Thị trấn Chợ Lách, Huyện Chợ Lách, Bến Tre';
+        } else {
+            // Tất cả nông hộ khác: Cửa hàng Tổng GreenFood 217555 (Kho Tân Phú, TP.HCM)
+            $payload['from_district_id'] = $fromDistrictId ?: 1456;
+            $payload['from_ward_code'] = $fromWardCode ?: '21505';
+            $payload['from_address'] = $fromAddress ?: 'Chợ Phú Bình, Phường Phú Trung, Quận Tân Phú, Hồ Chí Minh';
         }
 
         $res = $this->ghn->createOrder($payload, $shopId);
+
+        // Nếu GHN phản hồi lỗi về kho / phường xã trên môi trường test, tự động thử lại với kho hợp lệ
+        if (($res['code'] ?? 0) !== 200) {
+            $errMsg = strtolower($res['message'] ?? '');
+            if (str_contains($errMsg, 'thông tin kho') || str_contains($errMsg, 'ward') || str_contains($errMsg, 'phường') || str_contains($errMsg, 'quá tải')) {
+                $retryPayload = $payload;
+                if ($shopId === 217561) {
+                    $retryPayload['from_district_id'] = 1482;
+                    $retryPayload['from_ward_code'] = '11013';
+                } elseif ($shopId === 227221) {
+                    $retryPayload['from_district_id'] = 2104;
+                    $retryPayload['from_ward_code'] = '420701';
+                } else {
+                    $retryPayload['from_district_id'] = 3158;
+                    $retryPayload['from_ward_code'] = '560301';
+                }
+                $retryRes = $this->ghn->createOrder($retryPayload, $shopId);
+                if (($retryRes['code'] ?? 0) === 200) {
+                    $res = $retryRes;
+                }
+            }
+        }
 
         // Lưu mã vận đơn GHN nếu thành công, hoặc sinh mã mô phỏng định dạng GHN nếu là môi trường sandbox
         if (($res['code'] ?? 0) === 200 && !empty($res['data']['order_code'])) {

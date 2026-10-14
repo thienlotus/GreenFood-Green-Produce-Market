@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { 
   ChevronRight, Handshake, Sprout, TrendingUp, DollarSign, CheckCircle2, 
   Send, ShieldCheck, Award, FileText, CheckSquare, Sparkles, Building2,
-  Tractor, Scale, Info
+  Tractor, Scale, Info, Store
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { registerFarmerApi } from '@/lib/api';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function PartnersPage() {
+  const { user } = useAuthStore();
   const [partnerType, setPartnerType] = useState<'farmer' | 'supplier'>('farmer');
   const [formData, setFormData] = useState({
     name: '',
@@ -160,6 +162,46 @@ export default function PartnersPage() {
           <span className="text-gray-900 font-medium">Hợp tác cùng GreenFood</span>
         </div>
       </div>
+
+      {/* Thông báo nếu tài khoản đã là Nông Hộ đối tác */}
+      {user && (user.role === 'vendor' || (user.role as string)?.toLowerCase() === 'vendor') && (
+        <div className="container mx-auto px-4 lg:px-8 mb-6">
+          <div className="bg-emerald-50 border border-emerald-300 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+                <Tractor size={24} />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full mb-1">
+                  <CheckCircle2 size={13} /> Nông Hộ Đã Kích Hoạt
+                </div>
+                <h3 className="text-base font-bold text-gray-900">
+                  Chào mừng {user.name} ({user.farmName || 'Gian Hàng Đối Tác GreenFood'})!
+                </h3>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Tài khoản của bạn đã là Nông Hộ đối tác chính thức. Bạn có thể vào Kênh Người Bán để quản lý kho hàng, đơn hàng hoặc xem gian hàng ngoài website.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0 w-full md:w-auto">
+              <Link
+                href="/farmer"
+                className="flex-1 md:flex-initial px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
+              >
+                <Tractor size={15} />
+                <span>Kênh Người Bán</span>
+              </Link>
+              <Link
+                href="/farmers/store"
+                className="flex-1 md:flex-initial px-5 py-2.5 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold rounded-xl transition-all shadow-2xs flex items-center justify-center gap-2"
+              >
+                <Store size={15} />
+                <span>Xem Gian Hàng</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <div className="container mx-auto px-4 lg:px-8 mb-12">

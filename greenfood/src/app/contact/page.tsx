@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, MapPin, Phone, Mail, Clock, Send, CheckCircle2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { submitContactInquiryApi } from '@/lib/api';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -15,18 +16,26 @@ export default function ContactPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.phone || !formData.message) {
       toast.error('Vui lòng điền đầy đủ các thông tin bắt buộc (*)');
       return;
     }
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const res = await submitContactInquiryApi(formData);
+      if (res.success) {
+        toast.success(res.message);
+        setFormData({ name: '', phone: '', email: '', subject: 'Góp ý chất lượng dịch vụ', message: '' });
+      } else {
+        toast.error('Có lỗi xảy ra, vui lòng thử lại.');
+      }
+    } catch {
+      toast.error('Không thể kết nối đến máy chủ, vui lòng thử lại.');
+    } finally {
       setIsSubmitting(false);
-      toast.success('Cảm ơn bạn! GreenFood đã tiếp nhận thông tin và sẽ phản hồi sớm nhất.');
-      setFormData({ name: '', phone: '', email: '', subject: 'Góp ý chất lượng dịch vụ', message: '' });
-    }, 1000);
+    }
   };
 
   return (

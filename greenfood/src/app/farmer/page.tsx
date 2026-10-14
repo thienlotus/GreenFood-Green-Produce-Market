@@ -8,7 +8,8 @@ import {
   MapPin, Phone, ShieldCheck, Leaf, Sparkles, Lock, ArrowLeft,
   Truck, Clock, CreditCard, Wallet, ArrowUpRight, FileText,
   Building2, Check, X, Search, Filter, MessageCircle, Send,
-  User as UserIcon, ShoppingBag, HeadphonesIcon
+  User as UserIcon, ShoppingBag, HeadphonesIcon, Edit2, Trash2,
+  Image as ImageIcon, History, AlertTriangle, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { 
@@ -18,6 +19,13 @@ import {
   updateFarmerOrderStatusApi, 
   getFarmerWalletApi, 
   updateFarmerBankApi,
+  requestFarmerWithdrawalApi,
+  getFarmerWithdrawalsApi,
+  FarmerWithdrawalRequest,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getProducts,
   VendorOrderData,
   FarmerWalletData
 } from '@/lib/api';
@@ -33,6 +41,27 @@ import {
 import { cleanVietnameseMojibake } from '@/data/vietnamAddress';
 import { resolveCoordinatesFromAddress } from '@/lib/geoUtils';
 import { useAuthStore } from '@/store/useAuthStore';
+
+const PRODUCT_CATEGORIES = [
+  { id: 1, name: 'Trái cây tươi' },
+  { id: 2, name: 'Rau củ hữu cơ' },
+  { id: 3, name: 'Nấm sạch VietGAP' },
+  { id: 4, name: 'Trà & Cà phê' },
+  { id: 5, name: 'Gạo & Nông sản khô' },
+  { id: 6, name: 'Gia vị truyền thống' },
+  { id: 7, name: 'Đặc sản vùng miền' },
+];
+
+const SAMPLE_PRODUCT_IMAGES = [
+  { label: 'Sầu riêng Ri6', url: 'https://images.unsplash.com/photo-1596704017254-9b121068fb31?w=500' },
+  { label: 'Bưởi da xanh', url: 'https://images.unsplash.com/photo-1587132137056-bfbf0166836e?w=500' },
+  { label: 'Rau hữu cơ', url: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500' },
+  { label: 'Cà chua bi', url: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500' },
+  { label: 'Nấm tươi', url: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=500' },
+  { label: 'Trà xanh / Chè', url: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500' },
+  { label: 'Cà phê Robusta', url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500' },
+  { label: 'Mật ong rừng', url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500' },
+];
 
 export default function FarmerPortalPage() {
   const { user } = useAuthStore();
@@ -52,7 +81,8 @@ export default function FarmerPortalPage() {
   const [chatLoading, setChatLoading] = useState(false);
   const [chatSending, setChatSending] = useState(false);
   const [farmerUnreadChatCount, setFarmerUnreadChatCount] = useState<number>(0);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
+  const previousUnreadCountRef = useRef<number>(0);
 
   // Vendor Orders State
   const [orders, setOrders] = useState<VendorOrderData[]>([]);
@@ -61,7 +91,7 @@ export default function FarmerPortalPage() {
   const [orderSearch, setOrderSearch] = useState<string>('');
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
-  // Vendor Wallet State
+  // Vendor Wallet & Withdrawal State
   const [wallet, setWallet] = useState<FarmerWalletData | null>(null);
   const [walletLoading, setWalletLoading] = useState(false);
   const [bankForm, setBankForm] = useState({
@@ -71,6 +101,31 @@ export default function FarmerPortalPage() {
   });
   const [isSavingBank, setIsSavingBank] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [withdrawals, setWithdrawals] = useState<FarmerWithdrawalRequest[]>([]);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState<string>('');
+  const [withdrawNote, setWithdrawNote] = useState<string>('');
+  const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
+
+  // Farmer Products Management State
+  const [farmerProducts, setFarmerProducts] = useState<any[]>([]);
+  const [farmerProductsLoading, setFarmerProductsLoading] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
+  const [productForm, setProductForm] = useState({
+    name: '',
+    category_id: 1,
+    price: '',
+    unit: '1kg',
+    stock: '100',
+    badge: 'Chính vụ VietGAP',
+    image_url: 'https://images.unsplash.com/photo-1596704017254-9b121068fb31?w=500',
+    description: '',
+    is_seasonal: true,
+  });
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
 
   // Form State cho Tab Profile
   const [profileForm, setProfileForm] = useState({
@@ -147,9 +202,9 @@ export default function FarmerPortalPage() {
               if (user?.farmName && (f.farm_name || '').toLowerCase().includes(user.farmName.toLowerCase())) return true;
               if (user?.name && ((f.farm_name || '').toLowerCase().includes(user.name.toLowerCase()) || (f.user?.name && f.user.name.toLowerCase().includes(user.name.toLowerCase())))) return true;
               if (
-                ((user?.email && (user.email.includes('thieuhung') || user.email.includes('0912'))) ||
-                 (user?.name && (user.name.toLowerCase().includes('thiều hưng') || user.name.toLowerCase().includes('hưng')))) &&
-                ((f.farm_name || '').toLowerCase().includes('thiều hưng') || String(f.id) === '01a111cf-de77-727c-bf12-292c04160d6c')
+                ((user?.email && (user.email.includes('chuba') || user.email.includes('thieuhung') || user.email.includes('0912'))) ||
+                 (user?.name && (user.name.toLowerCase().includes('ba') || user.name.toLowerCase().includes('thiều hưng') || user.name.toLowerCase().includes('hưng')))) &&
+                ((f.farm_name || '').toLowerCase().includes('ba') || (f.farm_name || '').toLowerCase().includes('thiều hưng') || String(f.id) === '6b9c95e4-27cc-4835-a192-9e29def04086' || String(f.id) === '01a111cf-de77-727c-bf12-292c04160d6c')
               ) {
                 return true;
               }
@@ -229,12 +284,47 @@ export default function FarmerPortalPage() {
     }
   }, [currentFarmer?.id]);
 
+  // Load danh sách sản phẩm nông hộ
+  const loadFarmerProducts = useCallback(async () => {
+    if (!currentFarmer?.id) return;
+    setFarmerProductsLoading(true);
+    try {
+      const data = await getProducts({ farmer_id: currentFarmer.id, limit: 100 });
+      if (Array.isArray(data)) {
+        setFarmerProducts(data);
+      } else {
+        setFarmerProducts(currentFarmer.products || []);
+      }
+    } catch (err) {
+      console.error('Lỗi tải sản phẩm nông hộ:', err);
+      setFarmerProducts(currentFarmer.products || []);
+    } finally {
+      setFarmerProductsLoading(false);
+    }
+  }, [currentFarmer?.id, currentFarmer?.products]);
+
+  // Load lịch sử rút tiền của nông hộ
+  const loadWithdrawals = useCallback(async () => {
+    if (!currentFarmer?.id) return;
+    setWithdrawalsLoading(true);
+    try {
+      const data = await getFarmerWithdrawalsApi(currentFarmer.id);
+      setWithdrawals(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Lỗi tải lịch sử rút tiền:', err);
+    } finally {
+      setWithdrawalsLoading(false);
+    }
+  }, [currentFarmer?.id]);
+
   useEffect(() => {
     if (currentFarmer?.id) {
       loadOrders();
       loadWallet();
+      loadWithdrawals();
+      loadFarmerProducts();
     }
-  }, [currentFarmer?.id, loadOrders, loadWallet]);
+  }, [currentFarmer?.id, loadOrders, loadWallet, loadWithdrawals, loadFarmerProducts]);
 
   useEffect(() => {
     if (currentFarmer) {
@@ -255,31 +345,54 @@ export default function FarmerPortalPage() {
   }, [currentFarmer]);
 
   // Load danh sách hội thoại của Nông Hộ (Shopee Multi-Vendor Chat)
-  const loadFarmerChats = useCallback(async () => {
+  const loadFarmerChats = useCallback(async (isSilent = false) => {
     if (!currentFarmer?.id) return;
     try {
-      const data = await getChatConversations({ farmer_id: currentFarmer.id });
+      const data = await getChatConversations({ farmer_id: currentFarmer.id, role: 'farmer' });
       setChatConversations(data);
       const unread = data.reduce((acc, cur) => acc + (cur.unread_count || 0), 0);
       setFarmerUnreadChatCount(unread);
-      if (!selectedChatId && data.length > 0) {
-        setSelectedChatId(data[0].id);
+
+      // Nếu có tin nhắn mới phát sinh từ khách hàng
+      if (isSilent && unread > previousUnreadCountRef.current) {
+        const newlyUnread = data.find(c => (c.unread_count || 0) > 0);
+        if (newlyUnread) {
+          const senderName = newlyUnread.customer?.name || (newlyUnread.type === 'farmer_admin' ? 'Ban Quản Trị Sàn' : 'Khách mua');
+          toast.success(`💬 Có tin nhắn mới từ: ${senderName}`, {
+            duration: 4500,
+            icon: '🔔',
+          });
+        }
       }
+      previousUnreadCountRef.current = unread;
+
+      // Đồng bộ cuộc trò chuyện đang chọn
+      setSelectedChatId((prevSelected) => {
+        if (!prevSelected && data.length > 0) {
+          const unreadConv = data.find(c => (c.unread_count || 0) > 0);
+          return unreadConv ? unreadConv.id : data[0].id;
+        }
+        if (prevSelected && !data.some(c => c.id === prevSelected) && data.length > 0) {
+          return data[0].id;
+        }
+        return prevSelected;
+      });
     } catch (err) {
       console.error('Lỗi tải chat nông hộ:', err);
     }
-  }, [currentFarmer?.id, selectedChatId]);
+  }, [currentFarmer?.id]);
 
   useEffect(() => {
     if (currentFarmer?.id) {
-      loadFarmerChats();
+      loadFarmerChats(false);
     }
   }, [currentFarmer?.id, loadFarmerChats]);
 
-  // Tự động làm mới tin nhắn khi ở tab chat
+  // Tự động làm mới tin nhắn khi ở tab chat (polling nhanh 2.5s)
   useEffect(() => {
     if (activeTab === 'chat' && currentFarmer?.id) {
-      const interval = setInterval(loadFarmerChats, 6000);
+      loadFarmerChats(false);
+      const interval = setInterval(() => loadFarmerChats(true), 2500);
       return () => clearInterval(interval);
     }
   }, [activeTab, currentFarmer?.id, loadFarmerChats]);
@@ -299,25 +412,39 @@ export default function FarmerPortalPage() {
   useEffect(() => {
     if (selectedChatId && activeTab === 'chat') {
       loadFarmerChatMessages(selectedChatId);
-      const interval = setInterval(() => loadFarmerChatMessages(selectedChatId), 3500);
+      const interval = setInterval(() => loadFarmerChatMessages(selectedChatId), 2000);
       return () => clearInterval(interval);
     }
   }, [selectedChatId, activeTab, loadFarmerChatMessages]);
 
+  // Tự động cuộn NỘI BỘ khung chat (KHÔNG cuộn toàn trang window ra footer)
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatMessagesContainerRef.current) {
+      const container = chatMessagesContainerRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+      // Chỉ cuộn xuống đáy nếu người dùng đang đứng ở sát đáy (để không làm giật màn hình khi họ cuộn lên đọc tin nhắn cũ)
+      if (isNearBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   }, [chatMessages]);
 
   // Nông hộ gửi tin nhắn
   const handleSendFarmerMessage = async () => {
-    if (!newChatMessage.trim() || !selectedChatId || !user?.id || chatSending) return;
+    const senderId = currentFarmer?.user_id || user?.id || currentFarmer?.id;
+    if (!newChatMessage.trim() || !selectedChatId || !senderId || chatSending) return;
     setChatSending(true);
     try {
-      const res = await sendChatMessage(selectedChatId, user.id, 'farmer', newChatMessage.trim());
+      const res = await sendChatMessage(selectedChatId, senderId, 'farmer', newChatMessage.trim());
       if (res.success && res.data) {
         setChatMessages(prev => [...prev, res.data!]);
         setNewChatMessage('');
         loadFarmerChats();
+        setTimeout(() => {
+          if (chatMessagesContainerRef.current) {
+            chatMessagesContainerRef.current.scrollTop = chatMessagesContainerRef.current.scrollHeight;
+          }
+        }, 50);
       } else {
         toast.error('Gửi tin nhắn thất bại!');
       }
@@ -395,24 +522,179 @@ export default function FarmerPortalPage() {
     }
   };
 
-  // Yêu cầu rút tiền về ngân hàng
-  const handleWithdraw = () => {
-    if (!wallet || wallet.balance_available <= 0) {
-      toast.error('Số dư khả dụng hiện tại là 0đ, không thể rút tiền');
+  // Mở modal yêu cầu rút tiền về ngân hàng
+  const handleOpenWithdrawModal = () => {
+    if (!wallet || wallet.balance_available < 50000) {
+      toast.error('Số dư khả dụng tối thiểu để tạo lệnh rút là 50.000đ');
       return;
     }
-    if (!bankForm.bank_account_number) {
-      toast.error('Vui lòng thiết lập tài khoản ngân hàng trước khi rút tiền');
+    if (!bankForm.bank_account_number.trim() || !bankForm.bank_name.trim()) {
+      toast.error('Vui lòng lưu thông tin tài khoản ngân hàng trước khi gửi yêu cầu rút tiền');
+      return;
+    }
+    setWithdrawAmount(String(Math.floor(wallet.balance_available)));
+    setWithdrawNote('');
+    setIsWithdrawModalOpen(true);
+  };
+
+  // Gửi form yêu cầu rút tiền đến Ban Quản Trị
+  const handleSubmitWithdraw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentFarmer?.id) return;
+    const numAmount = parseFloat(withdrawAmount);
+    if (isNaN(numAmount) || numAmount < 50000) {
+      toast.error('Số tiền rút tối thiểu là 50.000đ');
+      return;
+    }
+    if (wallet && numAmount > wallet.balance_available) {
+      toast.error(`Số dư khả dụng không đủ (tối đa ${wallet.balance_available.toLocaleString('vi-VN')}đ)`);
       return;
     }
 
-    setIsWithdrawing(true);
-    setTimeout(() => {
-      setIsWithdrawing(false);
-      toast.success(
-        `Lệnh rút ${wallet.balance_available.toLocaleString('vi-VN')}đ về STK ${bankForm.bank_account_number} (${bankForm.bank_name}) đã được chuyển tới Bộ phận Đối soát Sàn GreenFood!`
-      );
-    }, 1000);
+    setIsSubmittingWithdraw(true);
+    try {
+      const res = await requestFarmerWithdrawalApi(currentFarmer.id, {
+        amount: numAmount,
+        bank_name: bankForm.bank_name.trim(),
+        bank_account_number: bankForm.bank_account_number.trim(),
+        bank_account_name: bankForm.bank_account_name.trim(),
+        farmer_note: withdrawNote.trim() || undefined,
+      });
+
+      if (res.success) {
+        toast.success(res.message || 'Đã gửi yêu cầu rút tiền tới Ban Quản Trị thành công!');
+        setIsWithdrawModalOpen(false);
+        setWithdrawAmount('');
+        setWithdrawNote('');
+        await Promise.all([loadWallet(), loadWithdrawals()]);
+      } else {
+        toast.error(res.message || 'Gửi yêu cầu rút tiền thất bại');
+      }
+    } catch {
+      toast.error('Lỗi kết nối khi gửi yêu cầu rút tiền');
+    } finally {
+      setIsSubmittingWithdraw(false);
+    }
+  };
+
+  // Quản lý sản phẩm nông sản của nông hộ
+  const handleOpenAddProduct = () => {
+    setEditingProduct(null);
+    setProductForm({
+      name: '',
+      category_id: 1,
+      price: '',
+      unit: '1kg',
+      stock: '100',
+      badge: 'Chính vụ VietGAP',
+      image_url: SAMPLE_PRODUCT_IMAGES[0].url,
+      description: `Nông sản tươi sạch thu hoạch trực tiếp tại ${currentFarmer?.farm_name || 'vườn'}, không chất bảo quản, đạt chuẩn an toàn vệ sinh thực phẩm.`,
+      is_seasonal: true,
+    });
+    setIsProductModalOpen(true);
+  };
+
+  const handleOpenEditProduct = (prod: any) => {
+    setEditingProduct(prod);
+    const variant = prod.variants?.[0];
+    setProductForm({
+      name: prod.name || '',
+      category_id: prod.category_id || prod.category?.id || 1,
+      price: String(variant?.price || prod.priceNum || prod.price || ''),
+      unit: variant?.unit || prod.unit || '1kg',
+      stock: String(variant?.stock_quantity ?? prod.stock ?? 100),
+      badge: prod.badge || 'Chính vụ VietGAP',
+      image_url: prod.image_url || prod.images?.[0] || '',
+      description: prod.description || '',
+      is_seasonal: Boolean(prod.is_seasonal ?? true),
+    });
+    setIsProductModalOpen(true);
+  };
+
+  const handleSubmitProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentFarmer?.id) return;
+    if (!productForm.name.trim()) {
+      toast.error('Vui lòng nhập tên nông sản');
+      return;
+    }
+    const numPrice = parseFloat(productForm.price);
+    if (isNaN(numPrice) || numPrice < 0) {
+      toast.error('Vui lòng nhập giá bán hợp lệ');
+      return;
+    }
+
+    setIsSubmittingProduct(true);
+    try {
+      if (editingProduct) {
+        // Cập nhật sản phẩm
+        const res = await updateProduct(editingProduct.id, {
+          name: productForm.name.trim(),
+          category_id: Number(productForm.category_id),
+          price: numPrice,
+          unit: productForm.unit.trim() || '1kg',
+          stock: parseInt(productForm.stock) || 100,
+          badge: productForm.badge.trim(),
+          image_url: productForm.image_url.trim() || undefined,
+          description: productForm.description.trim() || undefined,
+          is_seasonal: productForm.is_seasonal,
+        });
+
+        if (res.success) {
+          toast.success('Cập nhật nông sản thành công!');
+          setIsProductModalOpen(false);
+          await loadFarmerProducts();
+        } else {
+          toast.error(res.message || 'Cập nhật nông sản thất bại');
+        }
+      } else {
+        // Tạo sản phẩm mới gắn liền với farmer_id
+        const res = await createProduct({
+          name: productForm.name.trim(),
+          category_id: Number(productForm.category_id),
+          farmer_id: currentFarmer.id,
+          price: numPrice,
+          unit: productForm.unit.trim() || '1kg',
+          stock: parseInt(productForm.stock) || 100,
+          badge: productForm.badge.trim(),
+          image_url: productForm.image_url.trim() || SAMPLE_PRODUCT_IMAGES[0].url,
+          description: productForm.description.trim() || undefined,
+          is_seasonal: productForm.is_seasonal,
+        });
+
+        if (res.success) {
+          toast.success(`Đã thêm nông sản "${productForm.name.trim()}" vào gian hàng thành công!`);
+          setIsProductModalOpen(false);
+          await loadFarmerProducts();
+        } else {
+          toast.error(res.message || 'Thêm nông sản thất bại');
+        }
+      }
+    } catch {
+      toast.error('Lỗi kết nối khi lưu nông sản');
+    } finally {
+      setIsSubmittingProduct(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string | number, productName: string) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa nông sản "${productName}" khỏi gian hàng?`)) {
+      return;
+    }
+    setDeletingProductId(String(productId));
+    try {
+      const res = await deleteProduct(productId);
+      if (res.success) {
+        toast.success(`Đã xóa nông sản "${productName}"`);
+        setFarmerProducts(prev => prev.filter(p => String(p.id) !== String(productId)));
+      } else {
+        toast.error(res.message || 'Xóa sản phẩm thất bại');
+      }
+    } catch {
+      toast.error('Lỗi khi xóa sản phẩm');
+    } finally {
+      setDeletingProductId(null);
+    }
   };
 
   const handleAutoGeocode = () => {
@@ -791,6 +1073,47 @@ export default function FarmerPortalPage() {
                     </span>
                   </div>
                 )}
+
+                {/* Banner Kênh Tin Nhắn Nông Hộ */}
+                <div className="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-5 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm border border-emerald-700/50">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-xl shrink-0 border border-white/20">
+                      💬
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-sm text-white">Kênh Tin Nhắn Khách Hàng & Ban Quản Trị Sàn</h4>
+                        <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          Kênh Người Bán
+                        </span>
+                      </div>
+                      <p className="text-xs text-emerald-100 mt-0.5">
+                        Tư vấn trực tiếp cho khách mua nông sản, chốt đơn hàng và trao đổi chính sách/đối soát với Admin GreenFood.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5 w-full md:w-auto">
+                    <button
+                      onClick={() => setActiveTab('chat')}
+                      className="flex-1 md:flex-initial px-4 py-2 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <MessageCircle size={14} /> Xem tại đây
+                      {farmerUnreadChatCount > 0 && (
+                        <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                          {farmerUnreadChatCount}
+                        </span>
+                      )}
+                    </button>
+                    <Link
+                      href="/farmer/chat"
+                      target="_blank"
+                      className="flex-1 md:flex-initial px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      <span>Mở Trang Chat Độc Lập</span>
+                      <ArrowUpRight size={14} />
+                    </Link>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1056,12 +1379,17 @@ export default function FarmerPortalPage() {
                       {wallet ? `${wallet.balance_available.toLocaleString('vi-VN')}đ` : '0đ'}
                     </div>
                     <button
-                      onClick={handleWithdraw}
-                      disabled={isWithdrawing || !wallet || wallet.balance_available <= 0}
+                      onClick={handleOpenWithdrawModal}
+                      disabled={isSubmittingWithdraw || !wallet || wallet.balance_available < 50000}
                       className="w-full bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold py-2.5 rounded-xl text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <ArrowUpRight size={15} /> Rút tiền về ngân hàng
                     </button>
+                    {wallet && wallet.balance_available > 0 && wallet.balance_available < 50000 && (
+                      <p className="text-[11px] text-emerald-200 text-center">
+                        Tối thiểu 50.000đ để rút về ngân hàng
+                      </p>
+                    )}
                   </div>
 
                   <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-2xs space-y-2">
@@ -1167,62 +1495,259 @@ export default function FarmerPortalPage() {
                     </button>
                   </div>
                 </form>
+
+                {/* BẢNG LỊCH SỬ YÊU CẦU RÚT TIỀN */}
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-2xs p-6 md:p-8 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <History size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
+                          Lịch Sử Yêu Cầu Rút Tiền
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                            {withdrawals.length} lệnh
+                          </span>
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Theo dõi trạng thái duyệt lệnh và tiến độ chuyển khoản giải ngân từ Ban Quản Trị Sàn.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleOpenWithdrawModal}
+                      disabled={!wallet || wallet.balance_available < 50000}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors shadow-2xs flex items-center gap-1.5 self-start sm:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Plus size={14} /> Tạo lệnh rút tiền mới
+                    </button>
+                  </div>
+
+                  {withdrawalsLoading ? (
+                    <div className="py-10 text-center text-gray-400 text-xs">
+                      <RefreshCw size={18} className="animate-spin inline-block mr-2" />
+                      Đang tải lịch sử rút tiền...
+                    </div>
+                  ) : withdrawals.length === 0 ? (
+                    <div className="py-12 text-center text-gray-400 space-y-2">
+                      <Wallet size={36} className="mx-auto text-gray-300 stroke-[1.5]" />
+                      <p className="text-sm font-semibold text-gray-600">Chưa có yêu cầu rút tiền nào</p>
+                      <p className="text-xs text-gray-400">
+                        Khi số dư khả dụng đạt từ 50.000đ, bạn có thể tạo lệnh rút tiền về tài khoản ngân hàng.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead>
+                          <tr className="border-b border-gray-100 text-gray-500 font-semibold bg-gray-50/70">
+                            <th className="py-3 px-3 rounded-l-xl">Mã Lệnh</th>
+                            <th className="py-3 px-3">Thời Gian</th>
+                            <th className="py-3 px-3">Số Tiền Rút</th>
+                            <th className="py-3 px-3">Tài Khoản Nhận</th>
+                            <th className="py-3 px-3">Trạng Thái</th>
+                            <th className="py-3 px-3 rounded-r-xl">Ghi Chú Admin / Nông Hộ</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {withdrawals.map((w) => (
+                            <tr key={w.id} className="hover:bg-gray-50/60 transition-colors">
+                              <td className="py-3.5 px-3 font-mono font-medium text-gray-700">
+                                #{w.id.slice(0, 8)}
+                              </td>
+                              <td className="py-3.5 px-3 text-gray-500 whitespace-nowrap">
+                                {new Date(w.created_at).toLocaleString('vi-VN', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </td>
+                              <td className="py-3.5 px-3 font-bold text-emerald-700 text-sm whitespace-nowrap">
+                                {w.amount.toLocaleString('vi-VN')}đ
+                              </td>
+                              <td className="py-3.5 px-3">
+                                <div className="font-semibold text-gray-800">{w.bank_name}</div>
+                                <div className="text-[11px] text-gray-500 font-mono">{w.bank_account_number} • {w.bank_account_name}</div>
+                              </td>
+                              <td className="py-3.5 px-3 whitespace-nowrap">
+                                {w.status === 'PENDING' && (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                    <Clock size={12} className="animate-pulse" /> Đang chờ duyệt
+                                  </span>
+                                )}
+                                {(w.status === 'APPROVED' || w.status === 'COMPLETED') && (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <CheckCircle size={12} /> Đã giải ngân
+                                  </span>
+                                )}
+                                {w.status === 'REJECTED' && (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-50 text-red-700 border border-red-200">
+                                    <X size={12} /> Bị từ chối (Đã hoàn tiền)
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3.5 px-3 text-gray-600 max-w-xs truncate">
+                                {w.admin_note ? (
+                                  <span className="text-gray-800 font-medium">
+                                    Admin: {w.admin_note}
+                                  </span>
+                                ) : w.farmer_note ? (
+                                  <span className="text-gray-500 italic">
+                                    &ldquo;{w.farmer_note}&rdquo;
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
             {/* ── TAB 4: PRODUCTS LIST ── */}
             {activeTab === 'products' && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-2xs p-6 space-y-4">
-                <div className="flex items-center justify-between">
+              <div className="bg-white rounded-3xl border border-gray-100 shadow-2xs p-6 md:p-8 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
                   <div>
-                    <h3 className="font-bold text-gray-900 text-base">
+                    <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
                       Nông Sản Vụ Mùa Của {currentFarmer?.farm_name}
+                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                        {totalProducts} sản phẩm
+                      </span>
                     </h3>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      Danh sách các mặt hàng nông sản sạch đang liên kết trực tiếp với gian hàng này.
+                      Đăng bán, chỉnh sửa giá và cập nhật sản lượng mùa vụ trực tiếp lên gian hàng sàn GreenFood.
                     </p>
                   </div>
-                  <Link
-                    href={`/farmers/${currentFarmer?.id}`}
-                    target="_blank"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors"
-                  >
-                    <Eye size={14} /> Xem trên sàn
-                  </Link>
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <button
+                      onClick={handleOpenAddProduct}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+                    >
+                      <Plus size={16} /> Thêm nông sản mới
+                    </button>
+                    <Link
+                      href={`/farmers/${currentFarmer?.id}`}
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors"
+                    >
+                      <Eye size={15} /> Xem trên sàn
+                    </Link>
+                  </div>
                 </div>
 
-                {products.length === 0 ? (
-                  <div className="p-12 text-center text-gray-400">
-                    <Package size={40} className="mx-auto text-gray-300 mb-2" />
-                    <p className="text-sm font-semibold text-gray-600">Chưa có nông sản nào được đăng bán</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Nông sản mới sẽ hiển thị tại đây sau khi liên kết với gian hàng.</p>
+                {farmerProductsLoading ? (
+                  <div className="py-16 text-center text-gray-400">
+                    <RefreshCw size={24} className="animate-spin mx-auto text-emerald-600 mb-2" />
+                    Đang tải danh sách nông sản...
+                  </div>
+                ) : products.length === 0 ? (
+                  <div className="p-14 text-center text-gray-400 space-y-3">
+                    <Package size={48} className="mx-auto text-gray-300 stroke-[1.2]" />
+                    <p className="text-base font-bold text-gray-700">Chưa có nông sản nào được đăng bán</p>
+                    <p className="text-xs text-gray-400 max-w-md mx-auto">
+                      Gian hàng của bạn hiện chưa có sản phẩm. Hãy bấm nút &quot;Thêm nông sản mới&quot; phía trên để đăng bán sản vật tươi ngon của nông trại nhé!
+                    </p>
+                    <button
+                      onClick={handleOpenAddProduct}
+                      className="mt-2 inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                    >
+                      <Plus size={15} /> Đăng nông sản đầu tiên
+                    </button>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-100">
-                    {products.map((p: any) => (
-                      <div key={p.id} className="py-3.5 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={p.image_url || 'https://images.unsplash.com/photo-1550828520-4cb496926fc9?w=200'}
-                            alt={p.name}
-                            className="w-12 h-12 rounded-xl object-cover border border-gray-100"
-                          />
-                          <div>
-                            <h4 className="font-bold text-gray-900 text-sm">{p.name}</h4>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              Giá: <strong className="text-emerald-700">{Number(p.variants?.[0]?.price || 0).toLocaleString('vi-VN')}đ</strong> / {p.variants?.[0]?.unit || 'kg'}
-                            </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {products.map((p: any) => {
+                      const variant = p.variants?.[0];
+                      const price = variant?.price ?? p.priceNum ?? p.price ?? 0;
+                      const unit = variant?.unit ?? p.unit ?? '1kg';
+                      const stock = variant?.stock_quantity ?? p.stock ?? 100;
+                      const image = p.image_url || p.images?.[0] || 'https://images.unsplash.com/photo-1550828520-4cb496926fc9?w=300';
+                      const badge = p.badge || (p.is_seasonal ? 'Mùa vụ' : 'Đang mở bán');
+
+                      return (
+                        <div
+                          key={p.id}
+                          className="p-4 rounded-2xl border border-gray-100 bg-white hover:border-emerald-200 hover:shadow-sm transition-all flex flex-col justify-between gap-3 group"
+                        >
+                          <div className="flex items-start gap-3.5">
+                            <img
+                              src={image}
+                              alt={p.name}
+                              className="w-20 h-20 rounded-2xl object-cover border border-gray-100 shrink-0 bg-gray-50"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                                  {badge}
+                                </span>
+                                {p.category?.name && (
+                                  <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                                    {p.category.name}
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="font-bold text-gray-900 text-sm mt-1 truncate group-hover:text-emerald-700 transition-colors">
+                                {p.name}
+                              </h4>
+                              <div className="mt-1 flex items-baseline gap-2">
+                                <span className="text-base font-extrabold text-emerald-700">
+                                  {Number(price).toLocaleString('vi-VN')}đ
+                                </span>
+                                <span className="text-xs text-gray-500 font-medium">
+                                  / {unit}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500">
+                                <span>Kho: <strong className="text-gray-800">{stock}</strong></span>
+                                <span>•</span>
+                                <span>Đã bán: <strong className="text-gray-800">{p.sold_count || 0}</strong></span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="pt-2.5 border-t border-gray-100 flex items-center justify-between">
+                            <Link
+                              href={`/farmers/${currentFarmer?.id}`}
+                              target="_blank"
+                              className="text-xs font-semibold text-gray-500 hover:text-emerald-700 flex items-center gap-1 transition-colors"
+                            >
+                              <Eye size={13} /> Gian hàng
+                            </Link>
+
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => handleOpenEditProduct(p)}
+                                className="px-3 py-1.5 bg-gray-100 hover:bg-emerald-50 hover:text-emerald-700 text-gray-700 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                              >
+                                <Edit2 size={12} /> Sửa
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProduct(p.id, p.name)}
+                                disabled={deletingProductId === String(p.id)}
+                                className="px-3 py-1.5 bg-gray-100 hover:bg-red-50 hover:text-red-700 text-gray-700 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                              >
+                                {deletingProductId === String(p.id) ? (
+                                  <RefreshCw size={12} className="animate-spin" />
+                                ) : (
+                                  <Trash2 size={12} />
+                                )}
+                                Xóa
+                              </button>
+                            </div>
                           </div>
                         </div>
-
-                        <div className="text-right">
-                          <span className="text-xs text-gray-500 block">Đã bán: <strong>{p.sold_count || 0}</strong></span>
-                          <span className="text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded">
-                            {p.badge || 'Đang mở bán'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1525,13 +2050,24 @@ export default function FarmerPortalPage() {
                           <p className="text-[11px] text-gray-500">Trao đổi khách mua & Sàn</p>
                         </div>
                       </div>
-                      <button
-                        onClick={loadFarmerChats}
-                        className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-emerald-600 transition-colors"
-                        title="Làm mới"
-                      >
-                        <RefreshCw size={15} />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <Link
+                          href="/farmer/chat"
+                          target="_blank"
+                          className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors"
+                          title="Mở Kênh Chat Toàn Màn Hình"
+                        >
+                          <span>Mở Chat Độc Lập</span>
+                          <ArrowUpRight size={12} />
+                        </Link>
+                        <button
+                          onClick={() => loadFarmerChats()}
+                          className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-emerald-600 transition-colors"
+                          title="Làm mới"
+                        >
+                          <RefreshCw size={15} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Nút hành động nhanh: Nhắn tin cho Admin Sàn */}
@@ -1546,7 +2082,12 @@ export default function FarmerPortalPage() {
                     {/* Lọc loại tin nhắn */}
                     <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 rounded-lg text-[11px] font-medium">
                       <button
-                        onClick={() => setChatTabFilter('all')}
+                        onClick={() => {
+                          setChatTabFilter('all');
+                          if (chatConversations.length > 0 && !chatConversations.some(c => c.id === selectedChatId)) {
+                            setSelectedChatId(chatConversations[0].id);
+                          }
+                        }}
                         className={`py-1 rounded-md transition-all text-center ${
                           chatTabFilter === 'all' ? 'bg-white text-emerald-800 font-bold shadow-2xs' : 'text-gray-500'
                         }`}
@@ -1554,7 +2095,13 @@ export default function FarmerPortalPage() {
                         Tất cả
                       </button>
                       <button
-                        onClick={() => setChatTabFilter('customer_farmer')}
+                        onClick={() => {
+                          setChatTabFilter('customer_farmer');
+                          const matched = chatConversations.filter(c => c.type === 'customer_farmer');
+                          if (matched.length > 0 && !matched.some(c => c.id === selectedChatId)) {
+                            setSelectedChatId(matched[0].id);
+                          }
+                        }}
                         className={`py-1 rounded-md transition-all text-center flex items-center justify-center gap-0.5 ${
                           chatTabFilter === 'customer_farmer' ? 'bg-white text-blue-700 font-bold shadow-2xs' : 'text-gray-500'
                         }`}
@@ -1562,7 +2109,13 @@ export default function FarmerPortalPage() {
                         <UserIcon size={11} /> Khách mua
                       </button>
                       <button
-                        onClick={() => setChatTabFilter('farmer_admin')}
+                        onClick={() => {
+                          setChatTabFilter('farmer_admin');
+                          const matched = chatConversations.filter(c => c.type === 'farmer_admin');
+                          if (matched.length > 0 && !matched.some(c => c.id === selectedChatId)) {
+                            setSelectedChatId(matched[0].id);
+                          }
+                        }}
                         className={`py-1 rounded-md transition-all text-center flex items-center justify-center gap-0.5 ${
                           chatTabFilter === 'farmer_admin' ? 'bg-white text-purple-700 font-bold shadow-2xs' : 'text-gray-500'
                         }`}
@@ -1679,6 +2232,30 @@ export default function FarmerPortalPage() {
 
                     return (
                       <>
+                        {/* Thông báo nếu có tin nhắn mới từ khách hàng khác */}
+                        {(() => {
+                          const otherUnread = chatConversations.filter(c => c.id !== selectedChatId && (c.unread_count || 0) > 0);
+                          if (otherUnread.length === 0) return null;
+                          return (
+                            <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3.5 py-2 text-xs flex items-center justify-between shadow-xs">
+                              <span className="font-semibold flex items-center gap-1.5 truncate">
+                                🔔 Có {otherUnread.length} cuộc trò chuyện khác có tin mới từ khách: <strong>{otherUnread[0].customer?.name || 'Khách mua'}</strong>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedChatId(otherUnread[0].id);
+                                  if (otherUnread[0].type === 'customer_farmer') setChatTabFilter('customer_farmer');
+                                  else if (otherUnread[0].type === 'farmer_admin') setChatTabFilter('farmer_admin');
+                                }}
+                                className="bg-white text-amber-900 font-bold px-2.5 py-1 rounded-md text-[11px] hover:bg-amber-100 transition-colors shrink-0 cursor-pointer shadow-xs ml-2"
+                              >
+                                Xem ngay ⚡
+                              </button>
+                            </div>
+                          );
+                        })()}
+
                         {/* Header phòng chat */}
                         <div className="p-3.5 border-b border-gray-200 bg-white flex items-center justify-between shadow-2xs">
                           <div className="flex items-center gap-3">
@@ -1723,7 +2300,7 @@ export default function FarmerPortalPage() {
                             </div>
                             {currentConv.product.slug && (
                               <Link
-                                href={`/products/${currentConv.product.slug}`}
+                                href={`/product/${currentConv.product.slug}`}
                                 target="_blank"
                                 className="px-2.5 py-1 bg-white hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg text-[11px] font-semibold shrink-0 transition-colors"
                               >
@@ -1734,7 +2311,7 @@ export default function FarmerPortalPage() {
                         )}
 
                         {/* Nội dung danh sách tin nhắn */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
+                        <div ref={chatMessagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
                           {chatMessages.length === 0 ? (
                             <div className="text-center py-10 text-gray-400 text-xs">
                               Chưa có tin nhắn nào. Hãy gửi lời chào đầu tiên!
@@ -1777,7 +2354,6 @@ export default function FarmerPortalPage() {
                               );
                             })
                           )}
-                          <div ref={chatEndRef} />
                         </div>
 
                         {/* Mẫu tin nhắn phản hồi nhanh chuẩn Shopee */}
@@ -1839,6 +2415,383 @@ export default function FarmerPortalPage() {
           </>
         )}
       </div>
+
+      {/* ── MODAL 1: FORM YÊU CẦU RÚT TIỀN VỀ NGÂN HÀNG ── */}
+      {isWithdrawModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border border-gray-100 relative space-y-6">
+            <button
+              onClick={() => setIsWithdrawModalOpen(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                <Wallet size={24} />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 text-lg">Yêu Cầu Rút Tiền Về Ngân Hàng</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Lệnh rút tiền sẽ được gửi trực tiếp đến Bộ phận Đối soát Sàn GreenFood để giải ngân.
+                </p>
+              </div>
+            </div>
+
+            {/* Thẻ số dư khả dụng */}
+            <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex items-center justify-between">
+              <div>
+                <span className="text-xs text-emerald-700 font-semibold block">Số dư khả dụng hiện tại:</span>
+                <span className="text-2xl font-black text-emerald-900">
+                  {wallet ? `${wallet.balance_available.toLocaleString('vi-VN')}đ` : '0đ'}
+                </span>
+              </div>
+              <span className="text-[11px] font-bold px-2.5 py-1 bg-emerald-200/80 text-emerald-900 rounded-lg">
+                Tối thiểu 50.000đ
+              </span>
+            </div>
+
+            <form onSubmit={handleSubmitWithdraw} className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-gray-700 uppercase">
+                    Số Tiền Cần Rút (VNĐ) *
+                  </label>
+                  <span className="text-[11px] text-gray-400">Không tính phí rút tiền</span>
+                </div>
+                <div className="relative">
+                  <input
+                    required
+                    type="number"
+                    min="50000"
+                    max={wallet?.balance_available || 0}
+                    step="1000"
+                    value={withdrawAmount}
+                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                    placeholder="Nhập số tiền muốn rút..."
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-base font-bold text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                  <span className="absolute right-4 top-3.5 text-xs font-bold text-gray-400">
+                    VNĐ
+                  </span>
+                </div>
+
+                {/* Nút chọn nhanh số tiền */}
+                {wallet && wallet.balance_available > 0 && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setWithdrawAmount('50000')}
+                      className="px-2.5 py-1 bg-gray-100 hover:bg-emerald-50 hover:text-emerald-700 text-gray-600 rounded-lg text-[11px] font-semibold transition-colors"
+                    >
+                      50.000đ
+                    </button>
+                    {wallet.balance_available >= 200000 && (
+                      <button
+                        type="button"
+                        onClick={() => setWithdrawAmount('200000')}
+                        className="px-2.5 py-1 bg-gray-100 hover:bg-emerald-50 hover:text-emerald-700 text-gray-600 rounded-lg text-[11px] font-semibold transition-colors"
+                      >
+                        200.000đ
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setWithdrawAmount(String(Math.floor(wallet.balance_available * 0.5)))}
+                      className="px-2.5 py-1 bg-gray-100 hover:bg-emerald-50 hover:text-emerald-700 text-gray-600 rounded-lg text-[11px] font-semibold transition-colors"
+                    >
+                      50% ({Math.floor(wallet.balance_available * 0.5).toLocaleString('vi-VN')}đ)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setWithdrawAmount(String(Math.floor(wallet.balance_available)))}
+                      className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-lg text-[11px] font-bold transition-colors"
+                    >
+                      Tất cả 100%
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Thông tin tài khoản nhận tiền */}
+              <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200 space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-gray-700 uppercase">
+                  <span>Tài Khoản Ngân Hàng Nhận Tiền</span>
+                  <span className="text-[10px] text-emerald-700 font-normal">Chính chủ gian hàng</span>
+                </div>
+                <div className="text-sm font-semibold text-gray-900">
+                  {bankForm.bank_name || 'Chưa thiết lập'}
+                </div>
+                <div className="text-xs text-gray-600 font-mono">
+                  STK: {bankForm.bank_account_number || '---'}
+                </div>
+                <div className="text-xs text-gray-600 uppercase font-semibold">
+                  Chủ TK: {bankForm.bank_account_name || '---'}
+                </div>
+              </div>
+
+              {/* Ghi chú */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  Ghi Chú Cho Ban Quản Trị (Tùy chọn)
+                </label>
+                <input
+                  type="text"
+                  value={withdrawNote}
+                  onChange={(e) => setWithdrawNote(e.target.value)}
+                  placeholder="Ví dụ: Rút tiền doanh thu tuần 2 tháng 10..."
+                  className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsWithdrawModalOpen(false)}
+                  className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingWithdraw}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                >
+                  {isSubmittingWithdraw ? (
+                    <RefreshCw size={14} className="animate-spin" />
+                  ) : (
+                    <ArrowUpRight size={14} />
+                  )}
+                  Xác nhận gửi yêu cầu
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 2: THÊM / CHỈNH SỬA NÔNG SẢN VỤ MÙA ── */}
+      {isProductModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-gray-100 relative space-y-6 my-8 max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setIsProductModalOpen(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                <Package size={24} />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 text-lg">
+                  {editingProduct ? 'Chỉnh Sửa Nông Sản Vụ Mùa' : 'Đăng Bán Nông Sản Mới'}
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Gian hàng: <strong>{currentFarmer?.farm_name}</strong> • Sản phẩm liên kết trực tiếp với nhà vườn.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmitProduct} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                    Tên Sản Phẩm Nông Sản *
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={productForm.name}
+                    onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                    placeholder="Ví dụ: Bưởi da xanh Bến Tre ruột hồng"
+                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                    Danh Mục Nông Sản *
+                  </label>
+                  <select
+                    value={productForm.category_id}
+                    onChange={(e) => setProductForm({ ...productForm, category_id: Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  >
+                    {PRODUCT_CATEGORIES.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                    Huy Hiệu / Đặc Điểm Vụ Mùa
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.badge}
+                    onChange={(e) => setProductForm({ ...productForm, badge: e.target.value })}
+                    placeholder="Ví dụ: Chính vụ VietGAP, OCOP 4 sao, Hữu cơ..."
+                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                    Giá Bán (VNĐ) *
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={productForm.price}
+                    onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                    placeholder="Ví dụ: 85000"
+                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                    Đơn Vị Tính *
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={productForm.unit}
+                    onChange={(e) => setProductForm({ ...productForm, unit: e.target.value })}
+                    placeholder="Ví dụ: 1kg, 500g, 1 quả, 1 bó..."
+                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                    Số Lượng Tồn Kho Sẵn Có
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={productForm.stock}
+                    onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
+                    placeholder="100"
+                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-6">
+                  <input
+                    type="checkbox"
+                    id="is_seasonal"
+                    checked={productForm.is_seasonal}
+                    onChange={(e) => setProductForm({ ...productForm, is_seasonal: e.target.checked })}
+                    className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                  />
+                  <label htmlFor="is_seasonal" className="text-xs font-bold text-gray-700 cursor-pointer">
+                    Nông sản chính vụ / mùa thu hoạch ngắn ngày 🌾
+                  </label>
+                </div>
+              </div>
+
+              {/* Ảnh sản phẩm */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  Đường Dẫn Ảnh Sản Phẩm (Image URL) *
+                </label>
+                <input
+                  required
+                  type="url"
+                  value={productForm.image_url}
+                  onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+
+                {/* Chọn nhanh ảnh mẫu nông sản */}
+                <div className="mt-2.5">
+                  <span className="text-[11px] text-gray-500 font-semibold block mb-1">
+                    Gợi ý chọn nhanh ảnh mẫu tươi ngon chuẩn HD:
+                  </span>
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                    {SAMPLE_PRODUCT_IMAGES.map((img, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setProductForm({ ...productForm, image_url: img.url })}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap border transition-all ${
+                          productForm.image_url === img.url
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                        }`}
+                      >
+                        {img.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Preview ảnh */}
+                {productForm.image_url && (
+                  <div className="mt-3 flex items-center gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-200">
+                    <img
+                      src={productForm.image_url}
+                      alt="Preview"
+                      className="w-16 h-16 rounded-xl object-cover border border-gray-200"
+                    />
+                    <div className="text-xs text-gray-500">
+                      <strong className="text-gray-800 block">Xem trước ảnh đại diện nông sản</strong>
+                      Ảnh sẽ hiển thị trên trang chủ và danh mục tìm kiếm của sàn.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Mô tả sản phẩm */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  Mô Tả Nông Sản & Quy Trình Trồng Trọt
+                </label>
+                <textarea
+                  rows={3}
+                  value={productForm.description}
+                  onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                  placeholder="Mô tả giống cây trồng, kỹ thuật chăm bón hữu cơ, hương vị và chứng nhận..."
+                  className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setIsProductModalOpen(false)}
+                  className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingProduct}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                >
+                  {isSubmittingProduct ? (
+                    <RefreshCw size={14} className="animate-spin" />
+                  ) : (
+                    <Check size={14} />
+                  )}
+                  {editingProduct ? 'Lưu thay đổi' : 'Đăng bán nông sản'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

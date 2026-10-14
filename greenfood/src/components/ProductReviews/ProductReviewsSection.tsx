@@ -10,7 +10,6 @@ import { ProductReviewItem, ReviewStats, ReviewFilterTab } from '@/types/review'
 import { getProductReviews, likeProductReviewApi } from '@/lib/api';
 import ShopeeMediaTheaterModal, { TheaterMediaItem } from './ShopeeMediaTheaterModal';
 import WriteReviewModal from './WriteReviewModal';
-import ShopeeVideoReelsBar from './ShopeeVideoReelsBar';
 import { toast } from 'react-hot-toast';
 
 interface ProductReviewsSectionProps {
@@ -169,14 +168,7 @@ export default function ProductReviewsSection({
   };
 
   return (
-    <section className="mt-14 pt-10 border-t border-emerald-900/10" id="product-reviews">
-      {/* 1. Shopee Video Reels Bar (Shorts Showcase) */}
-      <ShopeeVideoReelsBar
-        reviews={reviews}
-        onOpenTheater={handleOpenTheater}
-        mediaList={allMediaList}
-      />
-
+    <section className="mt-8 pt-6 border-t border-emerald-900/10" id="product-reviews">
       {/* Main Reviews Container */}
       <div className="bg-white rounded-3xl p-6 lg:p-10 shadow-elevated-card border border-emerald-900/10">
         
@@ -348,6 +340,9 @@ export default function ProductReviewsSection({
                   <img
                     src={item.thumbnail || item.url}
                     alt=""
+                    onError={(e) => {
+                      e.currentTarget.src = '/products/dau-tay.jpg';
+                    }}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
 
@@ -394,7 +389,7 @@ export default function ProductReviewsSection({
                   {/* Reviewer Header */}
                   <div className="flex items-start gap-3.5 mb-3">
                     <img
-                      src={rev.userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop'}
+                      src={rev.userAvatar || '/avatars/user-levuthien.jpg'}
                       alt={rev.userName}
                       className="w-11 h-11 rounded-full object-cover border border-gray-200 shrink-0"
                     />
@@ -482,8 +477,11 @@ export default function ProductReviewsSection({
                               className="relative w-28 h-28 rounded-2xl overflow-hidden border-2 border-emerald-500/80 hover:border-emerald-600 cursor-pointer group shadow-sm transition-transform hover:scale-105 shrink-0"
                             >
                               <img
-                                src={rev.videoThumbnail || rev.images[0] || 'https://images.unsplash.com/photo-1550828520-4cb496926fc9?q=80&w=600&auto=format&fit=crop'}
+                                src={rev.videoThumbnail || (rev.images && rev.images[0]) || '/products/dau-tay.jpg'}
                                 alt="Video preview"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/products/dau-tay.jpg';
+                                }}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                               />
                               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -518,7 +516,14 @@ export default function ProductReviewsSection({
                             onClick={() => handleOpenTheaterForReview(rev, 'image')}
                             className="w-20 h-20 rounded-xl overflow-hidden border border-gray-200 hover:border-emerald-500 cursor-pointer transition-all hover:scale-105 shrink-0 shadow-2xs"
                           >
-                            <img src={img} alt="" className="w-full h-full object-cover" />
+                            <img 
+                              src={img} 
+                              alt="" 
+                              onError={(e) => {
+                                e.currentTarget.src = '/products/dau-tay.jpg';
+                              }}
+                              className="w-full h-full object-cover" 
+                            />
                           </div>
                         ))}
                       </div>

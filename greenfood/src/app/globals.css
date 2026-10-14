@@ -47,16 +47,19 @@ body {
   font-style: italic;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 /* =========================================================================
-   HIỆU ỨNG CUỘN LĂN CHUỘT MƯỢT MÀ (SMOOTH SCROLL REVEAL & DIRECTION REACTIVITY)
-   Lăn xuống thì các mục lướt nổi lên, lăn lên thì phản hồi mượt mà
+   HIỆU ỨNG CUỘN LĂN CHUỘT MƯỢT MÀ (SMOOTH SCROLL REVEAL)
    ========================================================================= */
-/* Hiệu ứng trồi dần lên khi cuộn chuột (Scroll Reveal phong cách ipkeyvn.com) */
+/* Hiệu ứng hiển thị nhẹ nhàng, tinh tế và tuyệt đối không giật nảy layout */
 .reveal-on-scroll,
 .product-reveal-item {
   opacity: 0;
-  transform: translateY(42px);
-  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(12px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
   will-change: transform, opacity;
 }
 
@@ -67,8 +70,7 @@ body {
 }
 
 .scroll-reactive-item {
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
 }
 
 /* ==========================================================================
