@@ -40,10 +40,6 @@ export default function ProductClient({ initialSlug }: ProductClientProps) {
       toast.error('Gian hàng chưa kích hoạt kênh chat trực tuyến');
       return;
     }
-    if (!user) {
-      toast.error('Vui lòng đăng nhập để chat với chủ gian hàng!');
-      return;
-    }
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('gf-open-chat', {
         detail: {

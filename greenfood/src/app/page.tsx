@@ -230,7 +230,6 @@ export default function Home() {
   }, []);
 
   const [showWelcomeLetter, setShowWelcomeLetter] = useState(false);
-  const [scrollDir, setScrollDir] = useState<'down' | 'up'>('down');
   const flashSaleScrollerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -274,34 +273,8 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [isFlashHovered, checkScrollPosition]);
 
-  // Cuộn ngang êm ái khi dùng con lăn chuột trên dải Flash Sale
+  // Hiệu ứng cuộn chuột: xuất hiện mượt mà 1 lần duy nhất, không giật nảy khi cuộn lên xuống
   useEffect(() => {
-    const el = flashSaleScrollerRef.current;
-    if (!el) return;
-    const handleWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault();
-        el.scrollBy({ left: e.deltaY * 1.3, behavior: 'smooth' });
-        checkScrollPosition();
-      }
-    };
-    el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
-  }, [checkScrollPosition]);
-
-  // Hiệu ứng cuộn chuột: khi lăn chuột xuống thì các mục sản phẩm / icon hiện dần lên như ipkeyvn.com
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (Math.abs(currentScrollY - lastScrollY) > 5) {
-        setScrollDir(currentScrollY > lastScrollY ? 'down' : 'up');
-        lastScrollY = currentScrollY;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
     let observer: IntersectionObserver | null = null;
     const timer = setTimeout(() => {
       observer = new IntersectionObserver(
@@ -309,21 +282,19 @@ export default function Home() {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               entry.target.classList.add('is-revealed');
-            } else if (entry.boundingClientRect.top > window.innerHeight * 0.75) {
-              // Khi người dùng cuộn ngược lên khiến phần tử trôi xuống dưới viewport, ẩn đi để khi cuộn xuống lại sẽ trồi lên tiếp mượt mà
-              entry.target.classList.remove('is-revealed');
+              // Khi đã hiển thị thì giữ nguyên trạng thái cố định, không gỡ class để trang không bị nhảy khi cuộn ngược lên
+              observer?.unobserve(entry.target);
             }
           });
         },
-        { threshold: 0.08, rootMargin: '0px 0px -60px 0px' }
+        { threshold: 0.05, rootMargin: '0px 0px 40px 0px' }
       );
 
       const elements = document.querySelectorAll('.reveal-on-scroll, .product-reveal-item');
       elements.forEach((el) => observer?.observe(el));
-    }, 100);
+    }, 80);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       clearTimeout(timer);
       observer?.disconnect();
     };
@@ -372,7 +343,7 @@ export default function Home() {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className={`min-h-screen bg-tech-grid pb-20 relative overflow-hidden scroll-direction-${scrollDir}`}>
+    <div className="min-h-screen bg-tech-grid pb-20 relative overflow-hidden">
       <h1 className="sr-only">GreenFood - Chợ Nông Sản Sạch Việt Nam</h1>
 
       {/* Vùng hào quang quang hợp & công nghệ chìm tinh tế phong cách SaaS */}

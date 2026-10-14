@@ -105,6 +105,12 @@ class ChatRepository
     ): ChatConversation {
         $farmer = Farmer::find($farmerId);
         $userId = $farmer ? $farmer->user_id : null;
+        if (!$userId || !\App\Models\User::find($userId)) {
+            $fallbackUser = \App\Models\User::where('email', 'nongdan@greenfood.vn')->first()
+                ?? \App\Models\User::where('role', 'VENDOR')->first()
+                ?? \App\Models\User::first();
+            $userId = $fallbackUser ? (string) $fallbackUser->id : null;
+        }
 
         $existing = ChatConversation::where('farmer_id', $farmerId)
             ->where('type', 'farmer_admin')

@@ -56,6 +56,7 @@ export default function AdminChatPage() {
   const [creatingChat, setCreatingChat] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Load danh sách nông hộ cho Admin chọn chat
   useEffect(() => {
@@ -114,17 +115,29 @@ export default function AdminChatPage() {
   }, [selectedConv, loadMessages]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+      if (isNearBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   }, [messages]);
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !selectedConv || !user?.id || sending) return;
+    const adminId = user?.id || 'usr-admin-01';
+    if (!newMessage.trim() || !selectedConv || sending) return;
     setSending(true);
-    const result = await sendChatMessage(selectedConv, user.id, 'admin', newMessage.trim());
+    const result = await sendChatMessage(selectedConv, adminId, 'admin', newMessage.trim());
     if (result.success && result.data) {
       setMessages(prev => [...prev, result.data!]);
       setNewMessage('');
       fetchConversations();
+      setTimeout(() => {
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        }
+      }, 50);
     } else {
       toast.error('Gửi tin nhắn thất bại!');
     }
@@ -132,8 +145,8 @@ export default function AdminChatPage() {
   };
 
   const handleAssign = async (convId: string) => {
-    if (!user?.id) return;
-    const result = await assignChatConversation(convId, user.id);
+    const adminId = user?.id || 'usr-admin-01';
+    const result = await assignChatConversation(convId, adminId);
     if (result.success) {
       toast.success('Đã nhận xử lý cuộc hội thoại!');
       fetchConversations();
@@ -512,7 +525,7 @@ export default function AdminChatPage() {
             )}
 
             {/* Messages Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/60">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/60">
               {messages.map((msg) => {
                 const isAdmin = msg.sender_role === 'admin';
                 const isFarmer = msg.sender_role === 'farmer';

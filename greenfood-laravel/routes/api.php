@@ -165,6 +165,21 @@ Route::prefix('v1')->group(function () {
     Route::get('/admin/complaints', [ComplaintController::class, 'index']);
     Route::put('/admin/complaints/{id}/status', [ComplaintController::class, 'updateStatus']);
     Route::delete('/admin/complaints/{id}', [ComplaintController::class, 'destroy']);
+
+    // 14. Chat Module (v1)
+    Route::prefix('chat')->group(function () {
+        Route::get('/conversations', [ChatController::class, 'index']);
+        Route::post('/conversations', [ChatController::class, 'store']);
+        Route::post('/customer/conversations/farmer', [ChatController::class, 'startCustomerFarmerChat']);
+        Route::post('/farmer/conversations/customer', [ChatController::class, 'startFarmerCustomerChat']);
+        Route::post('/farmer/conversations/admin', [ChatController::class, 'startFarmerAdminChat']);
+        Route::get('/conversations/{id}', [ChatController::class, 'show']);
+        Route::get('/conversations/{id}/customer', [ChatController::class, 'customerMessages']);
+        Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']);
+        Route::match(['put', 'post'], '/conversations/{id}/assign', [ChatController::class, 'assign']);
+        Route::match(['put', 'post'], '/conversations/{id}/close', [ChatController::class, 'close']);
+        Route::get('/unread-count', [ChatController::class, 'unreadCount']);
+    });
 });
 
 
@@ -289,8 +304,8 @@ Route::prefix('chat')->group(function () {
     Route::get('/conversations/{id}', [ChatController::class, 'show']);
     Route::get('/conversations/{id}/customer', [ChatController::class, 'customerMessages']);
     Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']);
-    Route::put('/conversations/{id}/assign', [ChatController::class, 'assign']);
-    Route::put('/conversations/{id}/close', [ChatController::class, 'close']);
+    Route::match(['put', 'post'], '/conversations/{id}/assign', [ChatController::class, 'assign']);
+    Route::match(['put', 'post'], '/conversations/{id}/close', [ChatController::class, 'close']);
     Route::get('/unread-count', [ChatController::class, 'unreadCount']);
 });
 

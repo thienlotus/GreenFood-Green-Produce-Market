@@ -82,6 +82,7 @@ export default function FarmerPortalPage() {
   const [chatSending, setChatSending] = useState(false);
   const [farmerUnreadChatCount, setFarmerUnreadChatCount] = useState<number>(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Vendor Orders State
   const [orders, setOrders] = useState<VendorOrderData[]>([]);
@@ -394,7 +395,14 @@ export default function FarmerPortalPage() {
   }, [selectedChatId, activeTab, loadFarmerChatMessages]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatMessagesContainerRef.current) {
+      const container = chatMessagesContainerRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+      // Chỉ cuộn xuống đáy nếu người dùng đang đứng ở sát đáy (để không làm giật màn hình khi họ cuộn lên đọc tin nhắn cũ)
+      if (isNearBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   }, [chatMessages]);
 
   // Nông hộ gửi tin nhắn
@@ -408,6 +416,11 @@ export default function FarmerPortalPage() {
         setChatMessages(prev => [...prev, res.data!]);
         setNewChatMessage('');
         loadFarmerChats();
+        setTimeout(() => {
+          if (chatMessagesContainerRef.current) {
+            chatMessagesContainerRef.current.scrollTop = chatMessagesContainerRef.current.scrollHeight;
+          }
+        }, 50);
       } else {
         toast.error('Gửi tin nhắn thất bại!');
       }
@@ -2233,7 +2246,7 @@ export default function FarmerPortalPage() {
                         )}
 
                         {/* Nội dung danh sách tin nhắn */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
+                        <div ref={chatMessagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
                           {chatMessages.length === 0 ? (
                             <div className="text-center py-10 text-gray-400 text-xs">
                               Chưa có tin nhắn nào. Hãy gửi lời chào đầu tiên!

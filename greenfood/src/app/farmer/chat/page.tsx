@@ -47,6 +47,7 @@ export default function FarmerChatPage() {
   const [loadingOrders, setLoadingOrders] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // 1. Tải danh sách gian hàng & phân quyền
   useEffect(() => {
@@ -134,7 +135,13 @@ export default function FarmerChatPage() {
   }, [selectedConvId, loadMessages]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+      if (isNearBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   }, [messages]);
 
   // 4. Nông hộ gửi tin nhắn
@@ -155,6 +162,11 @@ export default function FarmerChatPage() {
         setMessages(prev => [...prev, res.data!]);
         setNewMessage('');
         loadConversations();
+        setTimeout(() => {
+          if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+          }
+        }, 50);
       } else {
         toast.error('Gửi tin nhắn thất bại, vui lòng thử lại.');
       }
@@ -610,7 +622,7 @@ export default function FarmerChatPage() {
                 )}
 
                 {/* Bong bóng tin nhắn */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/40">
+                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/40">
                   {messages.length === 0 ? (
                     <div className="text-center py-12 text-slate-400 text-xs">
                       Chưa có tin nhắn nào trong cuộc trò chuyện này. Hãy gửi phản hồi đầu tiên!
