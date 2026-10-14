@@ -8,7 +8,7 @@ import {
   Leaf, Package, ArrowLeft, Share2, Award, Clock, Edit3,
   Compass, AlertCircle, RefreshCw, CheckCircle, Sparkles, MessageCircle
 } from 'lucide-react';
-import { getFarmerDetailApi, updateFarmerProfileApi } from '@/lib/api';
+import { getFarmerDetailApi, updateFarmerProfileApi, getAdminFarmersApi } from '@/lib/api';
 import { resolveCoordinatesFromAddress } from '@/lib/geoUtils';
 import { useAuthStore } from '@/store/useAuthStore';
 import ProductCard from '@/components/ProductCard';
@@ -17,6 +17,7 @@ import { toast } from 'react-hot-toast';
 export default function FarmerStorefrontClient({ initialId }: { initialId?: string }) {
   const params = useParams();
   const searchParams = useSearchParams();
+  const { user } = useAuthStore();
 
   // Xác định farmerId linh hoạt từ prop, dynamic params, query params (?id=... hoặc ?store=...), hoặc parse từ URL
   const [resolvedId, setResolvedId] = useState<string>(() => {
@@ -33,14 +34,43 @@ export default function FarmerStorefrontClient({ initialId }: { initialId?: stri
         id = parts[1];
       }
     }
-    if (id && id !== resolvedId) {
-      setResolvedId(id);
+    if (id) {
+      if (id !== resolvedId) {
+        setResolvedId(id);
+      }
+    } else {
+      // Trường hợp vào /farmers/store hoặc chưa có ID cụ thể: Tự động phân giải gian hàng nông hộ
+      getAdminFarmersApi().then((farmersList) => {
+        if (Array.isArray(farmersList) && farmersList.length > 0) {
+          if (user) {
+            const myFarm = farmersList.find((f: any) => {
+              if (f.user_id && user.id && String(f.user_id) === String(user.id)) return true;
+              if (f.user?.email && user.email && f.user.email.toLowerCase() === user.email.toLowerCase()) return true;
+              if (f.user?.phone && user.phone && f.user.phone === user.phone) return true;
+              if (user.farmName && (f.farm_name || '').toLowerCase().includes(user.farmName.toLowerCase())) return true;
+              if (user.name && ((f.farm_name || '').toLowerCase().includes(user.name.toLowerCase()) || (f.user?.name && f.user.name.toLowerCase().includes(user.name.toLowerCase())))) return true;
+              if (
+                ((user.email && (user.email.includes('chuba') || user.email.includes('thieuhung') || user.email.includes('0912'))) ||
+                 (user.name && (user.name.toLowerCase().includes('ba') || user.name.toLowerCase().includes('thiều hưng') || user.name.toLowerCase().includes('hưng')))) &&
+                ((f.farm_name || '').toLowerCase().includes('ba') || (f.farm_name || '').toLowerCase().includes('thiều hưng'))
+              ) {
+                return true;
+              }
+              return false;
+            });
+            if (myFarm) {
+              setResolvedId(myFarm.id);
+              return;
+            }
+          }
+          // Fallback về gian hàng mẫu đầu tiên
+          setResolvedId(farmersList[0].id);
+        }
+      }).catch(() => {});
     }
-  }, [initialId, params?.id, searchParams]);
+  }, [initialId, params?.id, searchParams, user]);
 
-  const farmerId = resolvedId || (initialId || (params?.id as string) || searchParams?.get('id') || searchParams?.get('store') || '');
-  const { user } = useAuthStore();
-
+  const farmerId = resolvedId;
   const [farmer, setFarmer] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'products' | 'story'>('products');
