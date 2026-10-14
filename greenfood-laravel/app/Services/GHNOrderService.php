@@ -192,7 +192,7 @@ class GHNOrderService
 
         // 3. Gửi toàn bộ thông tin người nhận và bưu kiện sang GHNService với đúng ShopId
         $payload = [
-            'payment_type_id' => 2,                // 1: Khách trả ship, 2: Cửa hàng trả ship cho GHN
+            'payment_type_id' => 1,                // 1: Người gửi / Shop trả cước cho GHN (tránh shipper thu cước của khách)
             'note' => $note,                       // Ghi chú in trên tem vận đơn
             'required_note' => 'KHONGCHOXEMHANG',  // Quy định xem hàng: KHONGCHOXEMHANG / CHOXEMHANGKHONGTHU
             'to_name' => $order->customer_name,    // Họ tên người nhận hàng
@@ -274,7 +274,7 @@ class GHNOrderService
         $codAmount = $isPaid ? 0 : (int) round($vendorOrder->sub_total + $vendorOrder->shipping_fee);
 
         $payload = [
-            'payment_type_id' => 2,
+            'payment_type_id' => 1,                // 1: Người gửi / Shop trả cước cho GHN
             'note' => $note,
             'required_note' => 'KHONGCHOXEMHANG',
             'to_name' => $order->customer_name,
